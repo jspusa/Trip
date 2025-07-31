@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>出差伙食費計算器</title>
+  <style>
+    :root{
+      --primary:#4a90e2; --bg:#f5f7fa; --radius:10px; --pad:12px;
+      --ff:'Helvetica Neue', Arial, sans-serif;
+    }
+    *{box-sizing:border-box;}
+    body{margin:0; font-family:var(--ff); background:#f5f7fa; color:#333; padding:var(--pad);}
+    h2{margin:12px 0 16px; color:var(--primary); text-align:center;}
+    form{max-width:1000px; margin:0 auto 18px; background:#fff; border-radius:var(--radius); padding:var(--pad); box-shadow:0 4px 12px rgba(0,0,0,.1);}
+    fieldset{border:1px solid #ddd; border-radius:var(--radius); padding:var(--pad); margin-bottom:20px;}
+    legend{font-weight:700; color:var(--primary); padding:0 8px;}
+
+    .row-2{
+      display:grid; grid-template-columns:repeat(2, minmax(320px, 1fr));
+      gap:18px 20px; align-items:start; margin-bottom:12px;
+    }
+    .field{display:flex; flex-direction:column;}
+    .label{font-weight:600; margin-bottom:6px;}
+    input,select{
+      padding:10px 12px; border:1px solid #ccc; border-radius:6px; font-size:16px;
+      background:#fff; color:#333;
+    }
+
+    /* 日期快選（文字輸入 + 自製日曆） */
+    .input-group{position:relative; display:flex; min-width:0;}
+    .input-group input{flex:1; padding-right:44px; min-width:0;}
+    .picker-btn{
+      position:absolute; right:6px; top:50%; transform:translateY(-50%);
+      border:1px solid #cfe0ff; background:#eef4ff; color:#2d5bd1;
+      border-radius:6px; padding:6px 8px; cursor:pointer; font-size:14px;
+    }
+    .picker-btn:hover{background:#dfeaff;}
+
+    .muted{color:#666; font-size:.92em;}
+
+    /* 三顆按鈕同尺寸 */
+    .btn{display:inline-block; padding:10px 18px; font-size:16px; border-radius:8px; border:none; cursor:pointer; transition:background .2s;}
+    .btn-primary{ background:var(--primary); color:#fff; }
+    .btn-primary:hover{ background:#357abd; }
+    .btn-secondary{ background:#6c757d; color:#fff; }
+    .btn-secondary:hover{ background:#5b636a; }
+
+    .kpi{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:10px 0;}
+    .kpi div{background:#f9fbff; border:1px solid #e6eefc; border-radius:12px; padding:10px; text-align:center;}
+    .kpi .val{font-size:1.2em; font-weight:700;}
+
+    table{width:100%; border-collapse:collapse; margin:8px 0 12px; font-size:.95em;}
+    th,td{border:1px solid #e6e6e6; padding:8px; text-align:center;}
+    th{background:#f3f6fb;}
+    .err{color:#e74c3c; font-weight:700; text-align:center;}
+    .rationale{background:#fcfdff; border:1px solid #e6eefc; border-radius:12px; padding:12px; line-height:1.7; margin-top:8px;}
+
+    /* 右下角：規則速查 */
+    #quickRef{position:fixed; bottom:var(--pad); right:var(--pad); background:#fff; border:1px solid #ccc; border-radius:10px; z-index:900; overflow:hidden;}
+    #quickRef summary{padding:8px 12px; cursor:pointer; color:var(--primary); font-weight:700;}
+    #quickRef[open]{box-shadow:0 4px 20px rgba(0,0,0,.12); width:360px;}
+    #quickRef > div{padding:0 12px 12px;}
+
+    /* 規則與費率：彈出視窗 */
+    .modal-backdrop{display:none; position:fixed; inset:0; background:rgba(0,0,0,.35); align-items:center; justify-content:center; z-index:1000;}
+    .modal{background:#fff; width:min(900px,96vw); max-height:90vh; overflow:auto; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.25); padding:16px;}
+    .modal header{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;}
+    .modal h3{margin:0; color:var(--primary);}
+    .tabs{display:flex; gap:8px; margin:8px 0 12px;}
+    .tabs button{background:#eef4ff; color:#2d5bd1; border:1px solid #cfe0ff; border-radius:8px; padding:8px 12px; cursor:pointer;}
+    .tabs button.active{background:#dfeaff;}
+    .modal .section{display:none;}
+    .modal .section.active{display:block;}
+
+    /* 自製日曆（覆蓋層） */
+    .cal-overlay{display:none; position:fixed; inset:0; background:rgba(0,0,0,.2); align-items:center; justify-content:center; z-index:1200;}
+    .cal-panel{background:#fff; width:min(320px, 96vw); border-radius:12px; box-shadow:0 10px 24px rgba(0,0,0,.25); padding:12px;}
+    .cal-header{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;}
+    .cal-header button{padding:6px 10px; border:1px solid #ddd; border-radius:6px; background:#f7f7f7; cursor:pointer;}
+    .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:6px;}
+    .cal-grid div{padding:8px 0; border:1px solid #eee; border-radius:6px; cursor:pointer; user-select:none;}
+    .cal-grid .dow{background:#f3f6fb; font-weight:700; border-color:#e6eefc;}
+    .cal-grid .disabled{opacity:.35; cursor:default;}
+    .cal-grid .day:hover{background:#eef4ff; border-color:#cfe0ff;}
+    .cal-title{font-weight:700;}
+    @media (max-width:760px){ .row-2{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body>
+  <!-- 右下角：規則速查（已改新標準） -->
+  <details id="quickRef">
+    <summary>規則速查</summary>
+    <div class="muted">僅核給「落地後至登機前」在當地地面的餐費；航班含餐期間不重複核發。</div>
+    <h4>抵達當日（依落地時間）</h4>
+    <table>
+      <thead><tr><th>落地時間</th><th>可核給</th></tr></thead>
+      <tbody>
+        <tr><td>00:00–08:59</td><td>早餐＋午餐＋晚餐</td></tr>
+        <tr><td>09:00–12:59</td><td>午餐＋晚餐</td></tr>
+        <tr><td>13:00–20:59</td><td>晚餐</td></tr>
+        <tr><td>21:00–24:00</td><td>原則不供餐</td></tr>
+      </tbody>
+    </table>
+    <h4>離境當日（依登機時間）</h4>
+    <table>
+      <thead><tr><th>登機時間</th><th>可核給</th></tr></thead>
+      <tbody>
+        <tr><td>00:00–04:59</td><td>原則不供餐</td></tr>
+        <tr><td>05:00–11:59</td><td>早餐</td></tr>
+        <tr><td>12:00–18:59</td><td>早餐＋午餐</td></tr>
+        <tr><td>19:00–24:00</td><td>早餐＋午餐＋晚餐</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <h2>出差伙食費計算器</h2>
+
+  <form id="mealForm" autocomplete="off">
+    <fieldset>
+      <legend>計算器</legend>
+
+      <div class="row-2">
+        <div class="field">
+          <div class="label">目的國家（依物價核定）</div>
+          <select id="country">
+            <option value="US">美國 🇺🇸</option>
+            <option value="DE">德國 🇩🇪</option>
+            <option value="JP">日本 🇯🇵</option>
+            <option value="VN">越南 🇻🇳</option>
+          </select>
+        </div>
+        <div></div>
+      </div>
+
+      <!-- 抵達：日期｜時間 -->
+      <div class="row-2">
+        <div class="field">
+          <div class="label">抵達（落地）日期（YYYY-MM-DD）</div>
+          <div class="input-group">
+            <input type="text" id="arrDate" inputmode="numeric" autocomplete="off">
+            <button type="button" class="picker-btn" data-target="arrDate">📅</button>
+          </div>
+        </div>
+        <div class="field">
+          <div class="label">抵達（落地）時間（HH:MM）</div>
+          <input type="text" id="arrTime" inputmode="numeric" autocomplete="off">
+        </div>
+      </div>
+
+      <!-- 離境：日期｜時間 -->
+      <div class="row-2">
+        <div class="field">
+          <div class="label">離境（登機）日期（YYYY-MM-DD）</div>
+          <div class="input-group">
+            <input type="text" id="depDate" inputmode="numeric" autocomplete="off">
+            <button type="button" class="picker-btn" data-target="depDate">📅</button>
+          </div>
+        </div>
+        <div class="field">
+          <div class="label">離境（登機）時間（HH:MM）</div>
+          <input type="text" id="depTime" inputmode="numeric" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="muted">提示：用不到桃園機場的時間，僅看國外抵達與離開。</div>
+
+      <div style="text-align:center; margin:16px 0;">
+        <button type="button" class="btn btn-primary" id="calcBtn">計算</button>
+        <button type="button" class="btn btn-secondary" id="resetBtn">重置</button>
+        <button type="button" class="btn btn-primary" id="openRulesBtn">查看規則與費率</button>
+      </div>
+
+      <div class="kpi" id="kpiRow" style="display:none;">
+        <div><div class="muted">早餐份數</div><div class="val" id="kB">0</div></div>
+        <div><div class="muted">午餐份數</div><div class="val" id="kL">0</div></div>
+        <div><div class="muted">晚餐份數</div><div class="val" id="kD">0</div></div>
+        <div><div class="muted">合計（USD）</div><div class="val" id="kT">0</div></div>
+      </div>
+
+      <div>
+        <h4>判別與明細</h4>
+        <table id="detailTable">
+          <thead><tr><th>日期</th><th>可核給餐別</th></tr></thead>
+          <tbody><tr><td colspan="2" class="muted">請先按「計算」</td></tr></tbody>
+        </table>
+
+        <!-- 計價明細（顯示 單價 × 份數 = 小計） -->
+        <div id="pricingBox" class="rationale" style="display:none;"></div>
+
+        <!-- 區間判斷依據 -->
+        <div id="rationaleBox" class="rationale" style="display:none;"></div>
+      </div>
+
+      <div id="errorMsg" class="err"></div>
+      <p class="output">合計（USD）：<span id="totalUSD">--</span></p>
+    </fieldset>
+  </form>
+
+  <!-- 規則與費率：彈出視窗（已改新標準） -->
+  <div class="modal-backdrop" id="rulesModal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="rulesTitle">
+      <header>
+        <h3 id="rulesTitle">規則與費率</h3>
+        <button class="btn btn-secondary" id="closeRulesBtn">關閉</button>
+      </header>
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="tab-rules">判斷基準</button>
+        <button class="tab-btn" data-tab="tab-rates">各國費用</button>
+      </div>
+      <section id="tab-rules" class="section active">
+        <h4>抵達當日（依「落地時間」核給）</h4>
+        <table>
+          <thead><tr><th>時間區間</th><th>可核給餐別</th></tr></thead>
+          <tbody>
+            <tr><td>00:00–08:59</td><td>早餐＋午餐＋晚餐</td></tr>
+            <tr><td>09:00–12:59</td><td>午餐＋晚餐</td></tr>
+            <tr><td>13:00–20:59</td><td>晚餐</td></tr>
+            <tr><td>21:00–24:00</td><td>原則不給餐</td></tr>
+          </tbody>
+        </table>
+        <h4>離境當日（依「登機時間」核給）</h4>
+        <table>
+          <thead><tr><th>時間區間</th><th>可核給餐別</th></tr></thead>
+          <tbody>
+            <tr><td>00:00–04:59</td><td>原則不供餐</td></tr>
+            <tr><td>05:00–11:59</td><td>早餐</td></tr>
+            <tr><td>12:00–18:59</td><td>早餐＋午餐</td></tr>
+            <tr><td>19:00–24:00</td><td>早餐＋午餐＋晚餐</td></tr>
+          </tbody>
+        </table>
+        <p class="muted">跨日的完整在地天數 → 每天核給：早餐＋午餐＋晚餐。</p>
+      </section>
+      <section id="tab-rates" class="section">
+        <h4>依物價核定之各國餐費（USD）</h4>
+        <table>
+          <thead><tr><th>國家</th><th>早餐</th><th>午餐</th><th>晚餐</th><th>三餐總額</th></tr></thead>
+          <tbody>
+            <tr><td>美國</td><td>13</td><td>26</td><td>26</td><td>65</td></tr>
+            <tr><td>德國</td><td>12</td><td>24</td><td>24</td><td>60</td></tr>
+            <tr><td>日本</td><td>8</td><td>16</td><td>16</td><td>40</td></tr>
+            <tr><td>越南</td><td>6</td><td>12</td><td>12</td><td>30</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </div>
+  </div>
+
+  <!-- 自製日期選擇器（覆蓋層） -->
+  <div class="cal-overlay" id="calOverlay" aria-hidden="true">
+    <div class="cal-panel" role="dialog" aria-modal="true" aria-labelledby="calTitle">
+      <div class="cal-header">
+        <button type="button" id="calPrev">‹</button>
+        <div class="cal-title" id="calTitle">2025-07</div>
+        <button type="button" id="calNext">›</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+  </div>
+
+  <script>
+  (function(){
+    // === 費率 ===
+    const rates = {
+      US:{label:'美國', B:13, L:26, D:26},
+      DE:{label:'德國', B:12, L:24, D:24},
+      JP:{label:'日本', B:8,  L:16, D:16},
+      VN:{label:'越南', B:6,  L:12, D:12}
+    };
+    const MEALS = ['早餐','午餐','晚餐'];
+
+    // DOM
+    const countrySel  = document.getElementById('country');
+    const arrDate = document.getElementById('arrDate');
+    const arrTime = document.getElementById('arrTime');
+    const depDate = document.getElementById('depDate');
+    const depTime = document.getElementById('depTime');
+
+    const calcBtn  = document.getElementById('calcBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const errorMsg = document.getElementById('errorMsg');
+    const detailBody  = document.getElementById('detailTable').querySelector('tbody');
+    const totalUSD    = document.getElementById('totalUSD');
+    const kpiRow      = document.getElementById('kpiRow');
+    const kB          = document.getElementById('kB');
+    const kL          = document.getElementById('kL');
+    const kD          = document.getElementById('kD');
+    const kT          = document.getElementById('kT');
+    const rationaleBox= document.getElementById('rationaleBox');
+    const pricingBox  = document.getElementById('pricingBox');
+
+    // Modal
+    const rulesModal   = document.getElementById('rulesModal');
+    const openRulesBtn = document.getElementById('openRulesBtn');
+    const closeRulesBtn= document.getElementById('closeRulesBtn');
+    const tabBtns      = document.querySelectorAll('.tab-btn');
+    const sections     = document.querySelectorAll('.modal .section');
+
+    // ====== Input Mask（位數夠才補分隔符；每打一碼都看得到） ======
+    function maskDate(el){
+      const d = el.value.replace(/\D/g,'').slice(0,8);
+      const y = d.slice(0,4), m = d.slice(4,6), da = d.slice(6,8);
+      let out = '';
+      if (d.length <= 4) out = y;
+      else if (d.length <= 6) out = y + '-' + m;
+      else out = y + '-' + m + '-' + da;
+      el.value = out;
+    }
+    function maskTime(el){
+      const t  = el.value.replace(/\D/g,'').slice(0,4);
+      const hh = t.slice(0,2), mm = t.slice(2,4);
+      el.value = (t.length <= 2) ? hh : (hh + ':' + mm);
+    }
+    [arrDate, depDate].forEach(el=> el.addEventListener('input', ()=>maskDate(el)));
+    [arrTime, depTime].forEach(el=> el.addEventListener('input', ()=>maskTime(el)));
+
+    // ====== 自製日期選擇器（通用） ======
+    const overlay = document.getElementById('calOverlay');
+    const grid    = document.getElementById('calGrid');
+    const titleEl = document.getElementById('calTitle');
+    const prevBtn = document.getElementById('calPrev');
+    const nextBtn = document.getElementById('calNext');
+    let activeInput = null;
+    let viewY=0, viewM=0; // month 0-11
+
+    function openCalendar(targetInputId){
+      activeInput = document.getElementById(targetInputId);
+      let base = new Date();
+      const v = activeInput.value;
+      if(/^\d{4}-\d{2}-\d{2}$/.test(v)){
+        const [yy,mm,dd] = v.split('-').map(n=>parseInt(n,10));
+        base = new Date(yy, mm-1, dd);
+      }
+      viewY = base.getFullYear();
+      viewM = base.getMonth();
+      renderCalendar();
+      overlay.style.display = 'flex';
+      overlay.setAttribute('aria-hidden','false');
+    }
+    function closeCalendar(){
+      overlay.style.display = 'none';
+      overlay.setAttribute('aria-hidden','true');
+      activeInput = null;
+    }
+    function pad2(n){ return String(n).padStart(2,'0'); }
+    function renderCalendar(){
+      titleEl.textContent = `${viewY}-${pad2(viewM+1)}`;
+      const first = new Date(viewY, viewM, 1);
+      const last  = new Date(viewY, viewM+1, 0);
+      const startDow = first.getDay(); // 0-6
+      const days = last.getDate();
+
+      const dows = ['日','一','二','三','四','五','六'];
+      let html = dows.map(w=>`<div class="dow">${w}</div>`).join('');
+      for(let i=0;i<startDow;i++){ html += `<div class="disabled"></div>`; }
+      for(let d=1; d<=days; d++){ html += `<div class="day" data-day="${d}">${d}</div>`; }
+      grid.innerHTML = html;
+
+      grid.querySelectorAll('.day').forEach(cell=>{
+        cell.addEventListener('click', ()=>{
+          if(!activeInput) return;
+          const d = Number(cell.dataset.day);
+          activeInput.value = `${viewY}-${pad2(viewM+1)}-${pad2(d)}`;
+          closeCalendar();
+        });
+      });
+    }
+    prevBtn.addEventListener('click', ()=>{ viewM--; if(viewM<0){viewM=11; viewY--;} renderCalendar(); });
+    nextBtn.addEventListener('click', ()=>{ viewM++; if(viewM>11){viewM=0; viewY++;} renderCalendar(); });
+    overlay.addEventListener('click', (e)=>{ if(e.target===overlay) closeCalendar(); });
+
+    document.querySelectorAll('.picker-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const id = btn.getAttribute('data-target');
+        openCalendar(id);
+      });
+    });
+
+    // ====== 計算工具 ======
+    function parseLocal(dateStr,timeStr){
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(dateStr) || !/^\d{2}:\d{2}$/.test(timeStr)) return new Date('invalid');
+      const [y,m,d] = dateStr.split('-').map(n=>parseInt(n,10));
+      const [hh,mm] = timeStr.split(':').map(n=>parseInt(n,10));
+      return new Date(y,(m||1)-1,d||1,hh||0,mm||0,0,0);
+    }
+    const pad2x = n => String(n).padStart(2,'0');
+    const dateOnly = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const sameDay = (a,b)=> a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+    const addDays = (d,n)=>{const x=new Date(d); x.setDate(x.getDate()+n); return x;};
+    const dateLabel = d => `${d.getFullYear()}-${pad2x(d.getMonth()+1)}-${pad2x(d.getDate())}`;
+    const timeLabel = d => `${pad2x(d.getHours())}:${pad2x(d.getMinutes())}`;
+
+    // === 新標準：抵達（落地） ===
+    // 00:00–08:59 → B,L,D；09:00–12:59 → L,D；13:00–20:59 → D；21:00–24:00 → none
+    function arrivalMinIndex(dt){
+      const m = dt.getHours()*60 + dt.getMinutes();
+      if (m <=  8*60+59) return 0;
+      if (m <= 12*60+59) return 1;
+      if (m <= 20*60+59) return 2;
+      return 3;
+    }
+    function arrivalRangeText(idx){
+      if(idx===0) return '00:00–08:59 → 早餐＋午餐＋晚餐';
+      if(idx===1) return '09:00–12:59 → 午餐＋晚餐';
+      if(idx===2) return '13:00–20:59 → 晚餐';
+      return '21:00–24:00 → 原則不供餐';
+    }
+
+    // === 新標準：離境（登機） ===
+    // 00:00–04:59 → none；05:00–11:59 → B；12:00–18:59 → B,L；19:00–24:00 → B,L,D
+    function departureMaxIndex(dt){
+      const m = dt.getHours()*60 + dt.getMinutes();
+      if (m <=  4*60+59) return -1;
+      if (m <= 11*60+59) return  0;
+      if (m <= 18*60+59) return  1;
+      return 2;
+    }
+    function departureRangeText(idx){
+      if(idx<0)  return '00:00–04:59 → 原則不供餐';
+      if(idx===0) return '05:00–11:59 → 早餐';
+      if(idx===1) return '12:00–18:59 → 早餐＋午餐';
+      return '19:00–24:00 → 早餐＋午餐＋晚餐';
+    }
+
+    function mealListFromMin(minIdx){
+      if (minIdx>=3) return [];
+      if (minIdx<=0) return ['早餐','午餐','晚餐'];
+      if (minIdx===1) return ['午餐','晚餐'];
+      return ['晚餐'];
+    }
+    function mealListToMax(maxIdx){
+      if (maxIdx<0)  return [];
+      if (maxIdx>=2) return ['早餐','午餐','晚餐'];
+      if (maxIdx===1) return ['早餐','午餐'];
+      return ['早餐'];
+    }
+    function addCounts(cnt, meals){
+      meals.forEach(m=>{
+        if(m==='早餐') cnt.B++;
+        if(m==='午餐') cnt.L++;
+        if(m==='晚餐') cnt.D++;
+      });
+    }
+    function renderRows(rows){
+      if(!rows.length){
+        detailBody.innerHTML = '<tr><td colspan="2" class="muted">無可核給餐別</td></tr>';
+        return;
+      }
+      detailBody.innerHTML = rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('');
+    }
+
+    function compute(){
+      errorMsg.textContent = "";
+      totalUSD.textContent = "--";
+      kpiRow.style.display = 'none';
+      rationaleBox.style.display = 'none';
+      rationaleBox.innerHTML = '';
+      pricingBox.style.display = 'none';
+      pricingBox.innerHTML = '';
+      detailBody.innerHTML = '<tr><td colspan="2" class="muted">計算中…</td></tr>';
+
+      if(!arrDate.value || !arrTime.value || !depDate.value || !depTime.value){
+        errorMsg.textContent = "請完整輸入抵達與離境的日期與時間（YYYY-MM-DD／HH:MM）。";
+        detailBody.innerHTML = '<tr><td colspan="2" class="muted">未完整輸入</td></tr>';
+        return;
+      }
+      const arr = parseLocal(arrDate.value, arrTime.value);
+      const dep = parseLocal(depDate.value, depTime.value);
+      if(isNaN(arr) || isNaN(dep)){
+        errorMsg.textContent = "格式不正確，請用 2025-07-10 / 10:00 這種格式。";
+        detailBody.innerHTML = '<tr><td colspan="2" class="muted">格式錯誤</td></tr>';
+        return;
+      }
+      if(dep<=arr){
+        errorMsg.textContent = "離境時間需晚於抵達時間。";
+        detailBody.innerHTML = '<tr><td colspan="2" class="muted">時間邏輯錯誤</td></tr>';
+        return;
+      }
+
+      const r = rates[countrySel.value];
+      const price = {B:r.B, L:r.L, D:r.D};
+
+      let cnt = {B:0, L:0, D:0};
+      let rows = [];
+
+      const arrMin = arrivalMinIndex(arr);
+      const depMax = departureMaxIndex(dep);
+
+      const arrD = dateOnly(arr), depD = dateOnly(dep);
+
+      if (sameDay(arrD,depD)){
+        const meals = [];
+        for(let i=Math.max(0,arrMin); i<=Math.min(2,depMax); i++) meals.push(MEALS[i]);
+        addCounts(cnt, meals);
+        rows.push([dateLabel(arrD), meals.length? meals.join('、'):'—']);
+      }else{
+        const m1 = mealListFromMin(arrMin);
+        addCounts(cnt, m1);
+        rows.push([dateLabel(arrD), m1.length? m1.join('、'):'—']);
+        let d=addDays(arrD,1);
+        while(d<depD){
+          const all=['早餐','午餐','晚餐'];
+          addCounts(cnt, all);
+          rows.push([dateLabel(d), all.join('、')]);
+          d=addDays(d,1);
+        }
+        const m2 = mealListToMax(depMax);
+        addCounts(cnt, m2);
+        rows.push([dateLabel(depD), m2.length? m2.join('、'):'—']);
+      }
+
+      const subB = cnt.B*price.B;
+      const subL = cnt.L*price.L;
+      const subD = cnt.D*price.D;
+      const total = subB + subL + subD;
+
+      renderRows(rows);
+      kB.textContent = cnt.B; kL.textContent = cnt.L; kD.textContent = cnt.D;
+      kT.textContent = total.toFixed(2); totalUSD.textContent = total.toFixed(2);
+      kpiRow.style.display = 'grid';
+
+      pricingBox.innerHTML =
+        `<strong>計價明細（${rates[countrySel.value].label}，USD）</strong><br>
+         早餐：${price.B} × ${cnt.B} = <strong>${subB.toFixed(2)}</strong><br>
+         午餐：${price.L} × ${cnt.L} = <strong>${subL.toFixed(2)}</strong><br>
+         晚餐：${price.D} × ${cnt.D} = <strong>${subD.toFixed(2)}</strong>`;
+      pricingBox.style.display = 'block';
+
+      rationaleBox.innerHTML =
+        `<strong>判斷依據</strong><br>
+         抵達當日：落地時間 <strong>${timeLabel(arr)}</strong> ，屬於「${arrivalRangeText(arrMin)}」。<br>
+         離境當日：登機時間 <strong>${timeLabel(dep)}</strong> ，屬於「${departureRangeText(depMax)}」。<br>
+         <span class="muted">（中間每一個完整在當地的日期，核給：早餐＋午餐＋晚餐）</span>`;
+      rationaleBox.style.display = 'block';
+    }
+
+    // 事件
+    calcBtn.addEventListener('click', compute);
+    resetBtn.addEventListener('click', ()=>{
+      [arrDate,arrTime,depDate,depTime].forEach(el=> el.value='');
+      errorMsg.textContent=""; detailBody.innerHTML='<tr><td colspan="2" class="muted">請先按「計算」</td></tr>';
+      totalUSD.textContent="--"; kpiRow.style.display='none';
+      rationaleBox.style.display='none'; rationaleBox.innerHTML='';
+      pricingBox.style.display='none'; pricingBox.innerHTML='';
+    });
+
+    // 規則與費率 Modal
+    openRulesBtn.addEventListener('click', ()=> rulesModal.style.display='flex');
+    closeRulesBtn.addEventListener('click', ()=> rulesModal.style.display='none');
+    rulesModal.addEventListener('click', e=>{ if(e.target===rulesModal) rulesModal.style.display='none'; });
+    tabBtns.forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        tabBtns.forEach(b=>b.classList.remove('active'));
+        sections.forEach(s=>s.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab).classList.add('active');
+      });
+    });
+  })();
+  </script>
+</body>
+</html>
