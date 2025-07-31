@@ -56,12 +56,6 @@
     .err{color:#e74c3c; font-weight:700; text-align:center;}
     .rationale{background:#fcfdff; border:1px solid #e6eefc; border-radius:12px; padding:12px; line-height:1.7; margin-top:8px;}
 
-    /* 右下角：規則速查 */
-    #quickRef{position:fixed; bottom:var(--pad); right:var(--pad); background:#fff; border:1px solid #ccc; border-radius:10px; z-index:900; overflow:hidden;}
-    #quickRef summary{padding:8px 12px; cursor:pointer; color:var(--primary); font-weight:700;}
-    #quickRef[open]{box-shadow:0 4px 20px rgba(0,0,0,.12); width:360px;}
-    #quickRef > div{padding:0 12px 12px;}
-
     /* 規則與費率：彈出視窗 */
     .modal-backdrop{display:none; position:fixed; inset:0; background:rgba(0,0,0,.35); align-items:center; justify-content:center; z-index:1000;}
     .modal{background:#fff; width:min(900px,96vw); max-height:90vh; overflow:auto; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.25); padding:16px;}
@@ -88,32 +82,6 @@
   </style>
 </head>
 <body>
-  <!-- 右下角：規則速查（已改新標準） -->
-  <details id="quickRef">
-    <summary>規則速查</summary>
-    <div class="muted">僅核給「落地後至登機前」在當地地面的餐費；航班含餐期間不重複核發。</div>
-    <h4>抵達當日（依落地時間）</h4>
-    <table>
-      <thead><tr><th>落地時間</th><th>可核給</th></tr></thead>
-      <tbody>
-        <tr><td>00:00–08:59</td><td>早餐＋午餐＋晚餐</td></tr>
-        <tr><td>09:00–12:59</td><td>午餐＋晚餐</td></tr>
-        <tr><td>13:00–20:59</td><td>晚餐</td></tr>
-        <tr><td>21:00–24:00</td><td>原則不供餐</td></tr>
-      </tbody>
-    </table>
-    <h4>離境當日（依登機時間）</h4>
-    <table>
-      <thead><tr><th>登機時間</th><th>可核給</th></tr></thead>
-      <tbody>
-        <tr><td>00:00–04:59</td><td>原則不供餐</td></tr>
-        <tr><td>05:00–11:59</td><td>早餐</td></tr>
-        <tr><td>12:00–18:59</td><td>早餐＋午餐</td></tr>
-        <tr><td>19:00–24:00</td><td>早餐＋午餐＋晚餐</td></tr>
-      </tbody>
-    </table>
-  </details>
-
   <h2>出差伙食費計算器</h2>
 
   <form id="mealForm" autocomplete="off">
@@ -128,6 +96,7 @@
             <option value="DE">德國 🇩🇪</option>
             <option value="JP">日本 🇯🇵</option>
             <option value="VN">越南 🇻🇳</option>
+            <option value="TW">台灣 🇹🇼</option>
           </select>
         </div>
         <div></div>
@@ -175,7 +144,10 @@
         <div><div class="muted">早餐份數</div><div class="val" id="kB">0</div></div>
         <div><div class="muted">午餐份數</div><div class="val" id="kL">0</div></div>
         <div><div class="muted">晚餐份數</div><div class="val" id="kD">0</div></div>
-        <div><div class="muted">合計（USD）</div><div class="val" id="kT">0</div></div>
+        <div>
+          <div class="muted">合計（<span id="kCur">USD</span>）</div>
+          <div class="val" id="kT">0</div>
+        </div>
       </div>
 
       <div>
@@ -193,11 +165,11 @@
       </div>
 
       <div id="errorMsg" class="err"></div>
-      <p class="output">合計（USD）：<span id="totalUSD">--</span></p>
+      <p class="output">合計（<span id="outCur">USD</span>）：<span id="totalAmt">--</span></p>
     </fieldset>
   </form>
 
-  <!-- 規則與費率：彈出視窗（已改新標準） -->
+  <!-- 規則與費率：彈出視窗 -->
   <div class="modal-backdrop" id="rulesModal">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="rulesTitle">
       <header>
@@ -232,14 +204,15 @@
         <p class="muted">跨日的完整在地天數 → 每天核給：早餐＋午餐＋晚餐。</p>
       </section>
       <section id="tab-rates" class="section">
-        <h4>依物價核定之各國餐費（USD）</h4>
+        <h4>依物價核定之各國餐費</h4>
         <table>
-          <thead><tr><th>國家</th><th>早餐</th><th>午餐</th><th>晚餐</th><th>三餐總額</th></tr></thead>
+          <thead><tr><th>國家</th><th>幣別</th><th>早餐</th><th>午餐</th><th>晚餐</th><th>三餐總額</th></tr></thead>
           <tbody>
-            <tr><td>美國</td><td>13</td><td>26</td><td>26</td><td>65</td></tr>
-            <tr><td>德國</td><td>12</td><td>24</td><td>24</td><td>60</td></tr>
-            <tr><td>日本</td><td>8</td><td>16</td><td>16</td><td>40</td></tr>
-            <tr><td>越南</td><td>6</td><td>12</td><td>12</td><td>30</td></tr>
+            <tr><td>美國</td><td>USD</td><td>13</td><td>26</td><td>26</td><td>65</td></tr>
+            <tr><td>德國</td><td>USD</td><td>12</td><td>24</td><td>24</td><td>60</td></tr>
+            <tr><td>日本</td><td>USD</td><td>8</td><td>16</td><td>16</td><td>40</td></tr>
+            <tr><td>越南</td><td>USD</td><td>6</td><td>12</td><td>12</td><td>30</td></tr>
+            <tr><td>台灣</td><td>TWD</td><td>100</td><td>200</td><td>200</td><td>500</td></tr>
           </tbody>
         </table>
       </section>
@@ -262,10 +235,11 @@
   (function(){
     // === 費率 ===
     const rates = {
-      US:{label:'美國', B:13, L:26, D:26},
-      DE:{label:'德國', B:12, L:24, D:24},
-      JP:{label:'日本', B:8,  L:16, D:16},
-      VN:{label:'越南', B:6,  L:12, D:12}
+      US:{label:'美國', currency:'USD', B:13,  L:26, D:26},
+      DE:{label:'德國', currency:'USD', B:12,  L:24, D:24},
+      JP:{label:'日本', currency:'USD', B:8,   L:16, D:16},
+      VN:{label:'越南', currency:'USD', B:6,   L:12, D:12},
+      TW:{label:'台灣', currency:'TWD', B:100, L:200, D:200}
     };
     const MEALS = ['早餐','午餐','晚餐'];
 
@@ -280,12 +254,14 @@
     const resetBtn = document.getElementById('resetBtn');
     const errorMsg = document.getElementById('errorMsg');
     const detailBody  = document.getElementById('detailTable').querySelector('tbody');
-    const totalUSD    = document.getElementById('totalUSD');
+    const totalAmt    = document.getElementById('totalAmt');
     const kpiRow      = document.getElementById('kpiRow');
     const kB          = document.getElementById('kB');
     const kL          = document.getElementById('kL');
     const kD          = document.getElementById('kD');
     const kT          = document.getElementById('kT');
+    const kCur        = document.getElementById('kCur');
+    const outCur      = document.getElementById('outCur');
     const rationaleBox= document.getElementById('rationaleBox');
     const pricingBox  = document.getElementById('pricingBox');
 
@@ -451,7 +427,7 @@
 
     function compute(){
       errorMsg.textContent = "";
-      totalUSD.textContent = "--";
+      totalAmt.textContent = "--";
       kpiRow.style.display = 'none';
       rationaleBox.style.display = 'none';
       rationaleBox.innerHTML = '';
@@ -516,11 +492,14 @@
 
       renderRows(rows);
       kB.textContent = cnt.B; kL.textContent = cnt.L; kD.textContent = cnt.D;
-      kT.textContent = total.toFixed(2); totalUSD.textContent = total.toFixed(2);
+      kT.textContent = total.toFixed(2);
+      kCur.textContent = r.currency;
+      totalAmt.textContent = total.toFixed(2);
+      outCur.textContent = r.currency;
       kpiRow.style.display = 'grid';
 
       pricingBox.innerHTML =
-        `<strong>計價明細（${rates[countrySel.value].label}，USD）</strong><br>
+        `<strong>計價明細（${r.label}，${r.currency}）</strong><br>
          早餐：${price.B} × ${cnt.B} = <strong>${subB.toFixed(2)}</strong><br>
          午餐：${price.L} × ${cnt.L} = <strong>${subL.toFixed(2)}</strong><br>
          晚餐：${price.D} × ${cnt.D} = <strong>${subD.toFixed(2)}</strong>`;
@@ -539,7 +518,7 @@
     resetBtn.addEventListener('click', ()=>{
       [arrDate,arrTime,depDate,depTime].forEach(el=> el.value='');
       errorMsg.textContent=""; detailBody.innerHTML='<tr><td colspan="2" class="muted">請先按「計算」</td></tr>';
-      totalUSD.textContent="--"; kpiRow.style.display='none';
+      totalAmt.textContent="--"; kpiRow.style.display='none';
       rationaleBox.style.display='none'; rationaleBox.innerHTML='';
       pricingBox.style.display='none'; pricingBox.innerHTML='';
     });
