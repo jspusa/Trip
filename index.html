@@ -13,7 +13,7 @@
     body{margin:0; font-family:var(--ff); background:#f5f7fa; color:#333; padding:var(--pad);}
     h2{margin:12px 0 16px; color:var(--primary); text-align:center;}
     form{max-width:1000px; margin:0 auto 18px; background:#fff; border-radius:var(--radius); padding:var(--pad); box-shadow:0 4px 12px rgba(0,0,0,.1);}
-    fieldset{border:1px solid #ddd; border-radius:var(--radius); padding:var(--pad); margin-bottom:20px;}
+    fieldset{border:1px solid #ddd; border-radius:var(--radius); padding:var(--pad); margin-bottom:20px; position:relative;}
     legend{font-weight:700; color:var(--primary); padding:0 8px;}
 
     .row-2{
@@ -85,6 +85,14 @@
     .modal .section{display:none;}
     .modal .section.active{display:block;}
 
+    .rules-btn{position:absolute; top:10px; right:10px;}
+
+    /* 時間選擇器 */
+    .time-overlay{display:none; position:fixed; inset:0; background:rgba(0,0,0,.2); align-items:center; justify-content:center; z-index:1200;}
+    .time-panel{background:#fff; width:min(260px,96vw); border-radius:12px; box-shadow:0 10px 24px rgba(0,0,0,.25); padding:12px;}
+    .time-grid{display:grid; grid-template-columns:repeat(6,1fr); gap:6px; margin-bottom:8px;}
+    .time-grid button{padding:6px; border:1px solid #ddd; border-radius:6px; background:#f7f7f7; cursor:pointer;}
+
     /* 自製日曆（覆蓋層） */
     .cal-overlay{display:none; position:fixed; inset:0; background:rgba(0,0,0,.2); align-items:center; justify-content:center; z-index:1200;}
     .cal-panel{background:#fff; width:min(320px, 96vw); border-radius:12px; box-shadow:0 10px 24px rgba(0,0,0,.25); padding:12px;}
@@ -105,6 +113,7 @@
   <form id="mealForm" autocomplete="off">
     <fieldset>
       <legend>計算器</legend>
+      <button type="button" class="btn btn-primary rules-btn" id="openRulesBtn">查看規則與費率</button>
 
       <div class="row-2">
         <div class="field">
@@ -123,30 +132,36 @@
       <!-- 抵達：日期｜時間 -->
       <div class="row-2">
         <div class="field">
-          <div class="label">抵達（落地）日期（YYYY-MM-DD）</div>
+          <div class="label" id="arrDateLabel">抵達（落地）日期（YYYY-MM-DD）</div>
           <div class="input-group">
             <input type="text" id="arrDate" inputmode="numeric" autocomplete="off">
-            <button type="button" class="picker-btn" data-target="arrDate">📅</button>
+            <button type="button" class="picker-btn date-picker-btn" data-target="arrDate">📅</button>
           </div>
         </div>
         <div class="field">
-          <div class="label">抵達（落地）時間（HH:MM）</div>
-          <input type="text" id="arrTime" inputmode="numeric" autocomplete="off">
+          <div class="label" id="arrTimeLabel">抵達（落地）時間（HH:MM）</div>
+          <div class="input-group">
+            <input type="text" id="arrTime" inputmode="numeric" autocomplete="off">
+            <button type="button" class="picker-btn time-picker-btn" data-target="arrTime">⏰</button>
+          </div>
         </div>
       </div>
 
       <!-- 離境：日期｜時間 -->
       <div class="row-2">
         <div class="field">
-          <div class="label">離境（登機）日期（YYYY-MM-DD）</div>
+          <div class="label" id="depDateLabel">離境（登機）日期（YYYY-MM-DD）</div>
           <div class="input-group">
             <input type="text" id="depDate" inputmode="numeric" autocomplete="off">
-            <button type="button" class="picker-btn" data-target="depDate">📅</button>
+            <button type="button" class="picker-btn date-picker-btn" data-target="depDate">📅</button>
           </div>
         </div>
         <div class="field">
-          <div class="label">離境（登機）時間（HH:MM）</div>
-          <input type="text" id="depTime" inputmode="numeric" autocomplete="off">
+          <div class="label" id="depTimeLabel">離境（登機）時間（HH:MM）</div>
+          <div class="input-group">
+            <input type="text" id="depTime" inputmode="numeric" autocomplete="off">
+            <button type="button" class="picker-btn time-picker-btn" data-target="depTime">⏰</button>
+          </div>
         </div>
       </div>
 
@@ -164,7 +179,6 @@
       <div style="text-align:center; margin:16px 0;">
         <button type="button" class="btn btn-primary" id="calcBtn">計算</button>
         <button type="button" class="btn btn-secondary" id="resetBtn">重置</button>
-        <button type="button" class="btn btn-primary" id="openRulesBtn">查看規則與費率</button>
       </div>
 
       <div class="kpi" id="kpiRow" style="display:none;">
@@ -262,6 +276,14 @@
     </div>
   </div>
 
+  <!-- 時間選擇器（覆蓋層） -->
+  <div class="time-overlay" id="timeOverlay" aria-hidden="true">
+    <div class="time-panel">
+      <div class="time-grid" id="hourGrid"></div>
+      <div class="time-grid" id="minGrid"></div>
+    </div>
+  </div>
+
   <script>
   (function(){
     // === 費率 ===
@@ -280,6 +302,15 @@
     const arrTime = document.getElementById('arrTime');
     const depDate = document.getElementById('depDate');
     const depTime = document.getElementById('depTime');
+    const arrDateLabel = document.getElementById('arrDateLabel');
+    const arrTimeLabel = document.getElementById('arrTimeLabel');
+    const depDateLabel = document.getElementById('depDateLabel');
+    const depTimeLabel = document.getElementById('depTimeLabel');
+
+    const hotelBreakfast = document.getElementById('hotelBreakfast');
+    const expoLunch      = document.getElementById('expoLunch');
+    const expoDateRow    = document.getElementById('expoDateRow');
+    const expoDatesDiv   = document.getElementById('expoDates');
 
     const hotelBreakfast = document.getElementById('hotelBreakfast');
     const expoLunch      = document.getElementById('expoLunch');
@@ -300,6 +331,22 @@
     const outCur      = document.getElementById('outCur');
     const rationaleBox= document.getElementById('rationaleBox');
     const pricingBox  = document.getElementById('pricingBox');
+
+    function updateLabels(){
+      if(countrySel.value==='TW'){
+        arrDateLabel.textContent='抵達（高鐵）日期（YYYY-MM-DD）';
+        arrTimeLabel.textContent='抵達（高鐵）時間（HH:MM）';
+        depDateLabel.textContent='離境（高鐵）日期（YYYY-MM-DD）';
+        depTimeLabel.textContent='離境（高鐵）時間（HH:MM）';
+      }else{
+        arrDateLabel.textContent='抵達（落地）日期（YYYY-MM-DD）';
+        arrTimeLabel.textContent='抵達（落地）時間（HH:MM）';
+        depDateLabel.textContent='離境（登機）日期（YYYY-MM-DD）';
+        depTimeLabel.textContent='離境（登機）時間（HH:MM）';
+      }
+    }
+    countrySel.addEventListener('change', updateLabels);
+    updateLabels();
 
     // Modal
     const rulesModal   = document.getElementById('rulesModal');
@@ -356,7 +403,11 @@
     const titleEl = document.getElementById('calTitle');
     const prevBtn = document.getElementById('calPrev');
     const nextBtn = document.getElementById('calNext');
+    const timeOverlay = document.getElementById('timeOverlay');
+    const hourGrid = document.getElementById('hourGrid');
+    const minGrid  = document.getElementById('minGrid');
     let activeInput = null;
+    let activeTimeInput = null;
     let viewY=0, viewM=0; // month 0-11
 
     function openCalendar(targetInputId){
@@ -377,6 +428,36 @@
       overlay.style.display = 'none';
       overlay.setAttribute('aria-hidden','true');
       activeInput = null;
+    }
+    function openTimePicker(target){
+      activeTimeInput = document.getElementById(target);
+      timeOverlay.style.display='flex';
+      timeOverlay.setAttribute('aria-hidden','false');
+    }
+    function closeTimePicker(){
+      timeOverlay.style.display='none';
+      timeOverlay.setAttribute('aria-hidden','true');
+      activeTimeInput=null;
+    }
+    function buildTimeGrids(){
+      let h='';
+      for(let i=0;i<24;i++){ const s=String(i).padStart(2,'0'); h+=`<button data-h="${s}">${s}</button>`; }
+      hourGrid.innerHTML=h;
+      let m='';
+      for(let i=0;i<60;i++){ const s=String(i).padStart(2,'0'); m+=`<button data-m="${s}">${s}</button>`; }
+      minGrid.innerHTML=m;
+      hourGrid.querySelectorAll('button').forEach(btn=>{ btn.addEventListener('click',()=>selectTime(btn.dataset.h,null));});
+      minGrid.querySelectorAll('button').forEach(btn=>{ btn.addEventListener('click',()=>selectTime(null,btn.dataset.m));});
+    }
+    let selH=null, selM=null;
+    function selectTime(h,m){
+      if(h!==null) selH=h;
+      if(m!==null) selM=m;
+      if(selH!==null && selM!==null && activeTimeInput){
+        activeTimeInput.value=`${selH}:${selM}`;
+        closeTimePicker();
+        selH=selM=null;
+      }
     }
     function pad2(n){ return String(n).padStart(2,'0'); }
     function renderCalendar(){
@@ -404,11 +485,20 @@
     prevBtn.addEventListener('click', ()=>{ viewM--; if(viewM<0){viewM=11; viewY--;} renderCalendar(); });
     nextBtn.addEventListener('click', ()=>{ viewM++; if(viewM>11){viewM=0; viewY++;} renderCalendar(); });
     overlay.addEventListener('click', (e)=>{ if(e.target===overlay) closeCalendar(); });
+    timeOverlay.addEventListener('click', e=>{ if(e.target===timeOverlay) closeTimePicker(); });
+    buildTimeGrids();
 
-    document.querySelectorAll('.picker-btn').forEach(btn=>{
+    document.querySelectorAll('.date-picker-btn').forEach(btn=>{
       btn.addEventListener('click', ()=>{
         const id = btn.getAttribute('data-target');
         openCalendar(id);
+      });
+    });
+
+    document.querySelectorAll('.time-picker-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const id = btn.getAttribute('data-target');
+        openTimePicker(id);
       });
     });
 
@@ -496,6 +586,7 @@
 
       const r = rates[countrySel.value];
       const price = {B:r.B, L:r.L, D:r.D};
+      const fmt = n => (r.currency==='TWD' ? Math.round(n).toString() : n.toFixed(2));
 
       let cnt = {B:0, L:0, D:0};
       let rows = [];
@@ -571,23 +662,23 @@
 
       renderRows(rows);
       kB.textContent = cnt.B; kL.textContent = cnt.L; kD.textContent = cnt.D;
-      kT.textContent = total.toFixed(2);
+      kT.textContent = fmt(total);
       kCur.textContent = r.currency;
-      totalAmt.textContent = total.toFixed(2);
+      totalAmt.textContent = fmt(total);
       outCur.textContent = r.currency;
       kpiRow.style.display = 'grid';
 
       pricingBox.innerHTML =
         `<strong>計價明細（${r.label}，${r.currency}）</strong><br>
-         早餐：${price.B} × ${cnt.B} = <strong>${subB.toFixed(2)}</strong><br>
-         午餐：${price.L} × ${cnt.L} = <strong>${subL.toFixed(2)}</strong><br>
-         晚餐：${price.D} × ${cnt.D} = <strong>${subD.toFixed(2)}</strong>`;
+         早餐：${price.B} × ${cnt.B} = <strong>${fmt(subB)}</strong><br>
+         午餐：${price.L} × ${cnt.L} = <strong>${fmt(subL)}</strong><br>
+         晚餐：${price.D} × ${cnt.D} = <strong>${fmt(subD)}</strong>`;
       pricingBox.style.display = 'block';
 
       rationaleBox.innerHTML =
         `<strong>判斷依據</strong><br>
-         抵達當日：落地時間 <strong>${timeLabel(arr)}</strong> ，屬於「${arrivalRangeText(arrMin)}」。<br>
-         離境當日：登機時間 <strong>${timeLabel(dep)}</strong> ，屬於「${departureRangeText(depMax)}」。<br>
+         抵達當日：${countrySel.value==='TW'?'高鐵時間':'落地時間'} <strong>${timeLabel(arr)}</strong> ，屬於「${arrivalRangeText(arrMin)}」。<br>
+         離境當日：${countrySel.value==='TW'?'高鐵時間':'登機時間'} <strong>${timeLabel(dep)}</strong> ，屬於「${departureRangeText(depMax)}」。<br>
          <span class="muted">（中間每一個完整在當地的日期，核給：早餐＋午餐＋晚餐）</span>`;
       rationaleBox.style.display = 'block';
     }
@@ -604,6 +695,7 @@
       totalAmt.textContent="--"; kpiRow.style.display='none';
       rationaleBox.style.display='none'; rationaleBox.innerHTML='';
       pricingBox.style.display='none'; pricingBox.innerHTML='';
+      updateLabels();
     });
 
     // 規則與費率 Modal
