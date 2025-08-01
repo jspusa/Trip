@@ -39,6 +39,11 @@
 
     .muted{color:#666; font-size:.92em;}
 
+    label.chk{display:flex; align-items:center; gap:4px; font-weight:600;}
+    .expo-dates{display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;}
+    .expo-dates button{border:1px solid #cfe0ff; background:#eef4ff; color:#2d5bd1; border-radius:6px; padding:6px 8px; cursor:pointer;}
+    .expo-dates button.active{background:#dfeaff;}
+
     /* 三顆按鈕同尺寸 */
     .btn{display:inline-block; padding:10px 18px; font-size:16px; border-radius:8px; border:none; cursor:pointer; transition:background .2s;}
     .btn-primary{ background:var(--primary); color:#fff; }
@@ -130,6 +135,15 @@
           <div class="label">離境（登機）時間（HH:MM）</div>
           <input type="text" id="depTime" inputmode="numeric" autocomplete="off">
         </div>
+      </div>
+
+      <div class="row-2">
+        <label class="chk"><input type="checkbox" id="hotelBreakfast"> 飯店供早餐</label>
+        <label class="chk"><input type="checkbox" id="expoLunch"> 展場供午餐</label>
+      </div>
+      <div class="field" id="expoDateRow" style="display:none;">
+        <div class="label">展場日期（點選）</div>
+        <div id="expoDates" class="expo-dates"></div>
       </div>
 
       <div class="muted">提示：用不到桃園機場的時間，僅看國外抵達與離開。</div>
@@ -250,6 +264,11 @@
     const depDate = document.getElementById('depDate');
     const depTime = document.getElementById('depTime');
 
+    const hotelBreakfast = document.getElementById('hotelBreakfast');
+    const expoLunch      = document.getElementById('expoLunch');
+    const expoDateRow    = document.getElementById('expoDateRow');
+    const expoDatesDiv   = document.getElementById('expoDates');
+
     const calcBtn  = document.getElementById('calcBtn');
     const resetBtn = document.getElementById('resetBtn');
     const errorMsg = document.getElementById('errorMsg');
@@ -289,6 +308,30 @@
     }
     [arrDate, depDate].forEach(el=> el.addEventListener('input', ()=>maskDate(el)));
     [arrTime, depTime].forEach(el=> el.addEventListener('input', ()=>maskTime(el)));
+
+    function generateExpoDates(){
+      expoDatesDiv.innerHTML = '';
+      if(!expoLunch.checked) return;
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(arrDate.value) || !/^\d{4}-\d{2}-\d{2}$/.test(depDate.value)) return;
+      let d = dateOnly(parseLocal(arrDate.value,'00:00'));
+      const end = dateOnly(parseLocal(depDate.value,'00:00'));
+      while(d<=end){
+        const lbl = dateLabel(d);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = lbl;
+        btn.dataset.date = lbl;
+        btn.addEventListener('click', ()=> btn.classList.toggle('active'));
+        expoDatesDiv.appendChild(btn);
+        d = addDays(d,1);
+      }
+    }
+
+    expoLunch.addEventListener('change', () => {
+      expoDateRow.style.display = expoLunch.checked ? 'block' : 'none';
+      generateExpoDates();
+    });
+    [arrDate, depDate].forEach(el=> el.addEventListener('change', ()=>{ if(expoLunch.checked) generateExpoDates(); }));
 
     // ====== 自製日期選擇器（通用） ======
     const overlay = document.getElementById('calOverlay');
@@ -410,13 +453,6 @@
       if (maxIdx===1) return ['早餐','午餐'];
       return ['早餐'];
     }
-    function addCounts(cnt, meals){
-      meals.forEach(m=>{
-        if(m==='早餐') cnt.B++;
-        if(m==='午餐') cnt.L++;
-        if(m==='晚餐') cnt.D++;
-      });
-    }
     function renderRows(rows){
       if(!rows.length){
         detailBody.innerHTML = '<tr><td colspan="2" class="muted">無可核給餐別</td></tr>';
@@ -459,30 +495,54 @@
       let cnt = {B:0, L:0, D:0};
       let rows = [];
 
+      const expoSet = new Set();
+      if(expoLunch.checked){
+        expoDatesDiv.querySelectorAll('button.active').forEach(btn => expoSet.add(btn.dataset.date));
+      }
+
       const arrMin = arrivalMinIndex(arr);
       const depMax = departureMaxIndex(dep);
 
       const arrD = dateOnly(arr), depD = dateOnly(dep);
 
+      const processDay = (d, meals, isArr)=>{
+        const label = dateLabel(d);
+        const list = [];
+        meals.forEach(m=>{
+          if(m==='早餐'){
+            if(!isArr && hotelBreakfast.checked){
+              list.push('飯店供早餐');
+            }else{
+              list.push('早餐');
+              cnt.B++;
+            }
+          }else if(m==='午餐'){
+            if(expoSet.has(label)){
+              list.push('展場供午餐');
+            }else{
+              list.push('午餐');
+              cnt.L++;
+            }
+          }else if(m==='晚餐'){
+            list.push('晚餐');
+            cnt.D++;
+          }
+        });
+        rows.push([label, list.length? list.join('、'):'—']);
+      };
+
       if (sameDay(arrD,depD)){
         const meals = [];
         for(let i=Math.max(0,arrMin); i<=Math.min(2,depMax); i++) meals.push(MEALS[i]);
-        addCounts(cnt, meals);
-        rows.push([dateLabel(arrD), meals.length? meals.join('、'):'—']);
+        processDay(arrD, meals, true);
       }else{
-        const m1 = mealListFromMin(arrMin);
-        addCounts(cnt, m1);
-        rows.push([dateLabel(arrD), m1.length? m1.join('、'):'—']);
+        processDay(arrD, mealListFromMin(arrMin), true);
         let d=addDays(arrD,1);
         while(d<depD){
-          const all=['早餐','午餐','晚餐'];
-          addCounts(cnt, all);
-          rows.push([dateLabel(d), all.join('、')]);
+          processDay(d, ['早餐','午餐','晚餐'], false);
           d=addDays(d,1);
         }
-        const m2 = mealListToMax(depMax);
-        addCounts(cnt, m2);
-        rows.push([dateLabel(depD), m2.length? m2.join('、'):'—']);
+        processDay(depD, mealListToMax(depMax), false);
       }
 
       const subB = cnt.B*price.B;
@@ -517,6 +577,10 @@
     calcBtn.addEventListener('click', compute);
     resetBtn.addEventListener('click', ()=>{
       [arrDate,arrTime,depDate,depTime].forEach(el=> el.value='');
+      hotelBreakfast.checked=false;
+      expoLunch.checked=false;
+      expoDateRow.style.display='none';
+      expoDatesDiv.innerHTML='';
       errorMsg.textContent=""; detailBody.innerHTML='<tr><td colspan="2" class="muted">請先按「計算」</td></tr>';
       totalAmt.textContent="--"; kpiRow.style.display='none';
       rationaleBox.style.display='none'; rationaleBox.innerHTML='';
