@@ -42,7 +42,11 @@
     label.chk{display:flex; align-items:center; gap:4px; font-weight:600;}
     .expo-dates{display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;}
     .expo-dates button{border:1px solid #cfe0ff; background:#eef4ff; color:#2d5bd1; border-radius:6px; padding:6px 8px; cursor:pointer;}
-    .expo-dates button.active{background:#dfeaff;}
+    .expo-dates button.active{
+      background:#4a90e2;
+      color:#fff;
+      border-color:#4a90e2;
+    }
 
     /* 三顆按鈕同尺寸 */
     .btn{display:inline-block; padding:10px 18px; font-size:16px; border-radius:8px; border:none; cursor:pointer; transition:background .2s;}
@@ -167,8 +171,12 @@
       <div>
         <h4>判別與明細</h4>
         <table id="detailTable">
-          <thead><tr><th>日期</th><th>可核給餐別</th></tr></thead>
-          <tbody><tr><td colspan="2" class="muted">請先按「計算」</td></tr></tbody>
+          <thead>
+            <tr>
+              <th>日期</th><th>早餐</th><th>午餐</th><th>晚餐</th>
+            </tr>
+          </thead>
+          <tbody><tr><td colspan="4" class="muted">請先按「計算」</td></tr></tbody>
         </table>
 
         <!-- 計價明細（顯示 單價 × 份數 = 小計） -->
@@ -455,10 +463,10 @@
     }
     function renderRows(rows){
       if(!rows.length){
-        detailBody.innerHTML = '<tr><td colspan="2" class="muted">無可核給餐別</td></tr>';
+        detailBody.innerHTML = '<tr><td colspan="4" class="muted">無可核給餐別</td></tr>';
         return;
       }
-      detailBody.innerHTML = rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('');
+      detailBody.innerHTML = rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join('');
     }
 
     function compute(){
@@ -469,23 +477,23 @@
       rationaleBox.innerHTML = '';
       pricingBox.style.display = 'none';
       pricingBox.innerHTML = '';
-      detailBody.innerHTML = '<tr><td colspan="2" class="muted">計算中…</td></tr>';
+      detailBody.innerHTML = '<tr><td colspan="4" class="muted">計算中…</td></tr>';
 
       if(!arrDate.value || !arrTime.value || !depDate.value || !depTime.value){
         errorMsg.textContent = "請完整輸入抵達與離境的日期與時間（YYYY-MM-DD／HH:MM）。";
-        detailBody.innerHTML = '<tr><td colspan="2" class="muted">未完整輸入</td></tr>';
+        detailBody.innerHTML = '<tr><td colspan="4" class="muted">未完整輸入</td></tr>';
         return;
       }
       const arr = parseLocal(arrDate.value, arrTime.value);
       const dep = parseLocal(depDate.value, depTime.value);
       if(isNaN(arr) || isNaN(dep)){
         errorMsg.textContent = "格式不正確，請用 2025-07-10 / 10:00 這種格式。";
-        detailBody.innerHTML = '<tr><td colspan="2" class="muted">格式錯誤</td></tr>';
+        detailBody.innerHTML = '<tr><td colspan="4" class="muted">格式錯誤</td></tr>';
         return;
       }
       if(dep<=arr){
         errorMsg.textContent = "離境時間需晚於抵達時間。";
-        detailBody.innerHTML = '<tr><td colspan="2" class="muted">時間邏輯錯誤</td></tr>';
+        detailBody.innerHTML = '<tr><td colspan="4" class="muted">時間邏輯錯誤</td></tr>';
         return;
       }
 
@@ -507,28 +515,28 @@
 
       const processDay = (d, meals, isArr)=>{
         const label = dateLabel(d);
-        const list = [];
-        meals.forEach(m=>{
-          if(m==='早餐'){
-            if(!isArr && hotelBreakfast.checked){
-              list.push('飯店供早餐');
-            }else{
-              list.push('早餐');
-              cnt.B++;
-            }
-          }else if(m==='午餐'){
-            if(expoSet.has(label)){
-              list.push('展場供午餐');
-            }else{
-              list.push('午餐');
-              cnt.L++;
-            }
-          }else if(m==='晚餐'){
-            list.push('晚餐');
-            cnt.D++;
+        let b='—', l='—', dn='—';
+        if(meals.includes('早餐')){
+          if(!isArr && hotelBreakfast.checked){
+            b='飯店供早餐';
+          }else{
+            b='✓';
+            cnt.B++;
           }
-        });
-        rows.push([label, list.length? list.join('、'):'—']);
+        }
+        if(meals.includes('午餐')){
+          if(expoSet.has(label)){
+            l='展場供午餐';
+          }else{
+            l='✓';
+            cnt.L++;
+          }
+        }
+        if(meals.includes('晚餐')){
+          dn='✓';
+          cnt.D++;
+        }
+        rows.push([label, b, l, dn]);
       };
 
       if (sameDay(arrD,depD)){
@@ -581,7 +589,7 @@
       expoLunch.checked=false;
       expoDateRow.style.display='none';
       expoDatesDiv.innerHTML='';
-      errorMsg.textContent=""; detailBody.innerHTML='<tr><td colspan="2" class="muted">請先按「計算」</td></tr>';
+      errorMsg.textContent=""; detailBody.innerHTML='<tr><td colspan="4" class="muted">請先按「計算」</td></tr>';
       totalAmt.textContent="--"; kpiRow.style.display='none';
       rationaleBox.style.display='none'; rationaleBox.innerHTML='';
       pricingBox.style.display='none'; pricingBox.innerHTML='';
