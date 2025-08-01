@@ -41,11 +41,20 @@
 
     label.chk{display:flex; align-items:center; gap:4px; font-weight:600;}
     .expo-dates{display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;}
-    .expo-dates button{border:1px solid #cfe0ff; background:#eef4ff; color:#2d5bd1; border-radius:6px; padding:6px 8px; cursor:pointer;}
+    .expo-dates button{
+      border:1px solid #cfe0ff;
+      background:#eef4ff;
+      color:#2d5bd1;
+      border-radius:6px;
+      padding:6px 8px;
+      cursor:pointer;
+      transition:background .2s, color .2s;
+    }
     .expo-dates button.active{
-      background:#4a90e2;
+      background:#2d5bd1;
       color:#fff;
-      border-color:#4a90e2;
+      border-color:#2d5bd1;
+      font-weight:700;
     }
 
     /* 三顆按鈕同尺寸 */
@@ -449,18 +458,6 @@
       return '19:00–24:00 → 早餐＋午餐＋晚餐';
     }
 
-    function mealListFromMin(minIdx){
-      if (minIdx>=3) return [];
-      if (minIdx<=0) return ['早餐','午餐','晚餐'];
-      if (minIdx===1) return ['午餐','晚餐'];
-      return ['晚餐'];
-    }
-    function mealListToMax(maxIdx){
-      if (maxIdx<0)  return [];
-      if (maxIdx>=2) return ['早餐','午餐','晚餐'];
-      if (maxIdx===1) return ['早餐','午餐'];
-      return ['早餐'];
-    }
     function renderRows(rows){
       if(!rows.length){
         detailBody.innerHTML = '<tr><td colspan="4" class="muted">無可核給餐別</td></tr>';
@@ -513,44 +510,58 @@
 
       const arrD = dateOnly(arr), depD = dateOnly(dep);
 
-      const processDay = (d, meals, isArr)=>{
+      const processDay = (d, arrIdx, depIdx, isArr)=>{
         const label = dateLabel(d);
-        let b='—', l='—', dn='—';
-        if(meals.includes('早餐')){
+        const chkExpo = expoSet.has(label);
+        const reasonLate = '抵達晚';
+        const reasonEarly = '登機早';
+        let b,l,dn;
+
+        // 早餐
+        if(0>=arrIdx && 0<=depIdx){
           if(!isArr && hotelBreakfast.checked){
             b='飯店供早餐';
           }else{
             b='✓';
             cnt.B++;
           }
+        }else{
+          b = (0<arrIdx) ? reasonLate : reasonEarly;
         }
-        if(meals.includes('午餐')){
-          if(expoSet.has(label)){
+
+        // 午餐
+        if(1>=arrIdx && 1<=depIdx){
+          if(chkExpo){
             l='展場供午餐';
           }else{
             l='✓';
             cnt.L++;
           }
+        }else{
+          l = (1<arrIdx) ? reasonLate : reasonEarly;
         }
-        if(meals.includes('晚餐')){
+
+        // 晚餐
+        if(2>=arrIdx && 2<=depIdx){
           dn='✓';
           cnt.D++;
+        }else{
+          dn = (2<arrIdx) ? reasonLate : reasonEarly;
         }
-        rows.push([label, b, l, dn]);
+
+        rows.push([label,b,l,dn]);
       };
 
       if (sameDay(arrD,depD)){
-        const meals = [];
-        for(let i=Math.max(0,arrMin); i<=Math.min(2,depMax); i++) meals.push(MEALS[i]);
-        processDay(arrD, meals, true);
+        processDay(arrD, arrMin, depMax, true);
       }else{
-        processDay(arrD, mealListFromMin(arrMin), true);
+        processDay(arrD, arrMin, 2, true);
         let d=addDays(arrD,1);
         while(d<depD){
-          processDay(d, ['早餐','午餐','晚餐'], false);
+          processDay(d, 0, 2, false);
           d=addDays(d,1);
         }
-        processDay(depD, mealListToMax(depMax), false);
+        processDay(depD, 0, depMax, false);
       }
 
       const subB = cnt.B*price.B;
