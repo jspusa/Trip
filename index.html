@@ -92,6 +92,7 @@
     .time-panel{background:#fff; width:min(260px,96vw); border-radius:12px; box-shadow:0 10px 24px rgba(0,0,0,.25); padding:12px;}
     .time-grid{display:grid; grid-template-columns:repeat(6,1fr); gap:6px; margin-bottom:8px;}
     .time-grid button{padding:6px; border:1px solid #ddd; border-radius:6px; background:#f7f7f7; cursor:pointer;}
+    .time-grid button.active{background:#2d5bd1; color:#fff; border-color:#2d5bd1;}
 
     /* 自製日曆（覆蓋層） */
     .cal-overlay{display:none; position:fixed; inset:0; background:rgba(0,0,0,.2); align-items:center; justify-content:center; z-index:1200;}
@@ -426,6 +427,15 @@
     }
     function openTimePicker(target){
       activeTimeInput = document.getElementById(target);
+      selH=selM=null;
+      hourGrid.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+      minGrid.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+      const v = activeTimeInput.value;
+      if(/^\d{2}:\d{2}$/.test(v)){
+        selH=v.slice(0,2); selM=v.slice(3,5);
+        hourGrid.querySelector(`[data-h='${selH}']`)?.classList.add('active');
+        minGrid.querySelector(`[data-m='${selM}']`)?.classList.add('active');
+      }
       timeOverlay.style.display='flex';
       timeOverlay.setAttribute('aria-hidden','false');
     }
@@ -446,8 +456,16 @@
     }
     let selH=null, selM=null;
     function selectTime(h,m){
-      if(h!==null) selH=h;
-      if(m!==null) selM=m;
+      if(h!==null){
+        selH=h;
+        hourGrid.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+        hourGrid.querySelector(`[data-h='${h}']`)?.classList.add('active');
+      }
+      if(m!==null){
+        selM=m;
+        minGrid.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+        minGrid.querySelector(`[data-m='${m}']`)?.classList.add('active');
+      }
       if(selH!==null && selM!==null && activeTimeInput){
         activeTimeInput.value=`${selH}:${selM}`;
         closeTimePicker();
