@@ -119,6 +119,7 @@
           <div class="label">目的國家（依物價核定）</div>
           <select id="country">
             <option value="US">美國 🇺🇸</option>
+            <option value="AU">澳洲 🇦🇺</option>
             <option value="DE">德國 🇩🇪</option>
             <option value="JP">日本 🇯🇵</option>
             <option value="VN">越南 🇻🇳</option>
@@ -253,6 +254,7 @@
           <thead><tr><th>國家</th><th>幣別</th><th>早餐</th><th>午餐</th><th>晚餐</th><th>三餐總額</th></tr></thead>
           <tbody>
             <tr><td>美國</td><td>USD</td><td>13</td><td>26</td><td>26</td><td>65</td></tr>
+            <tr><td>澳洲</td><td>USD</td><td>13</td><td>26</td><td>26</td><td>65</td></tr>
             <tr><td>德國</td><td>USD</td><td>12</td><td>24</td><td>24</td><td>60</td></tr>
             <tr><td>日本</td><td>USD</td><td>8</td><td>16</td><td>16</td><td>40</td></tr>
             <tr><td>越南</td><td>USD</td><td>6</td><td>12</td><td>12</td><td>30</td></tr>
@@ -289,6 +291,7 @@
     // === 費率 ===
     const rates = {
       US:{label:'美國', currency:'USD', B:13,  L:26, D:26},
+      AU:{label:'澳洲', currency:'USD', B:13,  L:26, D:26},
       DE:{label:'德國', currency:'USD', B:12,  L:24, D:24},
       JP:{label:'日本', currency:'USD', B:8,   L:16, D:16},
       VN:{label:'越南', currency:'USD', B:6,   L:12, D:12},
