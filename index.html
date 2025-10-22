@@ -118,17 +118,28 @@
         <div class="field">
           <div class="label">目的國家（依物價核定）</div>
           <select id="country">
-            <option value="US">美國 🇺🇸</option>
-            <option value="AU">澳洲 🇦🇺</option>
-            <option value="DE">德國 🇩🇪</option>
+            <option value="" selected>請選擇國家</option>
             <option value="JP">日本 🇯🇵</option>
-            <option value="SG">新加坡 🇸🇬</option>
-            <option value="VN">越南 🇻🇳</option>
+            <option value="KR">韓國 🇰🇷</option>
+            <option value="TH">泰國 🇹🇭</option>
+            <option value="MY">馬來西亞 🇲🇾</option>
+            <option value="AU">澳洲 🇦🇺</option>
             <option value="KH">柬埔寨 🇰🇭</option>
+            <option value="VN">越南 🇻🇳</option>
+            <option value="DE">德國 🇩🇪</option>
+            <option value="GB">英國 🇬🇧</option>
+            <option value="CA">加拿大 🇨🇦</option>
+            <option value="US">美國 🇺🇸</option>
+            <option value="SG">新加坡 🇸🇬</option>
             <option value="TW">台灣 🇹🇼</option>
           </select>
         </div>
-        <div></div>
+        <div class="field">
+          <div class="label">城市／地區</div>
+          <select id="city" disabled>
+            <option value="">請先選擇國家</option>
+          </select>
+        </div>
       </div>
 
       <!-- 抵達：日期｜時間 -->
@@ -188,7 +199,7 @@
         <div><div class="muted">午餐份數</div><div class="val" id="kL">0</div></div>
         <div><div class="muted">晚餐份數</div><div class="val" id="kD">0</div></div>
         <div>
-          <div class="muted">合計（<span id="kCur">USD</span>）</div>
+          <div class="muted">合計（<span id="kCur">--</span>）</div>
           <div class="val" id="kT">0</div>
         </div>
       </div>
@@ -212,7 +223,7 @@
       </div>
 
       <div id="errorMsg" class="err"></div>
-      <p class="output">合計（<span id="outCur">USD</span>）：<span id="totalAmt">--</span></p>
+      <p class="output">合計（<span id="outCur">--</span>）：<span id="totalAmt">--</span></p>
     </fieldset>
   </form>
 
@@ -253,17 +264,8 @@
       <section id="tab-rates" class="section">
         <h4>依物價核定之各國餐費</h4>
         <table>
-          <thead><tr><th>國家</th><th>幣別</th><th>早餐</th><th>午餐</th><th>晚餐</th><th>三餐總額</th></tr></thead>
-          <tbody>
-            <tr><td>美國</td><td>USD</td><td>13</td><td>26</td><td>26</td><td>65</td></tr>
-            <tr><td>澳洲</td><td>USD</td><td>13</td><td>26</td><td>26</td><td>65</td></tr>
-            <tr><td>德國</td><td>USD</td><td>12</td><td>24</td><td>24</td><td>60</td></tr>
-            <tr><td>日本</td><td>USD</td><td>8</td><td>16</td><td>16</td><td>40</td></tr>
-            <tr><td>新加坡</td><td>USD</td><td>18</td><td>36</td><td>36</td><td>90</td></tr>
-            <tr><td>越南</td><td>USD</td><td>6</td><td>12</td><td>12</td><td>30</td></tr>
-            <tr><td>柬埔寨</td><td>USD</td><td>6</td><td>12</td><td>12</td><td>30</td></tr>
-            <tr><td>台灣</td><td>TWD</td><td>100</td><td>200</td><td>200</td><td>500</td></tr>
-          </tbody>
+          <thead><tr><th>國家</th><th>城市／地區</th><th>早餐</th><th>午餐</th><th>晚餐</th><th>幣別</th></tr></thead>
+          <tbody id="ratesTableBody"></tbody>
         </table>
       </section>
     </div>
@@ -294,19 +296,107 @@
   (function(){
     // === 費率 ===
     const rates = {
-      US:{label:'美國', currency:'USD', B:13,  L:26, D:26},
-      AU:{label:'澳洲', currency:'USD', B:13,  L:26, D:26},
-      DE:{label:'德國', currency:'USD', B:12,  L:24, D:24},
-      JP:{label:'日本', currency:'USD', B:8,   L:16, D:16},
-      SG:{label:'新加坡', currency:'USD', B:18,  L:36, D:36},
-      VN:{label:'越南', currency:'USD', B:6,   L:12, D:12},
-      KH:{label:'柬埔寨', currency:'USD', B:6,   L:12, D:12},
-      TW:{label:'台灣', currency:'TWD', B:100, L:200, D:200}
+      JP:{
+        label:'日本',
+        cities:{
+          osaka:{label:'大阪', currency:'USD', B:10, L:20, D:20},
+          tokyo:{label:'東京', currency:'USD', B:12, L:24, D:24},
+          kyoto:{label:'京都', currency:'USD', B:12, L:24, D:24},
+          other:{label:'其他', currency:'USD', B:7, L:14, D:14}
+        }
+      },
+      KR:{
+        label:'韓國',
+        cities:{
+          seoul:{label:'首爾', currency:'USD', B:12, L:24, D:24},
+          other:{label:'其他', currency:'USD', B:10, L:21, D:21}
+        }
+      },
+      TH:{
+        label:'泰國',
+        cities:{
+          bangkok:{label:'曼谷', currency:'USD', B:10, L:21, D:21},
+          other:{label:'其他', currency:'USD', B:4, L:8, D:8}
+        }
+      },
+      MY:{
+        label:'馬來西亞',
+        cities:{
+          kualalumpur:{label:'吉隆玻', currency:'USD', B:9, L:19, D:19},
+          other:{label:'其他', currency:'USD', B:7, L:15, D:15}
+        }
+      },
+      AU:{
+        label:'澳洲',
+        cities:{
+          major:{label:'雪梨／墨爾本／布里斯本', currency:'USD', B:13, L:27, D:27},
+          other:{label:'其他', currency:'USD', B:12, L:25, D:25}
+        }
+      },
+      KH:{
+        label:'柬埔寨',
+        cities:{
+          phnompenh:{label:'金邊', currency:'USD', B:6, L:12, D:12},
+          other:{label:'其他', currency:'USD', B:4, L:8, D:8}
+        }
+      },
+      VN:{
+        label:'越南',
+        cities:{
+          hanoi:{label:'河內', currency:'USD', B:6, L:13, D:13},
+          hochiminh:{label:'胡志明', currency:'USD', B:6, L:12, D:12},
+          other:{label:'其他', currency:'USD', B:4, L:8, D:8}
+        }
+      },
+      DE:{
+        label:'德國',
+        cities:{
+          nuremberg:{label:'紐倫堡', currency:'USD', B:12, L:25, D:25},
+          berlin:{label:'柏林', currency:'USD', B:14, L:28, D:28},
+          other:{label:'其他', currency:'USD', B:12, L:25, D:25}
+        }
+      },
+      GB:{
+        label:'英國',
+        cities:{
+          london:{label:'倫敦', currency:'USD', B:19, L:39, D:39},
+          other:{label:'其他', currency:'USD', B:12, L:25, D:25}
+        }
+      },
+      CA:{
+        label:'加拿大',
+        cities:{
+          major:{label:'溫哥華／多倫多', currency:'USD', B:16, L:32, D:32},
+          other:{label:'其他', currency:'USD', B:11, L:22, D:22}
+        }
+      },
+      US:{
+        label:'美國',
+        cities:{
+          lasvegas:{label:'拉斯維加斯', currency:'USD', B:12, L:25, D:25},
+          orlando:{label:'奧蘭多', currency:'USD', B:12, L:25, D:25},
+          losangeles:{label:'洛杉磯', currency:'USD', B:14, L:29, D:29},
+          newyork:{label:'紐約', currency:'USD', B:20, L:40, D:40},
+          other:{label:'其他', currency:'USD', B:12, L:25, D:25}
+        }
+      },
+      SG:{
+        label:'新加坡',
+        cities:{
+          singapore:{label:'新加坡', currency:'USD', B:16, L:32, D:32}
+        }
+      },
+      TW:{
+        label:'台灣',
+        cities:{
+          taiwan:{label:'台灣', currency:'TWD', B:100, L:200, D:200}
+        }
+      }
     };
-    const MEALS = ['早餐','午餐','晚餐'];
 
     // DOM
     const countrySel  = document.getElementById('country');
+    const citySel     = document.getElementById('city');
     const arrDate = document.getElementById('arrDate');
     const arrTime = document.getElementById('arrTime');
     const depDate = document.getElementById('depDate');
@@ -335,6 +425,24 @@
     const outCur      = document.getElementById('outCur');
     const rationaleBox= document.getElementById('rationaleBox');
     const pricingBox  = document.getElementById('pricingBox');
+    const ratesTableBody = document.getElementById('ratesTableBody');
+
+    function populateCities(){
+      const country = rates[countrySel.value];
+      if(!country){
+        citySel.innerHTML = '<option value="">請先選擇國家</option>';
+        citySel.value = '';
+        citySel.disabled = true;
+        return;
+      }
+      const opts = ['<option value="" disabled selected>請選擇城市／地區</option>'];
+      Object.entries(country.cities).forEach(([value, city])=>{
+        opts.push(`<option value="${value}">${city.label}</option>`);
+      });
+      citySel.innerHTML = opts.join('');
+      citySel.disabled = false;
+      citySel.selectedIndex = 0;
+    }
 
     function updateLabels(){
       if(countrySel.value==='TW'){
@@ -349,8 +457,24 @@
         depTimeLabel.textContent='離境（登機）時間（HH:MM）';
       }
     }
-    countrySel.addEventListener('change', updateLabels);
+    countrySel.addEventListener('change', () => {
+      updateLabels();
+      populateCities();
+    });
     updateLabels();
+    populateCities();
+
+    function renderRatesTable(){
+      if(!ratesTableBody) return;
+      const rows = [];
+      Object.values(rates).forEach(country => {
+        Object.values(country.cities).forEach(city => {
+          rows.push(`<tr><td>${country.label}</td><td>${city.label}</td><td>${city.B}</td><td>${city.L}</td><td>${city.D}</td><td>${city.currency}</td></tr>`);
+        });
+      });
+      ratesTableBody.innerHTML = rows.join('');
+    }
+    renderRatesTable();
 
     // Modal
     const rulesModal   = document.getElementById('rulesModal');
@@ -571,6 +695,17 @@
       pricingBox.innerHTML = '';
       detailBody.innerHTML = '<tr><td colspan="4" class="muted">計算中…</td></tr>';
 
+      if(!countrySel.value){
+        errorMsg.textContent = "請先選擇目的國家。";
+        detailBody.innerHTML = '<tr><td colspan="4" class="muted">未選擇國家</td></tr>';
+        return;
+      }
+      if(citySel.disabled || !citySel.value){
+        errorMsg.textContent = "請先選擇城市或地區。";
+        detailBody.innerHTML = '<tr><td colspan="4" class="muted">未選擇城市／地區</td></tr>';
+        return;
+      }
+
       if(!arrDate.value || !arrTime.value || !depDate.value || !depTime.value){
         errorMsg.textContent = "請完整輸入抵達與離境的日期與時間（YYYY-MM-DD／HH:MM）。";
         detailBody.innerHTML = '<tr><td colspan="4" class="muted">未完整輸入</td></tr>';
@@ -589,9 +724,16 @@
         return;
       }
 
-      const r = rates[countrySel.value];
-      const price = {B:r.B, L:r.L, D:r.D};
-      const fmt = n => (r.currency==='TWD' ? Math.round(n).toString() : n.toFixed(2));
+      const country = rates[countrySel.value];
+      const cityRate = country && country.cities ? country.cities[citySel.value] : null;
+      if(!country || !cityRate){
+        errorMsg.textContent = "找不到對應的餐費設定，請重新選擇。";
+        detailBody.innerHTML = '<tr><td colspan="4" class="muted">無對應餐費</td></tr>';
+        return;
+      }
+
+      const price = {B:cityRate.B, L:cityRate.L, D:cityRate.D};
+      const fmt = n => (cityRate.currency==='TWD' ? Math.round(n).toString() : n.toFixed(2));
 
       let cnt = {B:0, L:0, D:0};
       let rows = [];
@@ -668,13 +810,13 @@
       renderRows(rows);
       kB.textContent = cnt.B; kL.textContent = cnt.L; kD.textContent = cnt.D;
       kT.textContent = fmt(total);
-      kCur.textContent = r.currency;
+      kCur.textContent = cityRate.currency;
       totalAmt.textContent = fmt(total);
-      outCur.textContent = r.currency;
+      outCur.textContent = cityRate.currency;
       kpiRow.style.display = 'grid';
 
       pricingBox.innerHTML =
-        `<strong>計價明細（${r.label}，${r.currency}）</strong><br>
+        `<strong>計價明細（${country.label}－${cityRate.label}，${cityRate.currency}）</strong><br>
          早餐：${price.B} × ${cnt.B} = <strong>${fmt(subB)}</strong><br>
          午餐：${price.L} × ${cnt.L} = <strong>${fmt(subL)}</strong><br>
          晚餐：${price.D} × ${cnt.D} = <strong>${fmt(subD)}</strong>`;
@@ -691,6 +833,9 @@
     // 事件
     calcBtn.addEventListener('click', compute);
     resetBtn.addEventListener('click', ()=>{
+      countrySel.value='';
+      populateCities();
+      updateLabels();
       [arrDate,arrTime,depDate,depTime].forEach(el=> el.value='');
       hotelBreakfast.checked=false;
       expoLunch.checked=false;
@@ -698,9 +843,10 @@
       expoDatesDiv.innerHTML='';
       errorMsg.textContent=""; detailBody.innerHTML='<tr><td colspan="4" class="muted">請先按「計算」</td></tr>';
       totalAmt.textContent="--"; kpiRow.style.display='none';
+      kCur.textContent='--';
+      outCur.textContent='--';
       rationaleBox.style.display='none'; rationaleBox.innerHTML='';
       pricingBox.style.display='none'; pricingBox.innerHTML='';
-      updateLabels();
     });
 
     // 規則與費率 Modal
