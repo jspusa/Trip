@@ -85,7 +85,12 @@
     .modal .section{display:none;}
     .modal .section.active{display:block;}
 
-    .rules-btn{position:absolute; top:10px; right:10px;}
+    .rules-btn{
+      position:relative;
+      display:block;
+      margin-left:auto;
+      margin-bottom:10px;
+    }
 
     /* 時間選擇器 */
     .time-overlay{display:none; position:fixed; inset:0; background:rgba(0,0,0,.2); align-items:center; justify-content:center; z-index:1200;}
@@ -264,7 +269,7 @@
       <section id="tab-rates" class="section">
         <h4>依物價核定之各國餐費</h4>
         <table>
-          <thead><tr><th>國家</th><th>城市／地區</th><th>早餐</th><th>午餐</th><th>晚餐</th><th>幣別</th></tr></thead>
+          <thead><tr><th>國家</th><th>城市／地區</th><th>早餐</th><th>午餐</th><th>晚餐</th><th>合計</th><th>幣別</th></tr></thead>
           <tbody id="ratesTableBody"></tbody>
         </table>
       </section>
@@ -469,7 +474,8 @@
       const rows = [];
       Object.values(rates).forEach(country => {
         Object.values(country.cities).forEach(city => {
-          rows.push(`<tr><td>${country.label}</td><td>${city.label}</td><td>${city.B}</td><td>${city.L}</td><td>${city.D}</td><td>${city.currency}</td></tr>`);
+          const total = city.B + city.L + city.D;
+          rows.push(`<tr><td>${country.label}</td><td>${city.label}</td><td>${city.B}</td><td>${city.L}</td><td>${city.D}</td><td>${total}</td><td>${city.currency}</td></tr>`);
         });
       });
       ratesTableBody.innerHTML = rows.join('');
