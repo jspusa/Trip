@@ -121,8 +121,10 @@
     select:disabled,.combo-input:disabled,.date-control input:disabled,.time-control input:disabled{background-color:#f2f2f7;color:#9b9ba0;cursor:not-allowed;}
     .combo{position:relative;min-width:0;}
     .combo-input{padding-right:44px;}
-    .combo-toggle{position:absolute;right:5px;top:5px;width:40px;height:40px;border:0;border-radius:10px;background:#f2f2f7;color:var(--muted);font-size:17px;cursor:pointer;transition:.2s ease;}
-    .combo.open .combo-toggle{transform:rotate(180deg);background:var(--blue-soft);color:var(--blue);}
+    .combo-toggle{position:absolute;right:5px;top:5px;display:grid;place-items:center;width:40px;height:40px;border:0;border-radius:10px;background:#f2f2f7;color:var(--muted);cursor:pointer;transition:background .2s ease,color .2s ease;}
+    .combo.open .combo-toggle{background:var(--blue-soft);color:var(--blue);}
+    .chevron-icon{display:block;width:9px;height:9px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .22s ease;}
+    .combo.open .chevron-icon{transform:translateY(2px) rotate(225deg);}
     .combo-menu{display:none;position:absolute;z-index:12;left:0;right:0;top:calc(100% + 7px);max-height:260px;overflow:auto;background:rgba(255,255,255,.97);border:1px solid var(--line);border-radius:15px;padding:6px;box-shadow:0 18px 45px rgba(0,0,0,.16);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);}
     .combo.open .combo-menu{display:grid;gap:2px;animation:menuIn .22s cubic-bezier(.22,1,.36,1);}
     .combo-option{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:42px;border:0;border-radius:10px;background:transparent;color:var(--text);padding:8px 10px;text-align:left;cursor:pointer;}
@@ -188,12 +190,14 @@
     .desktop-actions .button-hint{grid-column:1/-1;margin-top:0;}
     .results{display:none;margin-top:18px;}
     .results.show{display:block;animation:rise .28s ease;}
-    .result-toggle-row{display:flex;align-items:center;justify-content:space-between;gap:14px;}
+    .result-toggle-row{display:flex;align-items:center;justify-content:space-between;gap:14px;border-radius:14px;padding:2px;cursor:pointer;transition:background .18s ease;}
+    .result-toggle-row:hover{background:rgba(0,113,227,.045);}
+    .result-toggle-row:focus-visible{outline:3px solid rgba(0,113,227,.28);outline-offset:4px;}
     .result-toggle-row h2{font-size:24px;margin:0;letter-spacing:-.03em;}
     .result-toggle-row small{display:block;color:var(--muted);font-size:12px;font-weight:500;margin-top:3px;}
-    .result-toggle{display:flex;align-items:center;gap:8px;border:0;border-radius:10px;background:var(--blue-soft);color:var(--blue);padding:8px 10px;font-size:13px;font-weight:700;cursor:pointer;}
-    .result-chevron{font-size:20px;line-height:1;transition:transform .22s ease;}
-    .results.expanded .result-chevron{transform:rotate(180deg);}
+    .result-toggle{display:flex;align-items:center;gap:9px;border-radius:10px;background:var(--blue-soft);color:var(--blue);padding:8px 10px;font-size:13px;font-weight:700;}
+    .result-chevron{display:grid;place-items:center;width:16px;height:16px;}
+    .results.expanded .result-chevron .chevron-icon{transform:translateY(2px) rotate(225deg);}
     .result-details{padding-top:16px;animation:rise .22s ease;}
     .day-list{display:grid;gap:9px;}
     .day-row{display:grid;grid-template-columns:120px repeat(3,1fr);align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:15px;padding:10px 12px;}
@@ -370,7 +374,7 @@
               </select>
               <div class="combo" id="countryCombo">
                 <input class="combo-input" id="countrySearch" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="countryMenu" aria-describedby="countryHelp" placeholder="輸入或選擇國家" autocomplete="off">
-                <button class="combo-toggle" type="button" aria-label="展開國家選項">⌄</button>
+                <button class="combo-toggle" type="button" aria-label="展開國家選項"><span class="chevron-icon" aria-hidden="true"></span></button>
                 <div class="combo-menu" id="countryMenu" role="listbox"></div>
               </div>
               <div class="field-help" id="countryHelp">可直接輸入關鍵字搜尋。</div>
@@ -380,7 +384,7 @@
               <select id="city" hidden disabled aria-hidden="true" tabindex="-1"><option value="">請先選擇國家</option></select>
               <div class="combo" id="cityCombo">
                 <input class="combo-input" id="citySearch" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="cityMenu" aria-describedby="cityHelp" placeholder="請先選擇國家" autocomplete="off" disabled>
-                <button class="combo-toggle" type="button" aria-label="展開城市選項" disabled>⌄</button>
+                <button class="combo-toggle" type="button" aria-label="展開城市選項" disabled><span class="chevron-icon" aria-hidden="true"></span></button>
                 <div class="combo-menu" id="cityMenu" role="listbox"></div>
               </div>
               <div class="field-help" id="cityHelp">尚未選擇國家。</div>
@@ -468,9 +472,9 @@
       </aside>
 
       <section class="card results" id="results" aria-live="polite">
-        <div class="result-toggle-row">
+        <div class="result-toggle-row" id="resultToggle" role="button" tabindex="0" aria-expanded="false" aria-controls="resultDetails">
           <div><h2>計算結果</h2><small>查看每日餐費明細</small></div>
-          <button class="result-toggle" id="resultToggle" type="button" aria-expanded="false" aria-controls="resultDetails"><span id="resultToggleLabel">展開</span><span class="result-chevron">⌄</span></button>
+          <span class="result-toggle"><span id="resultToggleLabel">展開</span><span class="result-chevron"><span class="chevron-icon" aria-hidden="true"></span></span></span>
         </div>
         <div class="result-details" id="resultDetails" hidden>
           <div class="day-list" id="dayList"></div>
@@ -753,7 +757,7 @@
         const exact=comboChoices(kind).find(choice=>choice.label.toLowerCase()===parts.input.value.trim().toLowerCase()||choice.value.toLowerCase()===parts.input.value.trim().toLowerCase());
         if(exact&&!parts.select.value)selectCombo(kind,exact.value);else closeCombo(kind);
       },140));
-      toggle.addEventListener('click',()=>{parts.input.focus();parts.combo.classList.contains('open')?closeCombo(kind):openCombo(kind);});
+      toggle.addEventListener('click',()=>{const shouldOpen=!parts.combo.classList.contains('open');parts.input.focus({preventScroll:true});shouldOpen?openCombo(kind):closeCombo(kind);});
       parts.menu.addEventListener('mousedown',event=>event.preventDefault());
       parts.menu.addEventListener('click',event=>{const option=event.target.closest('.combo-option');if(option)selectCombo(kind,option.dataset.value);});
     }
@@ -880,7 +884,9 @@
     el.expoLunch.addEventListener('change',()=>{el.expoPicker.classList.toggle('show',el.expoLunch.checked);if(el.expoLunch.checked)renderExpoDates();else expoSelection.clear();clearResult();updateState();});
     el.expoDates.addEventListener('click',event=>{const button=event.target.closest('.date-chip');if(!button)return;const key=button.dataset.date;if(expoSelection.has(key))expoSelection.delete(key);else expoSelection.add(key);button.classList.toggle('active');button.setAttribute('aria-pressed',String(button.classList.contains('active')));clearResult();updateState();});
     el.calculateBtn.addEventListener('click',compute);el.mobileCalculateBtn.addEventListener('click',compute);
-    el.resultToggle.addEventListener('click',()=>{const expanded=el.resultToggle.getAttribute('aria-expanded')==='true';el.resultToggle.setAttribute('aria-expanded',String(!expanded));el.resultToggleLabel.textContent=expanded?'展開':'收合';el.resultDetails.hidden=expanded;el.results.classList.toggle('expanded',!expanded);});
+    function toggleResult(){const expanded=el.resultToggle.getAttribute('aria-expanded')==='true';el.resultToggle.setAttribute('aria-expanded',String(!expanded));el.resultToggleLabel.textContent=expanded?'展開':'收合';el.resultDetails.hidden=expanded;el.results.classList.toggle('expanded',!expanded);}
+    el.resultToggle.addEventListener('click',toggleResult);
+    el.resultToggle.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleResult();}});
     $('resetBtn').addEventListener('click',()=>{el.country.value='';el.countrySearch.value='';el.city.innerHTML='<option value="">請先選擇國家</option>';el.city.value='';el.city.disabled=true;el.citySearch.value='';el.citySearch.disabled=true;el.cityCombo.querySelector('.combo-toggle').disabled=true;closeCombo('country');closeCombo('city');[el.arrDate,el.arrTime,el.depDate,el.depTime].forEach(input=>input.value='');el.hotelBreakfast.checked=false;el.expoLunch.checked=false;el.expoPicker.classList.remove('show');el.expoDates.innerHTML='';expoSelection.clear();clearResult();updateLabels();updateState();window.scrollTo({top:0,behavior:'smooth'});showToast('已重新填寫');});
 
     document.addEventListener('pointerdown',event=>{if(!el.countryCombo.contains(event.target))closeCombo('country');if(!el.cityCombo.contains(event.target))closeCombo('city');});
