@@ -80,15 +80,18 @@
     .layout{display:block;}
     .form-stack{display:grid;gap:16px;}
     .card{
+      position:relative;
       background:var(--surface);border:1px solid rgba(255,255,255,.9);border-radius:var(--radius-xl);
       box-shadow:var(--shadow);padding:24px;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
       transition:opacity .25s ease,transform .25s ease;
       animation:riseIn .55s cubic-bezier(.22,1,.36,1) both;
     }
+    #destinationCard{z-index:3;}
+    #tripCard{z-index:2;}
+    #mealsCard{z-index:1;}
     .form-stack .card:nth-child(1){animation-delay:.14s;}
     .form-stack .card:nth-child(2){animation-delay:.20s;}
     .form-stack .card:nth-child(3){animation-delay:.26s;}
-    .card.just-unlocked{animation:unlockCard .48s cubic-bezier(.22,1,.36,1);}
     .card.locked{opacity:.56;box-shadow:none;}
     .card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px;}
     .card-title-wrap{display:flex;align-items:flex-start;gap:12px;}
@@ -270,7 +273,6 @@
     @keyframes menuIn{from{opacity:0;transform:translateY(-6px) scale(.985)}to{opacity:1;transform:none}}
     @keyframes dialogIn{from{opacity:0;transform:translateY(18px) scale(.96)}to{opacity:1;transform:none}}
     @keyframes backdropIn{from{opacity:0}to{opacity:1}}
-    @keyframes unlockCard{0%{transform:scale(.985)}55%{transform:scale(1.012)}100%{transform:none}}
     @keyframes amountPop{0%{transform:scale(.94);opacity:.5}65%{transform:scale(1.04)}100%{transform:none;opacity:1}}
     .amount.updated{animation:amountPop .45s cubic-bezier(.22,1,.36,1);}
 
@@ -746,8 +748,7 @@
     }
 
     function setCardState(card,fieldset,enabled){
-      const wasDisabled=fieldset.disabled;card.classList.toggle('locked',!enabled);card.setAttribute('aria-disabled',String(!enabled));fieldset.disabled=!enabled;
-      if(wasDisabled&&enabled){card.classList.remove('just-unlocked');void card.offsetWidth;card.classList.add('just-unlocked');setTimeout(()=>card.classList.remove('just-unlocked'),520);}
+      card.classList.toggle('locked',!enabled);card.setAttribute('aria-disabled',String(!enabled));fieldset.disabled=!enabled;
     }
     function setStatus(target,text,ready,tone='complete'){target.textContent=ready?'✓ '+text:text;target.classList.toggle('ready',ready);target.classList.toggle('optional',ready&&tone==='optional');}
     function setProgress(stage){
