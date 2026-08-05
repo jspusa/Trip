@@ -107,6 +107,7 @@
     .lock-hint{display:flex;align-items:center;gap:5px;white-space:nowrap;font-size:12px;color:var(--muted);background:#f2f2f7;border-radius:99px;padding:6px 9px;}
     .lock-hint.ready{color:var(--green);background:#eaf6ed;}
     .lock-hint.ready.optional{color:var(--blue);background:var(--blue-soft);}
+    .lock-hint.ready.warning{color:#8a5700;background:#fff0bd;}
 
     .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
     .field{display:grid;gap:7px;min-width:0;}
@@ -173,6 +174,7 @@
     .summary-label{color:var(--blue);font-size:13px;font-weight:700;margin-bottom:8px;}
     .amount{color:#005bbb;font-size:36px;line-height:1;font-weight:760;letter-spacing:-.045em;margin:0 0 9px;word-break:break-word;}
     .summary-place{font-size:13px;color:#557085;min-height:18px;}
+    .summary-place.warning{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;background:#fff0bd;color:#7a4b00;padding:5px 10px;font-weight:700;}
     .meal-counts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px;padding-top:16px;border-top:1px solid rgba(0,113,227,.15);}
     .meal-count{text-align:center;}
     .meal-count strong{display:block;font-size:18px;margin-bottom:2px;}
@@ -245,7 +247,7 @@
 
     .secretary-dialog{width:min(680px,calc(100% - 32px));overflow:hidden;}
     .secretary-title{display:flex;align-items:center;gap:10px;min-width:0;}
-    .secretary-title-icon{display:grid;place-items:center;width:35px;height:35px;flex:0 0 auto;border-radius:12px;background:var(--blue-soft);font-size:18px;}
+    .secretary-title-icon{display:grid;place-items:center;width:38px;height:38px;flex:0 0 auto;border:1px solid rgba(0,113,227,.12);border-radius:50%;background:linear-gradient(145deg,#fff,#dcecff);font-size:21px;box-shadow:0 4px 12px rgba(0,113,227,.12);}
     .secretary-title-copy{display:grid;gap:2px;min-width:0;}
     .secretary-title-copy h2{font-size:19px;}
     .secretary-step{color:var(--muted);font-size:11px;font-weight:600;}
@@ -253,10 +255,12 @@
     .secretary-chat{display:grid;align-content:start;gap:10px;overflow:auto;padding:20px;background:linear-gradient(180deg,#f8fbff 0%,#fff 58%);scroll-behavior:smooth;}
     .chat-message{display:flex;align-items:flex-start;gap:8px;max-width:88%;animation:rise .2s ease;}
     .chat-message.user{justify-self:end;flex-direction:row-reverse;}
-    .chat-avatar{display:grid;place-items:center;width:28px;height:28px;flex:0 0 auto;border-radius:10px;background:var(--blue-soft);font-size:14px;}
+    .chat-avatar{display:grid;place-items:center;width:31px;height:31px;flex:0 0 auto;border:1px solid rgba(0,113,227,.12);border-radius:50%;background:linear-gradient(145deg,#fff,#dcecff);font-size:17px;box-shadow:0 3px 10px rgba(0,113,227,.1);}
     .chat-message.user .chat-avatar{background:#e9e9ed;}
     .chat-bubble{border:1px solid var(--line);border-radius:5px 16px 16px 16px;background:#fff;padding:10px 12px;font-size:14px;line-height:1.55;white-space:pre-line;box-shadow:0 5px 18px rgba(0,0,0,.035);}
     .chat-message.user .chat-bubble{border-color:var(--blue);border-radius:16px 5px 16px 16px;background:var(--blue);color:#fff;}
+    .chat-message.warning .chat-avatar{border-color:#f2c94c;background:#fff0bd;}
+    .chat-message.warning .chat-bubble{border-color:#efbd3f;background:#fff8df;color:#714700;box-shadow:0 5px 18px rgba(178,115,0,.08);}
     .secretary-panel{max-height:min(58vh,520px);overflow:auto;border-top:1px solid var(--line);background:#fff;padding:16px 20px 20px;}
     .secretary-form{display:grid;gap:7px;}
     .secretary-form label{font-size:12px;color:var(--muted);}
@@ -270,6 +274,9 @@
     .secretary-meals .switch-list{gap:8px;}
     .secretary-meals .switch-row{padding:11px 13px;}
     .secretary-lunch-dates{border-radius:14px;background:#f5f5f7;padding:12px;}
+    .secretary-lunch-dates .date-chip{border-color:#d1d1d6;background:#e5e5ea;color:#3a3a3c;font-weight:650;transition:.18s ease;}
+    .secretary-lunch-dates .date-chip:hover{background:#d8d8dc;}
+    .secretary-lunch-dates .date-chip.active{border-color:var(--blue);background:var(--blue);color:#fff;box-shadow:0 4px 10px rgba(0,113,227,.2);}
     .secretary-actions{display:grid;grid-template-columns:auto 1fr 1.4fr;gap:8px;margin-top:2px;}
     .secretary-actions button{min-height:46px;border:0;border-radius:12px;padding:0 14px;font-weight:700;cursor:pointer;}
     .secretary-actions button:disabled{opacity:.42;cursor:not-allowed;}
@@ -278,6 +285,8 @@
     .secretary-review{display:grid;gap:12px;}
     .review-grid{display:grid;gap:8px;}
     .review-row{display:grid;grid-template-columns:92px 1fr;gap:12px;align-items:start;border-radius:13px;background:#f5f5f7;padding:10px 12px;}
+    .review-row.warning{border:1px solid #efbd3f;background:#fff8df;}
+    .review-row.warning span,.review-row.warning strong{color:#714700;}
     .review-row span{color:var(--muted);font-size:12px;}
     .review-row strong{font-size:13px;line-height:1.5;text-align:right;word-break:break-word;}
     .review-note{color:var(--muted);font-size:11px;line-height:1.5;text-align:center;}
@@ -370,10 +379,10 @@
     }
 
     @media(max-width:390px){
-      .hero-top{gap:8px;}
-      .eyebrow{font-size:12px;}
+      .hero-top{gap:6px;}
+      .eyebrow{font-size:11px;}
       .hero-actions{gap:4px;}
-      .rules-corner{justify-content:center;min-height:30px;padding:0 6px;font-size:10px;}
+      .rules-corner{justify-content:center;min-height:36px;padding:0 7px;font-size:11px;}
       .date-time{grid-template-columns:1fr;}
       .lock-hint{display:none;}
       .amount{font-size:34px;}
@@ -385,6 +394,13 @@
       .review-row{grid-template-columns:76px 1fr;}
     }
 
+    @media(max-width:360px){
+      .hero-top{display:grid;grid-template-columns:1fr;gap:9px;}
+      .eyebrow{justify-self:center;font-size:12px;}
+      .hero-actions{display:grid;grid-template-columns:1fr 1fr;width:100%;gap:6px;}
+      .rules-corner{width:100%;min-height:40px;font-size:12px;}
+    }
+
     @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important;}}
   </style>
 </head>
@@ -394,7 +410,7 @@
       <div class="hero-top">
         <div class="eyebrow"><span class="eyebrow-dot"></span>Jasper Travel</div>
         <div class="hero-actions">
-          <button class="rules-corner secretary-corner" id="secretaryBtn" type="button" aria-label="開啟秘書模式">✦ 秘書模式</button>
+          <button class="rules-corner secretary-corner" id="secretaryBtn" type="button" aria-label="開啟秘書模式">👩🏻‍💼 秘書模式</button>
           <button class="rules-corner" id="rulesBtn" type="button" aria-label="查看規則與費率">ⓘ 規則與費率</button>
         </div>
       </div>
@@ -567,7 +583,7 @@
   <dialog class="secretary-dialog" id="secretaryDialog" aria-labelledby="secretaryDialogTitle">
     <div class="dialog-head">
       <div class="secretary-title">
-        <span class="secretary-title-icon" aria-hidden="true">✦</span>
+        <span class="secretary-title-icon" aria-hidden="true">👩🏻‍💼</span>
         <div class="secretary-title-copy"><h2 id="secretaryDialogTitle">秘書模式</h2><span class="secretary-step" id="secretaryStep">第 1／5 步・目的地</span></div>
       </div>
       <button class="icon-btn" id="closeSecretaryBtn" type="button" aria-label="關閉秘書模式">×</button>
@@ -599,14 +615,14 @@
             </label>
           </div>
           <div class="secretary-lunch-dates" id="secretaryLunchDatesWrap" hidden>
-            <div class="expo-picker-title">哪些日期有提供午餐？</div>
+            <div class="expo-picker-title">請點選有提供午餐的日期（藍色代表已選）</div>
             <div class="date-chips" id="secretaryLunchDates"></div>
           </div>
-          <div class="secretary-hint" id="secretaryMealHint" role="status" aria-live="polite">沒有供餐就維持未勾選。</div>
+          <div class="secretary-hint" id="secretaryMealHint" role="status" aria-live="polite"></div>
           <div class="secretary-actions">
             <button class="secretary-back" id="secretaryMealBackBtn" type="button">上一步</button>
             <button class="secretary-reset" id="secretaryMealResetBtn" type="button">重新開始</button>
-            <button class="secretary-next" id="secretaryMealNextBtn" type="button">確認餐食</button>
+            <button class="secretary-next" id="secretaryMealNextBtn" type="button">此次沒供餐</button>
           </div>
         </section>
 
@@ -710,7 +726,7 @@
 
     const $=id=>document.getElementById(id);
     const el={country:$('country'),countrySearch:$('countrySearch'),countryCombo:$('countryCombo'),countryMenu:$('countryMenu'),city:$('city'),citySearch:$('citySearch'),cityCombo:$('cityCombo'),cityMenu:$('cityMenu'),arrDate:$('arrDate'),arrTime:$('arrTime'),depDate:$('depDate'),depTime:$('depTime'),tripCard:$('tripCard'),tripFields:$('tripFields'),mealsCard:$('mealsCard'),mealFields:$('mealFields'),hotelBreakfast:$('hotelBreakfast'),expoLunch:$('expoLunch'),expoPicker:$('expoPicker'),expoDates:$('expoDates'),calculateBtn:$('calculateBtn'),mobileCalculateBtn:$('mobileCalculateBtn'),buttonHint:$('buttonHint'),mobileActionTitle:$('mobileActionTitle'),mobileActionHint:$('mobileActionHint'),results:$('results'),resultToggle:$('resultToggle'),resultToggleLabel:$('resultToggleLabel'),resultDetails:$('resultDetails'),dayList:$('dayList'),breakdown:$('breakdown'),basis:$('basis'),totalAmount:$('totalAmount'),summaryPlace:$('summaryPlace'),emptySummary:$('emptySummary'),mealCounts:$('mealCounts'),countB:$('countB'),countL:$('countL'),countD:$('countD'),destinationStatus:$('destinationStatus'),tripStatus:$('tripStatus'),mealsStatus:$('mealsStatus'),arrivalLabel:$('arrivalLabel'),departureLabel:$('departureLabel'),arrivalHelp:$('arrivalHelp'),departureHelp:$('departureHelp'),dateDialog:$('dateDialog'),dateDialogTitle:$('dateDialogTitle'),calendarMonth:$('calendarMonth'),calendarGrid:$('calendarGrid'),timeDialog:$('timeDialog'),timeDialogTitle:$('timeDialogTitle'),hourWheel:$('hourWheel'),minuteWheel:$('minuteWheel'),rulesDialog:$('rulesDialog'),ratesTableBody:$('ratesTableBody'),rateFilter:$('rateFilter'),toast:$('toast')};
-    const secretaryEl={dialog:$('secretaryDialog'),step:$('secretaryStep'),chat:$('secretaryChat'),form:$('secretaryForm'),input:$('secretaryInput'),inputLabel:$('secretaryInputLabel'),hint:$('secretaryHint'),back:$('secretaryBackBtn'),meals:$('secretaryMeals'),breakfast:$('secretaryBreakfast'),lunch:$('secretaryLunch'),lunchWrap:$('secretaryLunchDatesWrap'),lunchDates:$('secretaryLunchDates'),mealHint:$('secretaryMealHint'),mealBack:$('secretaryMealBackBtn'),review:$('secretaryReview'),reviewGrid:$('secretaryReviewGrid'),reviewBack:$('secretaryReviewBackBtn')};
+    const secretaryEl={dialog:$('secretaryDialog'),step:$('secretaryStep'),chat:$('secretaryChat'),form:$('secretaryForm'),input:$('secretaryInput'),inputLabel:$('secretaryInputLabel'),hint:$('secretaryHint'),back:$('secretaryBackBtn'),meals:$('secretaryMeals'),breakfast:$('secretaryBreakfast'),lunch:$('secretaryLunch'),lunchWrap:$('secretaryLunchDatesWrap'),lunchDates:$('secretaryLunchDates'),mealHint:$('secretaryMealHint'),mealBack:$('secretaryMealBackBtn'),mealNext:$('secretaryMealNextBtn'),review:$('secretaryReview'),reviewGrid:$('secretaryReviewGrid'),reviewBack:$('secretaryReviewBackBtn')};
     let expoSelection=new Set();
     let activeDateInput=null;
     let activeTimeInput=null;
@@ -721,6 +737,7 @@
     let secretaryStep='destination';
     let secretaryStack=[];
     let secretaryComposing=false;
+    let activeSecretaryOther=null;
 
     const pad=n=>String(n).padStart(2,'0');
     const dateKey=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
@@ -739,7 +756,7 @@
     const secretaryCityExtraAliases={
       'AU:major':['sydney','melbourne','brisbane'],'CA:major':['vancouver','toronto'],
       'CN:hongkong':['hong kong','hongkong','hk'],'CN:macau':['macau','macao'],
-      'US:lasvegas':['las vegas'],'US:losangeles':['los angeles'],'US:newyork':['new york'],
+      'US:lasvegas':['las vegas'],'US:losangeles':['los angeles','la','l.a.','lax'],'US:newyork':['new york'],
       'VN:hochiminh':['ho chi minh','ho chi minh city']
     };
 
@@ -747,9 +764,10 @@
       return String(value||'').normalize('NFKC').toLowerCase().replace(/臺/g,'台').replace(/[\s，,、。．.・:：;；'"「」『』()（）\[\]【】/／_\-]/g,'');
     }
 
-    function secretaryAliasMatches(text,alias){
+    function secretaryAliasMatches(text,alias,shortAliasExact=false){
       const normalized=normalizeSecretaryText(alias);if(!normalized)return false;
-      return /^[a-z]+$/.test(normalized)?text===normalized||text.startsWith(normalized)||text.endsWith(normalized):text.includes(normalized);
+      if(/^[a-z]+$/.test(normalized)){if(shortAliasExact&&normalized.length<=3)return text===normalized;return text===normalized||text.startsWith(normalized)||text.endsWith(normalized);}
+      return text.includes(normalized);
     }
 
     function secretaryCountryAliasList(countryKey){return[rates[countryKey].label,...(secretaryCountryAliases[countryKey]||[]),countryKey];}
@@ -763,14 +781,17 @@
 
     function secretaryCityMatches(text,pool){
       const matches=[];pool.forEach(countryKey=>Object.keys(rates[countryKey].cities).forEach(cityKey=>{
-        const hits=secretaryCityAliases(countryKey,cityKey).filter(alias=>secretaryAliasMatches(text,alias));
+        const hits=secretaryCityAliases(countryKey,cityKey).filter(alias=>secretaryAliasMatches(text,alias,true));
         const score=hits.reduce((max,alias)=>Math.max(max,alias.length),0);if(score)matches.push({countryKey,cityKey,score});
       }));return matches.sort((a,b)=>b.score-a.score);
     }
 
     function secretaryUnknownCityDisplay(answer,countryKey){
       let display=String(answer||'').normalize('NFKC');secretaryCountryAliasList(countryKey).sort((a,b)=>String(b).length-String(a).length).forEach(alias=>{
-        const escaped=String(alias).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');display=display.replace(new RegExp(escaped,'ig'),' ');
+        const raw=String(alias).trim(),escaped=raw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+        if(/^[a-z]{2,3}$/i.test(raw))display=display.replace(new RegExp(`(^|[\\s，,、。．.・:：;；'"「」『』()（）\\[\\]【】/／_\\-])${escaped}(?=$|[\\s，,、。．.・:：;；'"「」『』()（）\\[\\]【】/／_\\-])`,'ig'),'$1');
+        else if(/^[a-z][a-z ]*$/i.test(raw))display=display.replace(new RegExp(`^\\s*${escaped}|${escaped}\\s*$|\\b${escaped}\\b`,'ig'),' ');
+        else display=display.replace(new RegExp(escaped,'ig'),' ');
       });
       return display.replace(/[，,、。．・:：;；'"「」『』()（）\[\]【】/／_\-]/g,' ').replace(/\s+/g,' ').trim();
     }
@@ -785,15 +806,16 @@
       const explicitCountry=countryMatches[0]?.countryKey||null;
       if(preferredCountry&&explicitCountry&&explicitCountry!==preferredCountry)return{error:`這個國家和剛才選的「${rates[preferredCountry].label}」不同，請再確認一次。`};
       const countryKey=preferredCountry||explicitCountry;
-      const pool=countryKey?[countryKey]:Object.keys(rates),cityMatches=secretaryCityMatches(text,pool);
+      const cityText=countryKey?normalizeSecretaryText(secretaryUnknownCityDisplay(answer,countryKey)):text;
+      const pool=countryKey?[countryKey]:Object.keys(rates),cityMatches=secretaryCityMatches(cityText,pool);
       if(cityMatches.length){
         const bestScore=cityMatches[0].score;const best=cityMatches.filter(item=>item.score===bestScore);
         const unique=[...new Map(best.map(item=>[`${item.countryKey}:${item.cityKey}`,item])).values()];
         if(unique.length>1)return{error:'這個城市名稱可能對應多個國家，請把國家和城市一起輸入。'};
-        const city=unique[0];return{countryKey:countryKey||city.countryKey,cityKey:city.cityKey,cityDisplay:rates[city.countryKey].cities[city.cityKey].label};
+        const city=unique[0];return{countryKey:countryKey||city.countryKey,cityKey:city.cityKey,cityDisplay:rates[city.countryKey].cities[city.cityKey].label,usesOtherRate:city.cityKey==='other'};
       }
       if(countryKey){
-        const foreign=secretaryCityMatches(text,Object.keys(rates).filter(key=>key!==countryKey));
+        const foreign=secretaryCityMatches(cityText,Object.keys(rates).filter(key=>key!==countryKey));
         if(foreign.length){const match=foreign[0];return{error:`「${rates[match.countryKey].cities[match.cityKey].label}」不屬於「${rates[countryKey].label}」，請再確認國家與城市。`};}
         const customCity=secretaryUnknownCityDisplay(answer,countryKey),otherKey=Object.prototype.hasOwnProperty.call(rates[countryKey].cities,'other')?'other':null;
         if(customCity&&otherKey)return{countryKey,cityKey:otherKey,cityDisplay:customCity,usesOtherRate:true};
@@ -834,11 +856,11 @@
       return[...text.matchAll(/(?:^|[^\d/.\-年月])(\d{3,4})(?![\d/.\-年月日])/g)].length>0;
     }
 
-    function parseSecretaryDateTime(value){
+    function parseSecretaryDateTime(value,example='07/13，20:30',timeExample='20:30'){
       const date=secretaryDateParts(value),time=secretaryTimeParts(value);
-      if(!date&&!time)return{error:'請一起提供日期與時間，例如「08/14，20:00」。'};
-      if(!date)return{error:'我有看到時間，但還需要日期，例如「08/14，20:00」。'};
-      if(!time)return{error:secretaryHasTimeLike(value)?'時間格式不正確，請使用例如「20:00」或「晚上 8 點」。':'我有看到日期，但還需要時間，例如「08/14，20:00」。'};
+      if(!date&&!time)return{error:`請一起提供日期與時間，例如「${example}」。`};
+      if(!date)return{error:`我有看到時間，但還需要日期，例如「${example}」。`};
+      if(!time)return{error:secretaryHasTimeLike(value)?`時間格式不正確，請使用例如「${timeExample}」。`:`我有看到日期，但還需要時間，例如「${example}」。`};
       const result=new Date(date.year,date.month-1,date.day,time.hour,time.minute,0,0);
       if(result.getFullYear()!==date.year||result.getMonth()!==date.month-1||result.getDate()!==date.day)return{error:'這個日期不存在，請再確認一次。'};
       return{date:result,dateValue:dateKey(result),timeValue:`${pad(time.hour)}:${pad(time.minute)}`,assumedYear:date.assumedYear};
@@ -848,13 +870,13 @@
     function formatSecretaryDateOnly(date){return`${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日（週${'日一二三四五六'[date.getDay()]}）`;}
     function newSecretaryDraft(){return{countryKey:null,cityKey:null,cityDisplay:null,usesOtherRate:false,arrival:null,departure:null,breakfast:false,lunch:false,lunchDates:new Set()};}
     function cloneSecretaryDraft(draft=secretaryDraft){return{...draft,arrival:draft?.arrival?{...draft.arrival,date:new Date(draft.arrival.date)}:null,departure:draft?.departure?{...draft.departure,date:new Date(draft.departure.date)}:null,lunchDates:new Set(draft?.lunchDates||[])};}
-    function pushSecretaryMessage(role,text){secretaryMessages.push({role,text});}
+    function pushSecretaryMessage(role,text,tone=''){secretaryMessages.push({role,text,tone});}
     function saveSecretaryState(){secretaryStack.push({step:secretaryStep,draft:cloneSecretaryDraft(),messages:secretaryMessages.map(message=>({...message}))});}
 
     function renderSecretaryMessages(){
       secretaryEl.chat.replaceChildren();secretaryMessages.forEach(message=>{
-        const row=document.createElement('div');row.className=`chat-message ${message.role}`;
-        const avatar=document.createElement('span');avatar.className='chat-avatar';avatar.setAttribute('aria-hidden','true');avatar.textContent=message.role==='user'?'你':'✦';
+        const row=document.createElement('div');row.className=`chat-message ${message.role}${message.tone?` ${message.tone}`:''}`;
+        const avatar=document.createElement('span');avatar.className='chat-avatar';avatar.setAttribute('aria-hidden','true');avatar.textContent=message.role==='user'?'你':'👩🏻‍💼';
         const bubble=document.createElement('div');bubble.className='chat-bubble';bubble.textContent=message.text;row.append(avatar,bubble);secretaryEl.chat.append(row);
       });
       requestAnimationFrame(()=>{secretaryEl.chat.scrollTop=secretaryEl.chat.scrollHeight;});
@@ -882,11 +904,15 @@
       dates.forEach(date=>{const key=dateKey(date),button=document.createElement('button');button.type='button';button.className=`date-chip${secretaryDraft.lunchDates.has(key)?' active':''}`;button.dataset.date=key;button.setAttribute('aria-pressed',String(secretaryDraft.lunchDates.has(key)));button.textContent=formatDate(date);secretaryEl.lunchDates.append(button);});
     }
 
+    function updateSecretaryMealButton(){
+      secretaryEl.mealNext.textContent=secretaryEl.breakfast.checked||secretaryEl.lunch.checked?'確認餐食':'此次沒供餐';
+    }
+
     function renderSecretaryReview(){
       const {country,displayCity}=secretaryLocation();const departureLabel=secretaryDraft.countryKey==='TW'?'發車':'起飛',destination=`${country.label}・${displayCity}${secretaryDraft.usesOtherRate?'（套用其他地區費率）':''}`;
       const lunch=secretaryDraft.lunch?`有：${secretaryTripDates().filter(date=>secretaryDraft.lunchDates.has(dateKey(date))).map(formatSecretaryDateOnly).join('、')}`:'無';
       const rows=[['目的地',destination],['抵達',formatSecretaryDateTime(secretaryDraft.arrival.date)],[departureLabel,formatSecretaryDateTime(secretaryDraft.departure.date)],['飯店早餐',secretaryDraft.breakfast?'有':'無'],['展場午餐',lunch]];
-      secretaryEl.reviewGrid.replaceChildren();rows.forEach(([label,value])=>{const row=document.createElement('div');row.className='review-row';const name=document.createElement('span');name.textContent=label;const content=document.createElement('strong');content.textContent=value;row.append(name,content);secretaryEl.reviewGrid.append(row);});
+      secretaryEl.reviewGrid.replaceChildren();rows.forEach(([label,value],index)=>{const row=document.createElement('div');row.className=`review-row${index===0&&secretaryDraft.usesOtherRate?' warning':''}`;const name=document.createElement('span');name.textContent=label;const content=document.createElement('strong');content.textContent=value;row.append(name,content);secretaryEl.reviewGrid.append(row);});
     }
 
     function renderSecretaryStep(){
@@ -895,9 +921,9 @@
       secretaryEl.back.disabled=!secretaryStack.length;secretaryEl.mealBack.disabled=!secretaryStack.length;secretaryEl.reviewBack.disabled=!secretaryStack.length;
       if(secretaryStep==='destination'){secretaryEl.inputLabel.textContent='國家或國家＋城市';secretaryEl.input.placeholder='例如：日本東京';setSecretaryHint('也可以輸入「東京日本」或只輸入「東京」。');}
       if(secretaryStep==='city'){const country=rates[secretaryDraft.countryKey];secretaryEl.inputLabel.textContent='城市／地區';secretaryEl.input.placeholder=`例如：${Object.values(country.cities)[0].label}`;setSecretaryHint(`請輸入 ${country.label} 的城市或地區。`);}
-      if(secretaryStep==='arrival'){secretaryEl.inputLabel.textContent='抵達日期與時間';secretaryEl.input.placeholder='例如：08/14，20:00';setSecretaryHint(`未提供年份時，會預設為 ${new Date().getFullYear()} 年。`);}
-      if(secretaryStep==='departure'){secretaryEl.inputLabel.textContent=secretaryDraft.countryKey==='TW'?'發車日期與時間':'起飛日期與時間';secretaryEl.input.placeholder='例如：08/17，19:00';setSecretaryHint('請同時提供日期與時間，離開時間須晚於抵達時間。');}
-      if(secretaryStep==='meals'){secretaryEl.breakfast.checked=secretaryDraft.breakfast;secretaryEl.lunch.checked=secretaryDraft.lunch;setSecretaryHint('沒有供餐就維持未勾選。');renderSecretaryLunchDates();}
+      if(secretaryStep==='arrival'){secretaryEl.inputLabel.textContent='抵達日期與時間';secretaryEl.input.placeholder='例如：07/13，20:30';setSecretaryHint(`未提供年份時，會預設為 ${new Date().getFullYear()} 年。`);}
+      if(secretaryStep==='departure'){secretaryEl.inputLabel.textContent=secretaryDraft.countryKey==='TW'?'發車日期與時間':'起飛日期與時間';secretaryEl.input.placeholder='例如：07/17，15:20';setSecretaryHint('請同時提供日期與時間，離開時間須晚於抵達時間。');}
+      if(secretaryStep==='meals'){secretaryEl.breakfast.checked=secretaryDraft.breakfast;secretaryEl.lunch.checked=secretaryDraft.lunch;setSecretaryHint('');renderSecretaryLunchDates();updateSecretaryMealButton();}
       if(secretaryStep==='review')renderSecretaryReview();
       renderSecretaryMessages();
       requestAnimationFrame(()=>{if(textStep)secretaryEl.input.focus();else if(secretaryStep==='meals')secretaryEl.breakfast.focus();else if(secretaryStep==='review')$('secretaryConfirmBtn').focus();});
@@ -917,12 +943,12 @@
         if(secretaryStep==='city'&&!parsed.cityKey){setSecretaryHint(`找不到「${rates[secretaryDraft.countryKey].label}」的這個城市，請再輸入一次。`,true);return;}
         saveSecretaryState();pushSecretaryMessage('user',answer);secretaryDraft.countryKey=parsed.countryKey;secretaryDraft.cityKey=parsed.cityKey;secretaryDraft.cityDisplay=parsed.cityDisplay||null;secretaryDraft.usesOtherRate=Boolean(parsed.usesOtherRate);
         if(!parsed.cityKey){secretaryStep='city';pushSecretaryMessage('assistant',`好的，${rates[parsed.countryKey].label}。請問這次要到哪個城市？`);}
-        else{secretaryStep='arrival';const {country,displayCity}=secretaryLocation();pushSecretaryMessage('assistant',`好的，目的地是 ${country.label}・${displayCity}${secretaryDraft.usesOtherRate?'，將套用其他地區費率':''}。\n${secretaryArrivalQuestion()}`);}
+        else{secretaryStep='arrival';const {country,displayCity}=secretaryLocation();pushSecretaryMessage('assistant',`好的，目的地是 ${country.label}・${displayCity}${secretaryDraft.usesOtherRate?'，將套用其他地區費率':''}。\n${secretaryArrivalQuestion()}`,secretaryDraft.usesOtherRate?'warning':'');}
       }else if(secretaryStep==='arrival'){
         const parsed=parseSecretaryDateTime(answer);if(parsed.error){setSecretaryHint(parsed.error,true);return;}
         saveSecretaryState();pushSecretaryMessage('user',answer);secretaryDraft.arrival=parsed;secretaryStep='departure';pushSecretaryMessage('assistant',`已記下抵達時間：${formatSecretaryDateTime(parsed.date)}${parsed.assumedYear?'（未填年份，已採今年）':''}\n${secretaryDepartureQuestion()}`);
       }else if(secretaryStep==='departure'){
-        const parsed=parseSecretaryDateTime(answer);if(parsed.error){setSecretaryHint(parsed.error,true);return;}
+        const parsed=parseSecretaryDateTime(answer,'07/17，15:20','15:20');if(parsed.error){setSecretaryHint(parsed.error,true);return;}
         if(parsed.date<=secretaryDraft.arrival.date){setSecretaryHint('離開時間必須晚於抵達時間；若是跨年行程，請一併輸入年份。',true);return;}
         const days=(dateOnly(parsed.date)-dateOnly(secretaryDraft.arrival.date))/86400000;if(days>120){setSecretaryHint('單次行程最多可計算 120 天。',true);return;}
         saveSecretaryState();pushSecretaryMessage('user',answer);secretaryDraft.departure=parsed;secretaryStep='meals';pushSecretaryMessage('assistant',`已記下離開時間：${formatSecretaryDateTime(parsed.date)}${parsed.assumedYear?'（未填年份，已採今年）':''}\n最後請勾選這次是否已有提供早餐或午餐。`);
@@ -932,10 +958,11 @@
 
     function applySecretaryDraft(){
       const {country,city,displayCity}=secretaryLocation();el.country.value=secretaryDraft.countryKey;el.countrySearch.value=[...el.country.options].find(option=>option.value===secretaryDraft.countryKey)?.textContent.trim()||country.label;
+      activeSecretaryOther=secretaryDraft.usesOtherRate?{countryKey:secretaryDraft.countryKey,cityDisplay:displayCity}:null;
       populateCities(false);el.city.value=secretaryDraft.cityKey;el.citySearch.value=city.label;
       el.arrDate.value=secretaryDraft.arrival.dateValue;el.arrTime.value=secretaryDraft.arrival.timeValue;el.depDate.value=secretaryDraft.departure.dateValue;el.depTime.value=secretaryDraft.departure.timeValue;
       el.hotelBreakfast.checked=secretaryDraft.breakfast;el.expoLunch.checked=secretaryDraft.lunch;expoSelection=new Set(secretaryDraft.lunchDates);el.expoPicker.classList.toggle('show',secretaryDraft.lunch);
-      if(secretaryDraft.lunch)renderExpoDates();else el.expoDates.innerHTML='';clearResult();updateLabels();updateState();secretaryEl.dialog.close();compute();if(secretaryDraft.usesOtherRate){setStatus(el.destinationStatus,`${country.label}・${displayCity}（其他費率）`,true);el.summaryPlace.textContent=`${country.label}・${displayCity}（其他費率）`;}
+      if(secretaryDraft.lunch)renderExpoDates();else el.expoDates.innerHTML='';clearResult();updateLabels();updateState();secretaryEl.dialog.close();compute();
     }
 
     function parseDateValue(value){
@@ -1099,13 +1126,18 @@
     function setCardState(card,fieldset,enabled){
       card.classList.toggle('locked',!enabled);card.setAttribute('aria-disabled',String(!enabled));fieldset.disabled=!enabled;
     }
-    function setStatus(target,text,ready,tone='complete'){target.textContent=ready?'✓ '+text:text;target.classList.toggle('ready',ready);target.classList.toggle('optional',ready&&tone==='optional');}
+    function setStatus(target,text,ready,tone='complete'){target.textContent=ready?`${tone==='warning'?'⚠':'✓'} ${text}`:text;target.classList.toggle('ready',ready);target.classList.toggle('optional',ready&&tone==='optional');target.classList.toggle('warning',ready&&tone==='warning');}
+    function currentOtherRateContext(){
+      if(!el.country.value||el.city.value!=='other')return null;
+      const country=rates[el.country.value],saved=activeSecretaryOther?.countryKey===el.country.value?activeSecretaryOther:null;
+      return{countryLabel:country.label,cityDisplay:saved?.cityDisplay||country.cities.other.label};
+    }
     function setProgress(stage){
       document.querySelectorAll('.progress-item').forEach((item,i)=>{const n=i+1;item.classList.toggle('active',n===stage);item.classList.toggle('complete',n<stage);item.querySelector('.step-dot').textContent=n<stage?'✓':n;});
     }
 
     function clearResult(){
-      el.results.classList.remove('show','expanded');el.resultDetails.hidden=true;el.resultToggle.setAttribute('aria-expanded','false');el.resultToggleLabel.textContent='展開';el.totalAmount.textContent='—';el.summaryPlace.textContent='完成上方步驟後即可計算';el.emptySummary.hidden=false;el.mealCounts.hidden=true;
+      el.results.classList.remove('show','expanded');el.resultDetails.hidden=true;el.resultToggle.setAttribute('aria-expanded','false');el.resultToggleLabel.textContent='展開';el.totalAmount.textContent='—';el.summaryPlace.textContent='完成上方步驟後即可計算';el.summaryPlace.classList.remove('warning');el.emptySummary.hidden=false;el.mealCounts.hidden=true;
     }
 
     function populateCities(focusInput=true){
@@ -1134,15 +1166,15 @@
     }
 
     function updateState(){
-      const hasCountry=Boolean(el.country.value);const hasCity=hasCountry&&Boolean(el.city.value);const check=tripValidation();
-      setStatus(el.destinationStatus,hasCity?`${rates[el.country.value].label}・${rates[el.country.value].cities[el.city.value].label}`:(hasCountry?'請選城市':'請選擇'),hasCity);
+      const hasCountry=Boolean(el.country.value);const hasCity=hasCountry&&Boolean(el.city.value);const check=tripValidation(),otherContext=hasCity?currentOtherRateContext():null;
+      setStatus(el.destinationStatus,hasCity?(otherContext?`${otherContext.countryLabel}・${otherContext.cityDisplay}（其他費率）`:`${rates[el.country.value].label}・${rates[el.country.value].cities[el.city.value].label}`):(hasCountry?'請選城市':'請選擇'),hasCity,otherContext?'warning':'complete');
       setCardState(el.tripCard,el.tripFields,hasCity);setStatus(el.tripStatus,hasCity?(check.valid?'行程已完成':'請填日期時間'):'先選城市',check.valid);
       setCardState(el.mealsCard,el.mealFields,hasCity&&check.valid);setStatus(el.mealsStatus,check.valid?'可選填':'先填行程',check.valid,'optional');
       const canCalculate=hasCity&&check.valid;el.calculateBtn.disabled=!canCalculate;el.mobileCalculateBtn.disabled=!canCalculate;
       if(!hasCountry){el.buttonHint.textContent='請先選擇國家與城市';el.mobileActionTitle.textContent='尚未完成';el.mobileActionHint.textContent='先選擇目的地';setProgress(1);}
       else if(!hasCity){el.buttonHint.textContent='接著選擇城市／地區';el.mobileActionTitle.textContent=rates[el.country.value].label;el.mobileActionHint.textContent='接著選擇城市';setProgress(1);}
       else if(!check.valid){el.buttonHint.textContent=check.message;el.mobileActionTitle.textContent='填寫行程';el.mobileActionHint.textContent=check.message;setProgress(2);}
-      else{el.buttonHint.textContent='資料完整，可以計算';el.mobileActionTitle.textContent=`${rates[el.country.value].cities[el.city.value].label}・${Math.round((check.dep-check.arr)/3600000)} 小時`;el.mobileActionHint.textContent='可選填供餐，再開始計算';setProgress(3);}
+      else{el.buttonHint.textContent='資料完整，可以計算';el.mobileActionTitle.textContent=`${otherContext?.cityDisplay||rates[el.country.value].cities[el.city.value].label}・${Math.round((check.dep-check.arr)/3600000)} 小時`;el.mobileActionHint.textContent='可選填供餐，再開始計算';setProgress(3);}
       if(el.arrDate.value)el.depDate.min=el.arrDate.value;else el.depDate.removeAttribute('min');
       [el.arrDate,el.arrTime,el.depDate,el.depTime].forEach(input=>input.classList.remove('invalid'));
       el.departureHelp.classList.remove('field-error');
@@ -1158,7 +1190,7 @@
 
     function mealBadge(status){const included=status==='✓';return `<span class="meal-status${included?' included':''}" title="${status}">${status}</span>`;}
     function compute(){
-      const check=tripValidation();const country=rates[el.country.value];const city=country?.cities[el.city.value];
+      const check=tripValidation();const country=rates[el.country.value];const city=country?.cities[el.city.value],otherContext=currentOtherRateContext();
       if(!country||!city||!check.valid){updateState();showToast(check.message||'請先完成必填資料');return;}
       const arrIdx=arrivalMinIndex(check.arr),depIdx=departureMaxIndex(check.dep),arrDay=dateOnly(check.arr),depDay=dateOnly(check.dep);
       const counts={B:0,L:0,D:0};const rows=[];
@@ -1174,7 +1206,7 @@
       el.dayList.innerHTML='<div class="day-row day-header"><span>日期</span><span>早餐</span><span>午餐</span><span>晚餐</span></div>'+rows.map(r=>`<div class="day-row"><span class="day-date">${formatDate(r.day)}</span>${r.statuses.map(mealBadge).join('')}</div>`).join('');
       el.breakdown.innerHTML=[['早餐',city.B,counts.B,subtotals.B],['午餐',city.L,counts.L,subtotals.L],['晚餐',city.D,counts.D,subtotals.D]].map(([label,price,count,subtotal])=>`<div class="breakdown-item"><span>${label}・${formatMoney(price,city.currency)} × ${count}</span><strong>${formatMoney(subtotal,city.currency)}</strong></div>`).join('');
       el.basis.innerHTML=`<strong>判斷依據</strong><br>抵達 ${pad(check.arr.getHours())}:${pad(check.arr.getMinutes())}：${arrivalRule(arrIdx)}。<br>離境 ${pad(check.dep.getHours())}:${pad(check.dep.getMinutes())}：${departureRule(depIdx)}。`;
-      const formatted=formatMoney(total,city.currency);el.totalAmount.textContent=formatted;el.totalAmount.classList.remove('updated');void el.totalAmount.offsetWidth;el.totalAmount.classList.add('updated');el.summaryPlace.textContent=`${country.label}・${city.label}`;el.emptySummary.hidden=true;el.mealCounts.hidden=false;el.countB.textContent=counts.B;el.countL.textContent=counts.L;el.countD.textContent=counts.D;el.results.classList.add('show');el.results.classList.remove('expanded');el.resultDetails.hidden=true;el.resultToggle.setAttribute('aria-expanded','false');el.resultToggleLabel.textContent='展開';setProgress(4);
+      const formatted=formatMoney(total,city.currency);el.totalAmount.textContent=formatted;el.totalAmount.classList.remove('updated');void el.totalAmount.offsetWidth;el.totalAmount.classList.add('updated');el.summaryPlace.textContent=otherContext?`⚠ ${otherContext.countryLabel}・${otherContext.cityDisplay}（套用其他地區費率）`:`${country.label}・${city.label}`;el.summaryPlace.classList.toggle('warning',Boolean(otherContext));el.emptySummary.hidden=true;el.mealCounts.hidden=false;el.countB.textContent=counts.B;el.countL.textContent=counts.L;el.countD.textContent=counts.D;el.results.classList.add('show');el.results.classList.remove('expanded');el.resultDetails.hidden=true;el.resultToggle.setAttribute('aria-expanded','false');el.resultToggleLabel.textContent='展開';setProgress(4);
       el.results.scrollIntoView({behavior:'smooth',block:'start'});showToast('計算完成');
     }
 
@@ -1211,8 +1243,8 @@
     $('confirmTimeBtn').addEventListener('click',confirmTime);$('cancelTimeBtn').addEventListener('click',()=>el.timeDialog.close());$('closeTimeBtn').addEventListener('click',()=>el.timeDialog.close());
     el.timeDialog.addEventListener('click',event=>{if(event.target===el.timeDialog)el.timeDialog.close();});
 
-    el.country.addEventListener('change',()=>{el.city.value='';populateCities();updateLabels();clearResult();updateState();});
-    el.city.addEventListener('change',()=>{clearResult();updateState();if(el.city.value)setTimeout(()=>el.arrDate.focus(),80);});
+    el.country.addEventListener('change',()=>{activeSecretaryOther=null;el.city.value='';populateCities();updateLabels();clearResult();updateState();});
+    el.city.addEventListener('change',()=>{activeSecretaryOther=null;clearResult();updateState();if(el.city.value)setTimeout(()=>el.arrDate.focus(),80);});
     [el.arrDate,el.arrTime,el.depDate,el.depTime].forEach(input=>input.addEventListener('change',()=>{clearResult();updateState();}));
     el.hotelBreakfast.addEventListener('change',()=>{clearResult();updateState();});
     el.expoLunch.addEventListener('change',()=>{el.expoPicker.classList.toggle('show',el.expoLunch.checked);if(el.expoLunch.checked)renderExpoDates();else expoSelection.clear();clearResult();updateState();});
@@ -1221,7 +1253,7 @@
     function toggleResult(){const expanded=el.resultToggle.getAttribute('aria-expanded')==='true';el.resultToggle.setAttribute('aria-expanded',String(!expanded));el.resultToggleLabel.textContent=expanded?'展開':'收合';el.resultDetails.hidden=expanded;el.results.classList.toggle('expanded',!expanded);}
     el.resultToggle.addEventListener('click',toggleResult);
     el.resultToggle.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleResult();}});
-    $('resetBtn').addEventListener('click',()=>{el.country.value='';el.countrySearch.value='';el.city.innerHTML='<option value="">請先選擇國家</option>';el.city.value='';el.city.disabled=true;el.citySearch.value='';el.citySearch.disabled=true;el.cityCombo.querySelector('.combo-toggle').disabled=true;closeCombo('country');closeCombo('city');[el.arrDate,el.arrTime,el.depDate,el.depTime].forEach(input=>input.value='');el.hotelBreakfast.checked=false;el.expoLunch.checked=false;el.expoPicker.classList.remove('show');el.expoDates.innerHTML='';expoSelection.clear();clearResult();updateLabels();updateState();window.scrollTo({top:0,behavior:'smooth'});showToast('已重新填寫');});
+    $('resetBtn').addEventListener('click',()=>{activeSecretaryOther=null;el.country.value='';el.countrySearch.value='';el.city.innerHTML='<option value="">請先選擇國家</option>';el.city.value='';el.city.disabled=true;el.citySearch.value='';el.citySearch.disabled=true;el.cityCombo.querySelector('.combo-toggle').disabled=true;closeCombo('country');closeCombo('city');[el.arrDate,el.arrTime,el.depDate,el.depTime].forEach(input=>input.value='');el.hotelBreakfast.checked=false;el.expoLunch.checked=false;el.expoPicker.classList.remove('show');el.expoDates.innerHTML='';expoSelection.clear();clearResult();updateLabels();updateState();window.scrollTo({top:0,behavior:'smooth'});showToast('已重新填寫');});
 
     document.addEventListener('pointerdown',event=>{if(!el.countryCombo.contains(event.target))closeCombo('country');if(!el.cityCombo.contains(event.target))closeCombo('city');});
 
@@ -1235,11 +1267,11 @@
     secretaryEl.form.addEventListener('submit',event=>{event.preventDefault();if(secretaryComposing)return;const answer=secretaryEl.input.value.trim();if(!answer){setSecretaryHint('請先輸入答案。',true);return;}submitSecretaryAnswer(answer);});
     [secretaryEl.back,secretaryEl.mealBack,secretaryEl.reviewBack].forEach(button=>button.addEventListener('click',secretaryGoBack));
     ['secretaryResetBtn','secretaryMealResetBtn','secretaryReviewResetBtn'].forEach(id=>$(id).addEventListener('click',resetSecretary));
-    secretaryEl.breakfast.addEventListener('change',()=>{secretaryDraft.breakfast=secretaryEl.breakfast.checked;secretaryEl.mealHint.classList.remove('error');});
+    secretaryEl.breakfast.addEventListener('change',()=>{secretaryDraft.breakfast=secretaryEl.breakfast.checked;setSecretaryHint('');updateSecretaryMealButton();});
     secretaryEl.lunch.addEventListener('change',()=>{
-      secretaryDraft.lunch=secretaryEl.lunch.checked;if(secretaryDraft.lunch&&!secretaryDraft.lunchDates.size)secretaryDraft.lunchDates=new Set(secretaryTripDates().map(dateKey));if(!secretaryDraft.lunch)secretaryDraft.lunchDates.clear();renderSecretaryLunchDates();secretaryEl.mealHint.classList.remove('error');
+      secretaryDraft.lunch=secretaryEl.lunch.checked;if(!secretaryDraft.lunch)secretaryDraft.lunchDates.clear();renderSecretaryLunchDates();setSecretaryHint(secretaryDraft.lunch?'請把有午餐的日期由灰色點成藍色。':'');updateSecretaryMealButton();
     });
-    secretaryEl.lunchDates.addEventListener('click',event=>{const button=event.target.closest('.date-chip');if(!button)return;const key=button.dataset.date;if(secretaryDraft.lunchDates.has(key))secretaryDraft.lunchDates.delete(key);else secretaryDraft.lunchDates.add(key);button.classList.toggle('active');button.setAttribute('aria-pressed',String(button.classList.contains('active')));secretaryEl.mealHint.classList.remove('error');});
+    secretaryEl.lunchDates.addEventListener('click',event=>{const button=event.target.closest('.date-chip');if(!button)return;const key=button.dataset.date;if(secretaryDraft.lunchDates.has(key))secretaryDraft.lunchDates.delete(key);else secretaryDraft.lunchDates.add(key);button.classList.toggle('active');button.setAttribute('aria-pressed',String(button.classList.contains('active')));setSecretaryHint('');});
     $('secretaryMealNextBtn').addEventListener('click',()=>{
       secretaryDraft.breakfast=secretaryEl.breakfast.checked;secretaryDraft.lunch=secretaryEl.lunch.checked;if(secretaryDraft.lunch&&!secretaryDraft.lunchDates.size){setSecretaryHint('請至少選擇一個有提供午餐的日期，或取消午餐勾選。',true);return;}
       saveSecretaryState();const lunchSummary=secretaryDraft.lunch?`${secretaryDraft.lunchDates.size} 天`:'無';pushSecretaryMessage('user',`飯店早餐：${secretaryDraft.breakfast?'有':'無'}\n展場午餐：${lunchSummary}`);secretaryStep='review';pushSecretaryMessage('assistant','資料都整理好了，請確認抵達、起飛日期與供餐資訊。');renderSecretaryStep();
