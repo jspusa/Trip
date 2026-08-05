@@ -261,6 +261,10 @@
     .chat-message.user .chat-bubble{border-color:var(--blue);border-radius:16px 5px 16px 16px;background:var(--blue);color:#fff;}
     .chat-message.warning .chat-avatar{border-color:#f2c94c;background:#fff0bd;}
     .chat-message.warning .chat-bubble{border-color:#efbd3f;background:#fff8df;color:#714700;box-shadow:0 5px 18px rgba(178,115,0,.08);}
+    .chat-mark{display:inline-block;margin:1px 2px;border:1px solid transparent;border-radius:7px;padding:1px 6px;font-weight:780;line-height:1.4;vertical-align:baseline;-webkit-box-decoration-break:clone;box-decoration-break:clone;}
+    .chat-mark.place{border-color:#8fc4ff;background:#e8f2ff;color:#005bbb;}
+    .chat-mark.time{border-color:#86d79a;background:#e9f8ee;color:#1f7437;font-variant-numeric:tabular-nums;}
+    .chat-mark.action{border-color:#ffb07a;background:#fff0e6;color:#a43e00;font-weight:850;}
     .secretary-panel{max-height:min(58vh,520px);overflow:auto;border-top:1px solid var(--line);background:#fff;padding:16px 20px 20px;}
     .secretary-form{display:grid;gap:7px;}
     .secretary-form label{font-size:12px;color:var(--muted);}
@@ -592,9 +596,9 @@
       <div class="secretary-chat" id="secretaryChat" role="log" aria-live="polite" aria-label="秘書模式對話"></div>
       <div class="secretary-panel">
         <form class="secretary-form" id="secretaryForm">
-          <label for="secretaryInput" id="secretaryInputLabel">國家或國家＋城市</label>
-          <div class="secretary-composer"><input class="secretary-input" id="secretaryInput" type="text" autocomplete="off" aria-describedby="secretaryHint" aria-invalid="false" placeholder="例如：日本東京"></div>
-          <div class="secretary-hint" id="secretaryHint" role="status" aria-live="polite">也可以輸入「東京日本」或只輸入「東京」。</div>
+          <label for="secretaryInput" id="secretaryInputLabel">國家或城市</label>
+          <div class="secretary-composer"><input class="secretary-input" id="secretaryInput" type="text" autocomplete="off" aria-describedby="secretaryHint" aria-invalid="false" placeholder="例如：東京"></div>
+          <div class="secretary-hint" id="secretaryHint" role="status" aria-live="polite">也可以輸入「日本東京」或「東京日本」。</div>
           <div class="secretary-actions">
             <button class="secretary-back" id="secretaryBackBtn" type="button">上一步</button>
             <button class="secretary-reset" id="secretaryResetBtn" type="button">重新開始</button>
@@ -622,7 +626,7 @@
           <div class="secretary-actions">
             <button class="secretary-back" id="secretaryMealBackBtn" type="button">上一步</button>
             <button class="secretary-reset" id="secretaryMealResetBtn" type="button">重新開始</button>
-            <button class="secretary-next" id="secretaryMealNextBtn" type="button">此次沒供餐</button>
+            <button class="secretary-next" id="secretaryMealNextBtn" type="button">無額外供餐</button>
           </div>
         </section>
 
@@ -756,9 +760,10 @@
     const secretaryCityExtraAliases={
       'AU:major':['sydney','melbourne','brisbane'],'CA:major':['vancouver','toronto'],
       'CN:hongkong':['hong kong','hongkong','hk'],'CN:macau':['macau','macao'],
-      'US:lasvegas':['las vegas'],'US:losangeles':['los angeles','la','l.a.','lax'],'US:newyork':['new york'],
+      'US:lasvegas':['las vegas','vegas','lv','las'],'US:orlando':['orl','mco'],'US:losangeles':['los angeles','la','l.a.','lax'],'US:newyork':['new york','ny','nyc'],
       'VN:hochiminh':['ho chi minh','ho chi minh city']
     };
+    const secretaryTaiwanCityAliases=['台北','新北','桃園','台中','台南','高雄','基隆','新竹','嘉義','宜蘭','花蓮','台東','南投','彰化','雲林','苗栗','屏東','澎湖','金門','馬祖'];
 
     function normalizeSecretaryText(value){
       return String(value||'').normalize('NFKC').toLowerCase().replace(/臺/g,'台').replace(/[\s，,、。．.・:：;；'"「」『』()（）\[\]【】/／_\-]/g,'');
@@ -805,8 +810,10 @@
       }).filter(item=>item.score).sort((a,b)=>b.score-a.score);
       const explicitCountry=countryMatches[0]?.countryKey||null;
       if(preferredCountry&&explicitCountry&&explicitCountry!==preferredCountry)return{error:`這個國家和剛才選的「${rates[preferredCountry].label}」不同，請再確認一次。`};
-      const countryKey=preferredCountry||explicitCountry;
-      const cityText=countryKey?normalizeSecretaryText(secretaryUnknownCityDisplay(answer,countryKey)):text;
+      const countryKey=preferredCountry||explicitCountry,taiwanCityMatch=secretaryTaiwanCityAliases.find(alias=>text.includes(normalizeSecretaryText(alias)));
+      if(taiwanCityMatch&&countryKey&&countryKey!=='TW')return{error:`「${taiwanCityMatch}」不屬於「${rates[countryKey].label}」，請再確認國家與城市。`};
+      if(!countryKey&&taiwanCityMatch)return{countryKey:'TW',cityKey:'taiwan',cityDisplay:secretaryUnknownCityDisplay(answer,'TW')};
+      const customCity=countryKey?secretaryUnknownCityDisplay(answer,countryKey):'',cityText=countryKey?normalizeSecretaryText(customCity):text;
       const pool=countryKey?[countryKey]:Object.keys(rates),cityMatches=secretaryCityMatches(cityText,pool);
       if(cityMatches.length){
         const bestScore=cityMatches[0].score;const best=cityMatches.filter(item=>item.score===bestScore);
@@ -817,7 +824,8 @@
       if(countryKey){
         const foreign=secretaryCityMatches(cityText,Object.keys(rates).filter(key=>key!==countryKey));
         if(foreign.length){const match=foreign[0];return{error:`「${rates[match.countryKey].cities[match.cityKey].label}」不屬於「${rates[countryKey].label}」，請再確認國家與城市。`};}
-        const customCity=secretaryUnknownCityDisplay(answer,countryKey),otherKey=Object.prototype.hasOwnProperty.call(rates[countryKey].cities,'other')?'other':null;
+        if(countryKey==='TW'&&customCity)return{countryKey:'TW',cityKey:'taiwan',cityDisplay:customCity};
+        const otherKey=Object.prototype.hasOwnProperty.call(rates[countryKey].cities,'other')?'other':null;
         if(customCity&&otherKey)return{countryKey,cityKey:otherKey,cityDisplay:customCity,usesOtherRate:true};
         if(customCity)return{error:`目前沒有「${customCity}」的費率，請改選這個國家已有的城市或地區。`};
         return{countryKey,cityKey:null};
@@ -870,14 +878,20 @@
     function formatSecretaryDateOnly(date){return`${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日（週${'日一二三四五六'[date.getDay()]}）`;}
     function newSecretaryDraft(){return{countryKey:null,cityKey:null,cityDisplay:null,usesOtherRate:false,arrival:null,departure:null,breakfast:false,lunch:false,lunchDates:new Set()};}
     function cloneSecretaryDraft(draft=secretaryDraft){return{...draft,arrival:draft?.arrival?{...draft.arrival,date:new Date(draft.arrival.date)}:null,departure:draft?.departure?{...draft.departure,date:new Date(draft.departure.date)}:null,lunchDates:new Set(draft?.lunchDates||[])};}
-    function pushSecretaryMessage(role,text,tone=''){secretaryMessages.push({role,text,tone});}
+    function secretaryMark(text,kind){return{text,kind};}
+    function pushSecretaryMessage(role,content,tone=''){
+      const parts=Array.isArray(content)?content:null,text=parts?parts.map(part=>typeof part==='string'?part:part.text).join(''):String(content);
+      secretaryMessages.push({role,text,tone,parts});
+    }
     function saveSecretaryState(){secretaryStack.push({step:secretaryStep,draft:cloneSecretaryDraft(),messages:secretaryMessages.map(message=>({...message}))});}
 
     function renderSecretaryMessages(){
       secretaryEl.chat.replaceChildren();secretaryMessages.forEach(message=>{
         const row=document.createElement('div');row.className=`chat-message ${message.role}${message.tone?` ${message.tone}`:''}`;
         const avatar=document.createElement('span');avatar.className='chat-avatar';avatar.setAttribute('aria-hidden','true');avatar.textContent=message.role==='user'?'你':'👩🏻‍💼';
-        const bubble=document.createElement('div');bubble.className='chat-bubble';bubble.textContent=message.text;row.append(avatar,bubble);secretaryEl.chat.append(row);
+        const bubble=document.createElement('div');bubble.className='chat-bubble';
+        if(message.parts?.length)message.parts.forEach(part=>{if(typeof part==='string')bubble.append(document.createTextNode(part));else{const mark=document.createElement('span');mark.className=`chat-mark ${part.kind}`;mark.textContent=part.text;bubble.append(mark);}});else bubble.textContent=message.text;
+        row.append(avatar,bubble);secretaryEl.chat.append(row);
       });
       requestAnimationFrame(()=>{secretaryEl.chat.scrollTop=secretaryEl.chat.scrollHeight;});
     }
@@ -891,8 +905,8 @@
       return{country,city,displayCity:secretaryDraft.cityDisplay||city?.label||''};
     }
 
-    function secretaryArrivalQuestion(){const {displayCity}=secretaryLocation();return secretaryDraft.countryKey==='TW'?`高鐵抵達「${displayCity}」的日期與時間？`:`飛機抵達「${displayCity}」的日期與時間？`;}
-    function secretaryDepartureQuestion(){const {displayCity}=secretaryLocation();return secretaryDraft.countryKey==='TW'?`離開「${displayCity}」的高鐵會在什麼日期、幾點發車？`:`離開「${displayCity}」的飛機會在什麼日期、幾點起飛？`;}
+    function secretaryArrivalQuestionParts(){const {displayCity}=secretaryLocation();return[secretaryDraft.countryKey==='TW'?'高鐵抵達「':'飛機抵達「',secretaryMark(displayCity,'place'),'」的日期與時間？'];}
+    function secretaryDepartureQuestionParts(){const {displayCity}=secretaryLocation(),taiwan=secretaryDraft.countryKey==='TW';return['離開「',secretaryMark(displayCity,'place'),taiwan?'」的高鐵會在什麼日期、幾點':'」的飛機會在什麼日期、幾點',secretaryMark(taiwan?'發車':'起飛','action'),'？'];}
     function secretaryTripDates(){
       if(!secretaryDraft.arrival||!secretaryDraft.departure)return[];const dates=[];let cursor=dateOnly(secretaryDraft.arrival.date),end=dateOnly(secretaryDraft.departure.date);
       while(cursor<=end){dates.push(new Date(cursor));cursor=addDays(cursor,1);}return dates;
@@ -905,7 +919,7 @@
     }
 
     function updateSecretaryMealButton(){
-      secretaryEl.mealNext.textContent=secretaryEl.breakfast.checked||secretaryEl.lunch.checked?'確認餐食':'此次沒供餐';
+      secretaryEl.mealNext.textContent=secretaryEl.breakfast.checked||secretaryEl.lunch.checked?'確認餐食':'無額外供餐';
     }
 
     function renderSecretaryReview(){
@@ -917,9 +931,9 @@
 
     function renderSecretaryStep(){
       const textStep=['destination','city','arrival','departure'].includes(secretaryStep);secretaryEl.form.hidden=!textStep;secretaryEl.meals.hidden=secretaryStep!=='meals';secretaryEl.review.hidden=secretaryStep!=='review';
-      const progress={destination:'第 1／5 步・目的地',city:'第 1／5 步・目的地',arrival:'第 2／5 步・抵達',departure:'第 3／5 步・起飛',meals:'第 4／5 步・供餐',review:'第 5／5 步・確認'};secretaryEl.step.textContent=progress[secretaryStep];
+      const progress={destination:'第 1／5 步・目的地',city:'第 1／5 步・目的地',arrival:'第 2／5 步・抵達',departure:secretaryDraft.countryKey==='TW'?'第 3／5 步・發車':'第 3／5 步・起飛',meals:'第 4／5 步・供餐',review:'第 5／5 步・確認'};secretaryEl.step.textContent=progress[secretaryStep];
       secretaryEl.back.disabled=!secretaryStack.length;secretaryEl.mealBack.disabled=!secretaryStack.length;secretaryEl.reviewBack.disabled=!secretaryStack.length;
-      if(secretaryStep==='destination'){secretaryEl.inputLabel.textContent='國家或國家＋城市';secretaryEl.input.placeholder='例如：日本東京';setSecretaryHint('也可以輸入「東京日本」或只輸入「東京」。');}
+      if(secretaryStep==='destination'){secretaryEl.inputLabel.textContent='國家或城市';secretaryEl.input.placeholder='例如：東京';setSecretaryHint('也可以輸入「日本東京」或「東京日本」。');}
       if(secretaryStep==='city'){const country=rates[secretaryDraft.countryKey];secretaryEl.inputLabel.textContent='城市／地區';secretaryEl.input.placeholder=`例如：${Object.values(country.cities)[0].label}`;setSecretaryHint(`請輸入 ${country.label} 的城市或地區。`);}
       if(secretaryStep==='arrival'){secretaryEl.inputLabel.textContent='抵達日期與時間';secretaryEl.input.placeholder='例如：07/13，20:30';setSecretaryHint(`未提供年份時，會預設為 ${new Date().getFullYear()} 年。`);}
       if(secretaryStep==='departure'){secretaryEl.inputLabel.textContent=secretaryDraft.countryKey==='TW'?'發車日期與時間':'起飛日期與時間';secretaryEl.input.placeholder='例如：07/17，15:20';setSecretaryHint('請同時提供日期與時間，離開時間須晚於抵達時間。');}
@@ -930,7 +944,7 @@
     }
 
     function resetSecretary(){
-      secretaryDraft=newSecretaryDraft();secretaryMessages=[];secretaryStack=[];secretaryStep='destination';secretaryComposing=false;secretaryEl.input.value='';pushSecretaryMessage('assistant','請問這次要到哪個國家出差？\n也可以直接輸入國家＋城市，例如「日本東京」。');renderSecretaryStep();
+      secretaryDraft=newSecretaryDraft();secretaryMessages=[];secretaryStack=[];secretaryStep='destination';secretaryComposing=false;secretaryEl.input.value='';pushSecretaryMessage('assistant','請問這次要到哪個國家出差？\n也可以直接輸入城市，例如「東京」。');renderSecretaryStep();
     }
 
     function secretaryGoBack(){
@@ -943,15 +957,15 @@
         if(secretaryStep==='city'&&!parsed.cityKey){setSecretaryHint(`找不到「${rates[secretaryDraft.countryKey].label}」的這個城市，請再輸入一次。`,true);return;}
         saveSecretaryState();pushSecretaryMessage('user',answer);secretaryDraft.countryKey=parsed.countryKey;secretaryDraft.cityKey=parsed.cityKey;secretaryDraft.cityDisplay=parsed.cityDisplay||null;secretaryDraft.usesOtherRate=Boolean(parsed.usesOtherRate);
         if(!parsed.cityKey){secretaryStep='city';pushSecretaryMessage('assistant',`好的，${rates[parsed.countryKey].label}。請問這次要到哪個城市？`);}
-        else{secretaryStep='arrival';const {country,displayCity}=secretaryLocation();pushSecretaryMessage('assistant',`好的，目的地是 ${country.label}・${displayCity}${secretaryDraft.usesOtherRate?'，將套用其他地區費率':''}。\n${secretaryArrivalQuestion()}`,secretaryDraft.usesOtherRate?'warning':'');}
+        else{secretaryStep='arrival';const {country,displayCity}=secretaryLocation();pushSecretaryMessage('assistant',['好的，目的地是 ',secretaryMark(`${country.label}・${displayCity}`,'place'),secretaryDraft.usesOtherRate?'，將套用其他地區費率。\n':'。\n',...secretaryArrivalQuestionParts()],secretaryDraft.usesOtherRate?'warning':'');}
       }else if(secretaryStep==='arrival'){
         const parsed=parseSecretaryDateTime(answer);if(parsed.error){setSecretaryHint(parsed.error,true);return;}
-        saveSecretaryState();pushSecretaryMessage('user',answer);secretaryDraft.arrival=parsed;secretaryStep='departure';pushSecretaryMessage('assistant',`已記下抵達時間：${formatSecretaryDateTime(parsed.date)}${parsed.assumedYear?'（未填年份，已採今年）':''}\n${secretaryDepartureQuestion()}`);
+        saveSecretaryState();pushSecretaryMessage('user',answer);secretaryDraft.arrival=parsed;secretaryStep='departure';pushSecretaryMessage('assistant',['已記下抵達時間：',secretaryMark(formatSecretaryDateTime(parsed.date),'time'),parsed.assumedYear?'（未填年份，已採今年）':'','\n',...secretaryDepartureQuestionParts()]);
       }else if(secretaryStep==='departure'){
         const parsed=parseSecretaryDateTime(answer,'07/17，15:20','15:20');if(parsed.error){setSecretaryHint(parsed.error,true);return;}
         if(parsed.date<=secretaryDraft.arrival.date){setSecretaryHint('離開時間必須晚於抵達時間；若是跨年行程，請一併輸入年份。',true);return;}
         const days=(dateOnly(parsed.date)-dateOnly(secretaryDraft.arrival.date))/86400000;if(days>120){setSecretaryHint('單次行程最多可計算 120 天。',true);return;}
-        saveSecretaryState();pushSecretaryMessage('user',answer);secretaryDraft.departure=parsed;secretaryStep='meals';pushSecretaryMessage('assistant',`已記下離開時間：${formatSecretaryDateTime(parsed.date)}${parsed.assumedYear?'（未填年份，已採今年）':''}\n最後請勾選這次是否已有提供早餐或午餐。`);
+        saveSecretaryState();pushSecretaryMessage('user',answer);secretaryDraft.departure=parsed;secretaryStep='meals';pushSecretaryMessage('assistant',['已記下離開時間：',secretaryMark(formatSecretaryDateTime(parsed.date),'time'),parsed.assumedYear?'（未填年份，已採今年）':'','\n最後請勾選這次是否已有提供早餐或午餐。']);
       }
       secretaryEl.input.value='';renderSecretaryStep();
     }
@@ -1274,7 +1288,7 @@
     secretaryEl.lunchDates.addEventListener('click',event=>{const button=event.target.closest('.date-chip');if(!button)return;const key=button.dataset.date;if(secretaryDraft.lunchDates.has(key))secretaryDraft.lunchDates.delete(key);else secretaryDraft.lunchDates.add(key);button.classList.toggle('active');button.setAttribute('aria-pressed',String(button.classList.contains('active')));setSecretaryHint('');});
     $('secretaryMealNextBtn').addEventListener('click',()=>{
       secretaryDraft.breakfast=secretaryEl.breakfast.checked;secretaryDraft.lunch=secretaryEl.lunch.checked;if(secretaryDraft.lunch&&!secretaryDraft.lunchDates.size){setSecretaryHint('請至少選擇一個有提供午餐的日期，或取消午餐勾選。',true);return;}
-      saveSecretaryState();const lunchSummary=secretaryDraft.lunch?`${secretaryDraft.lunchDates.size} 天`:'無';pushSecretaryMessage('user',`飯店早餐：${secretaryDraft.breakfast?'有':'無'}\n展場午餐：${lunchSummary}`);secretaryStep='review';pushSecretaryMessage('assistant','資料都整理好了，請確認抵達、起飛日期與供餐資訊。');renderSecretaryStep();
+      saveSecretaryState();const lunchSummary=secretaryDraft.lunch?`${secretaryDraft.lunchDates.size} 天`:'無',departureTerm=secretaryDraft.countryKey==='TW'?'發車':'起飛';pushSecretaryMessage('user',`飯店早餐：${secretaryDraft.breakfast?'有':'無'}\n展場午餐：${lunchSummary}`);secretaryStep='review';pushSecretaryMessage('assistant',`資料都整理好了，請確認抵達、${departureTerm}日期與供餐資訊。`);renderSecretaryStep();
     });
     $('secretaryConfirmBtn').addEventListener('click',applySecretaryDraft);
 
