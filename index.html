@@ -198,9 +198,12 @@
     .result-toggle-row{display:flex;align-items:center;justify-content:space-between;gap:14px;border-radius:14px;padding:2px;cursor:pointer;transition:background .18s ease;}
     .result-toggle-row:hover{background:rgba(0,113,227,.045);}
     .result-toggle-row:focus-visible{outline:3px solid rgba(0,113,227,.28);outline-offset:4px;}
+    .result-copy{min-width:0;}
+    .result-heading{display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
     .result-toggle-row h2{font-size:24px;margin:0;letter-spacing:-.03em;}
     .result-toggle-row small{display:block;color:var(--muted);font-size:12px;font-weight:500;margin-top:3px;}
-    .result-toggle{display:flex;align-items:center;gap:9px;border-radius:10px;background:var(--blue-soft);color:var(--blue);padding:8px 10px;font-size:13px;font-weight:700;}
+    .result-complete-amount{display:inline-flex;align-items:center;border:1px solid rgba(36,138,61,.18);border-radius:999px;background:#eaf6ed;color:var(--green);padding:5px 9px;font-size:13px;font-weight:760;line-height:1;white-space:nowrap;font-variant-numeric:tabular-nums;}
+    .result-toggle{display:flex;align-items:center;gap:9px;flex:0 0 auto;border-radius:10px;background:var(--blue-soft);color:var(--blue);padding:8px 10px;font-size:13px;font-weight:700;white-space:nowrap;}
     .result-chevron{display:grid;place-items:center;width:16px;height:16px;}
     .results.expanded .result-chevron .chevron-icon{transform:translateY(2px) rotate(225deg);}
     .result-details{padding-top:16px;animation:rise .22s ease;}
@@ -553,7 +556,7 @@
 
       <section class="card results" id="results" aria-live="polite">
         <div class="result-toggle-row" id="resultToggle" role="button" tabindex="0" aria-expanded="false" aria-controls="resultDetails">
-          <div><h2>計算結果</h2><small>查看每日餐費明細</small></div>
+          <div class="result-copy"><div class="result-heading"><h2>計算結果</h2><span class="result-complete-amount" id="resultCompleteAmount">✓ —</span></div><small>查看每日餐費明細</small></div>
           <span class="result-toggle"><span id="resultToggleLabel">展開</span><span class="result-chevron"><span class="chevron-icon" aria-hidden="true"></span></span></span>
         </div>
         <div class="result-details" id="resultDetails" hidden>
@@ -564,7 +567,7 @@
       </section>
 
       <section class="summary-card">
-        <div class="summary-label">預估伙食費</div>
+        <div class="summary-label">出差伙食費</div>
         <div class="amount" id="totalAmount">—</div>
         <div class="summary-place" id="summaryPlace">完成上方步驟後即可計算</div>
         <div class="empty-summary" id="emptySummary">系統會依照抵達、離境時間與已供餐食，自動算出可核給金額。</div>
@@ -729,7 +732,7 @@
     };
 
     const $=id=>document.getElementById(id);
-    const el={country:$('country'),countrySearch:$('countrySearch'),countryCombo:$('countryCombo'),countryMenu:$('countryMenu'),city:$('city'),citySearch:$('citySearch'),cityCombo:$('cityCombo'),cityMenu:$('cityMenu'),arrDate:$('arrDate'),arrTime:$('arrTime'),depDate:$('depDate'),depTime:$('depTime'),tripCard:$('tripCard'),tripFields:$('tripFields'),mealsCard:$('mealsCard'),mealFields:$('mealFields'),hotelBreakfast:$('hotelBreakfast'),expoLunch:$('expoLunch'),expoPicker:$('expoPicker'),expoDates:$('expoDates'),calculateBtn:$('calculateBtn'),mobileCalculateBtn:$('mobileCalculateBtn'),buttonHint:$('buttonHint'),mobileActionTitle:$('mobileActionTitle'),mobileActionHint:$('mobileActionHint'),results:$('results'),resultToggle:$('resultToggle'),resultToggleLabel:$('resultToggleLabel'),resultDetails:$('resultDetails'),dayList:$('dayList'),breakdown:$('breakdown'),basis:$('basis'),totalAmount:$('totalAmount'),summaryPlace:$('summaryPlace'),emptySummary:$('emptySummary'),mealCounts:$('mealCounts'),countB:$('countB'),countL:$('countL'),countD:$('countD'),destinationStatus:$('destinationStatus'),tripStatus:$('tripStatus'),mealsStatus:$('mealsStatus'),arrivalLabel:$('arrivalLabel'),departureLabel:$('departureLabel'),arrivalHelp:$('arrivalHelp'),departureHelp:$('departureHelp'),dateDialog:$('dateDialog'),dateDialogTitle:$('dateDialogTitle'),calendarMonth:$('calendarMonth'),calendarGrid:$('calendarGrid'),timeDialog:$('timeDialog'),timeDialogTitle:$('timeDialogTitle'),hourWheel:$('hourWheel'),minuteWheel:$('minuteWheel'),rulesDialog:$('rulesDialog'),ratesTableBody:$('ratesTableBody'),rateFilter:$('rateFilter'),toast:$('toast')};
+    const el={country:$('country'),countrySearch:$('countrySearch'),countryCombo:$('countryCombo'),countryMenu:$('countryMenu'),city:$('city'),citySearch:$('citySearch'),cityCombo:$('cityCombo'),cityMenu:$('cityMenu'),arrDate:$('arrDate'),arrTime:$('arrTime'),depDate:$('depDate'),depTime:$('depTime'),tripCard:$('tripCard'),tripFields:$('tripFields'),mealsCard:$('mealsCard'),mealFields:$('mealFields'),hotelBreakfast:$('hotelBreakfast'),expoLunch:$('expoLunch'),expoPicker:$('expoPicker'),expoDates:$('expoDates'),calculateBtn:$('calculateBtn'),mobileCalculateBtn:$('mobileCalculateBtn'),buttonHint:$('buttonHint'),mobileActionTitle:$('mobileActionTitle'),mobileActionHint:$('mobileActionHint'),results:$('results'),resultToggle:$('resultToggle'),resultToggleLabel:$('resultToggleLabel'),resultCompleteAmount:$('resultCompleteAmount'),resultDetails:$('resultDetails'),dayList:$('dayList'),breakdown:$('breakdown'),basis:$('basis'),totalAmount:$('totalAmount'),summaryPlace:$('summaryPlace'),emptySummary:$('emptySummary'),mealCounts:$('mealCounts'),countB:$('countB'),countL:$('countL'),countD:$('countD'),destinationStatus:$('destinationStatus'),tripStatus:$('tripStatus'),mealsStatus:$('mealsStatus'),arrivalLabel:$('arrivalLabel'),departureLabel:$('departureLabel'),arrivalHelp:$('arrivalHelp'),departureHelp:$('departureHelp'),dateDialog:$('dateDialog'),dateDialogTitle:$('dateDialogTitle'),calendarMonth:$('calendarMonth'),calendarGrid:$('calendarGrid'),timeDialog:$('timeDialog'),timeDialogTitle:$('timeDialogTitle'),hourWheel:$('hourWheel'),minuteWheel:$('minuteWheel'),rulesDialog:$('rulesDialog'),ratesTableBody:$('ratesTableBody'),rateFilter:$('rateFilter'),toast:$('toast')};
     const secretaryEl={dialog:$('secretaryDialog'),step:$('secretaryStep'),chat:$('secretaryChat'),form:$('secretaryForm'),input:$('secretaryInput'),inputLabel:$('secretaryInputLabel'),hint:$('secretaryHint'),back:$('secretaryBackBtn'),meals:$('secretaryMeals'),breakfast:$('secretaryBreakfast'),lunch:$('secretaryLunch'),lunchWrap:$('secretaryLunchDatesWrap'),lunchDates:$('secretaryLunchDates'),mealHint:$('secretaryMealHint'),mealBack:$('secretaryMealBackBtn'),mealNext:$('secretaryMealNextBtn'),review:$('secretaryReview'),reviewGrid:$('secretaryReviewGrid'),reviewBack:$('secretaryReviewBackBtn')};
     let expoSelection=new Set();
     let activeDateInput=null;
@@ -905,7 +908,7 @@
       return{country,city,displayCity:secretaryDraft.cityDisplay||city?.label||''};
     }
 
-    function secretaryArrivalQuestionParts(){const {displayCity}=secretaryLocation();return[secretaryDraft.countryKey==='TW'?'高鐵抵達「':'飛機抵達「',secretaryMark(displayCity,'place'),'」的日期與時間？'];}
+    function secretaryArrivalQuestionParts(){const {displayCity}=secretaryLocation(),taiwan=secretaryDraft.countryKey==='TW';return[taiwan?'高鐵':'飛機',secretaryMark('抵達','action'),'「',secretaryMark(displayCity,'place'),'」的日期與時間？'];}
     function secretaryDepartureQuestionParts(){const {displayCity}=secretaryLocation(),taiwan=secretaryDraft.countryKey==='TW';return['離開「',secretaryMark(displayCity,'place'),taiwan?'」的高鐵會在什麼日期、幾點':'」的飛機會在什麼日期、幾點',secretaryMark(taiwan?'發車':'起飛','action'),'？'];}
     function secretaryTripDates(){
       if(!secretaryDraft.arrival||!secretaryDraft.departure)return[];const dates=[];let cursor=dateOnly(secretaryDraft.arrival.date),end=dateOnly(secretaryDraft.departure.date);
@@ -1146,12 +1149,12 @@
       const country=rates[el.country.value],saved=activeSecretaryOther?.countryKey===el.country.value?activeSecretaryOther:null;
       return{countryLabel:country.label,cityDisplay:saved?.cityDisplay||country.cities.other.label};
     }
-    function setProgress(stage){
-      document.querySelectorAll('.progress-item').forEach((item,i)=>{const n=i+1;item.classList.toggle('active',n===stage);item.classList.toggle('complete',n<stage);item.querySelector('.step-dot').textContent=n<stage?'✓':n;});
+    function setProgress(stage,finished=false){
+      document.querySelectorAll('.progress-item').forEach((item,i)=>{const n=i+1,complete=n<stage||(finished&&n===stage);item.classList.toggle('active',n===stage&&!finished);item.classList.toggle('complete',complete);item.querySelector('.step-dot').textContent=complete?'✓':n;});
     }
 
     function clearResult(){
-      el.results.classList.remove('show','expanded');el.resultDetails.hidden=true;el.resultToggle.setAttribute('aria-expanded','false');el.resultToggleLabel.textContent='展開';el.totalAmount.textContent='—';el.summaryPlace.textContent='完成上方步驟後即可計算';el.summaryPlace.classList.remove('warning');el.emptySummary.hidden=false;el.mealCounts.hidden=true;
+      el.results.classList.remove('show','expanded');el.resultDetails.hidden=true;el.resultToggle.setAttribute('aria-expanded','false');el.resultToggleLabel.textContent='展開';el.resultCompleteAmount.textContent='✓ —';el.totalAmount.textContent='—';el.summaryPlace.textContent='完成上方步驟後即可計算';el.summaryPlace.classList.remove('warning');el.emptySummary.hidden=false;el.mealCounts.hidden=true;
     }
 
     function populateCities(focusInput=true){
@@ -1220,7 +1223,7 @@
       el.dayList.innerHTML='<div class="day-row day-header"><span>日期</span><span>早餐</span><span>午餐</span><span>晚餐</span></div>'+rows.map(r=>`<div class="day-row"><span class="day-date">${formatDate(r.day)}</span>${r.statuses.map(mealBadge).join('')}</div>`).join('');
       el.breakdown.innerHTML=[['早餐',city.B,counts.B,subtotals.B],['午餐',city.L,counts.L,subtotals.L],['晚餐',city.D,counts.D,subtotals.D]].map(([label,price,count,subtotal])=>`<div class="breakdown-item"><span>${label}・${formatMoney(price,city.currency)} × ${count}</span><strong>${formatMoney(subtotal,city.currency)}</strong></div>`).join('');
       el.basis.innerHTML=`<strong>判斷依據</strong><br>抵達 ${pad(check.arr.getHours())}:${pad(check.arr.getMinutes())}：${arrivalRule(arrIdx)}。<br>離境 ${pad(check.dep.getHours())}:${pad(check.dep.getMinutes())}：${departureRule(depIdx)}。`;
-      const formatted=formatMoney(total,city.currency);el.totalAmount.textContent=formatted;el.totalAmount.classList.remove('updated');void el.totalAmount.offsetWidth;el.totalAmount.classList.add('updated');el.summaryPlace.textContent=otherContext?`⚠ ${otherContext.countryLabel}・${otherContext.cityDisplay}（套用其他地區費率）`:`${country.label}・${city.label}`;el.summaryPlace.classList.toggle('warning',Boolean(otherContext));el.emptySummary.hidden=true;el.mealCounts.hidden=false;el.countB.textContent=counts.B;el.countL.textContent=counts.L;el.countD.textContent=counts.D;el.results.classList.add('show');el.results.classList.remove('expanded');el.resultDetails.hidden=true;el.resultToggle.setAttribute('aria-expanded','false');el.resultToggleLabel.textContent='展開';setProgress(4);
+      const formatted=formatMoney(total,city.currency);el.resultCompleteAmount.textContent=`✓ ${formatted}`;el.totalAmount.textContent=formatted;el.totalAmount.classList.remove('updated');void el.totalAmount.offsetWidth;el.totalAmount.classList.add('updated');el.summaryPlace.textContent=otherContext?`⚠ ${otherContext.countryLabel}・${otherContext.cityDisplay}（套用其他地區費率）`:`${country.label}・${city.label}`;el.summaryPlace.classList.toggle('warning',Boolean(otherContext));el.emptySummary.hidden=true;el.mealCounts.hidden=false;el.countB.textContent=counts.B;el.countL.textContent=counts.L;el.countD.textContent=counts.D;el.results.classList.add('show');el.results.classList.remove('expanded');el.resultDetails.hidden=true;el.resultToggle.setAttribute('aria-expanded','false');el.resultToggleLabel.textContent='展開';setProgress(4,true);
       el.results.scrollIntoView({behavior:'smooth',block:'start'});showToast('計算完成');
     }
 
