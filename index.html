@@ -50,6 +50,7 @@
     .hero-top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:10px;}
     .eyebrow{display:inline-flex;align-items:center;gap:7px;color:var(--blue);font-size:13px;font-weight:700;letter-spacing:.04em;}
     .eyebrow-dot{width:7px;height:7px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 5px rgba(0,113,227,.1);}
+    .app-version{display:inline-flex;align-items:center;justify-content:center;min-height:22px;border:1px solid rgba(0,113,227,.16);border-radius:999px;background:var(--blue-soft);color:var(--blue);padding:0 7px;font-size:10px;font-weight:800;line-height:1;letter-spacing:0;font-variant-numeric:tabular-nums;}
     .hero-actions{display:flex;align-items:center;justify-content:flex-end;gap:7px;}
     .rules-corner{display:inline-flex;align-items:center;gap:5px;min-height:32px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.8);color:var(--muted);padding:0 10px;font-size:12px;font-weight:650;cursor:pointer;transition:.18s ease;}
     .rules-corner:hover{background:#fff;color:var(--blue);border-color:rgba(0,113,227,.24);}
@@ -199,8 +200,10 @@
     .result-toggle-row:hover{background:rgba(0,113,227,.045);}
     .result-toggle-row:focus-visible{outline:3px solid rgba(0,113,227,.28);outline-offset:4px;}
     .result-copy{min-width:0;}
+    .result-heading{display:flex;align-items:center;gap:8px;}
     .result-toggle-row h2{font-size:24px;margin:0;letter-spacing:-.03em;}
     .result-toggle-row small{display:block;color:var(--muted);font-size:12px;font-weight:500;margin-top:3px;}
+    .result-complete-check{display:inline-grid;place-items:center;width:22px;height:22px;flex:0 0 auto;border:1px solid rgba(36,138,61,.18);border-radius:50%;background:#eaf6ed;color:var(--green);font-size:13px;font-weight:850;line-height:1;}
     .result-toggle{display:flex;align-items:center;gap:9px;flex:0 0 auto;border-radius:10px;background:var(--blue-soft);color:var(--blue);padding:8px 10px;font-size:13px;font-weight:700;white-space:nowrap;}
     .result-chevron{display:grid;place-items:center;width:16px;height:16px;}
     .results.expanded .result-chevron .chevron-icon{transform:translateY(2px) rotate(225deg);}
@@ -414,10 +417,10 @@
   <main class="app-shell">
     <header class="hero">
       <div class="hero-top">
-        <div class="eyebrow"><span class="eyebrow-dot"></span>Jasper Travel</div>
+        <div class="eyebrow"><span class="eyebrow-dot"></span>Jasper Travel <span class="app-version" data-update-count="45" aria-label="版本 4.5">V4.5</span></div>
         <div class="hero-actions">
-          <button class="rules-corner secretary-corner" id="secretaryBtn" type="button" aria-label="開啟秘書模式">👩🏻‍💼 秘書模式</button>
           <button class="rules-corner" id="rulesBtn" type="button" aria-label="查看規則與費率">ⓘ 規則與費率</button>
+          <button class="rules-corner secretary-corner" id="secretaryBtn" type="button" aria-label="開啟秘書模式">👩🏻‍💼 秘書模式</button>
         </div>
       </div>
       <h1>出差伙食費計算機</h1>
@@ -555,7 +558,7 @@
 
       <section class="card results" id="results" aria-live="polite">
         <div class="result-toggle-row" id="resultToggle" role="button" tabindex="0" aria-expanded="false" aria-controls="resultDetails">
-          <div class="result-copy"><h2>計算結果</h2><small>查看每日餐費明細</small></div>
+          <div class="result-copy"><div class="result-heading"><h2>計算明細</h2><span class="result-complete-check" aria-label="計算完成">✓</span></div><small>查看每日餐費明細</small></div>
           <span class="result-toggle"><span id="resultToggleLabel">展開</span><span class="result-chevron"><span class="chevron-icon" aria-hidden="true"></span></span></span>
         </div>
         <div class="result-details" id="resultDetails" hidden>
