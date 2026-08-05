@@ -1,913 +1,590 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f5f5f7">
   <title>出差伙食費計算器</title>
   <style>
     :root{
-      --primary:#4a90e2; --bg:#f5f7fa; --radius:10px; --pad:12px;
-      --ff:'Helvetica Neue', Arial, sans-serif;
+      color-scheme:light;
+      --bg:#f5f5f7;
+      --surface:rgba(255,255,255,.88);
+      --surface-solid:#fff;
+      --text:#1d1d1f;
+      --muted:#6e6e73;
+      --faint:#aeaeb2;
+      --line:rgba(60,60,67,.14);
+      --blue:#0071e3;
+      --blue-hover:#0077ed;
+      --blue-soft:#e8f2ff;
+      --green:#248a3d;
+      --red:#d70015;
+      --orange:#b25000;
+      --radius-xl:28px;
+      --radius-lg:20px;
+      --radius-md:14px;
+      --shadow:0 18px 50px rgba(0,0,0,.07);
+      --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,"Noto Sans TC",sans-serif;
     }
+
     *{box-sizing:border-box;}
-    body{margin:0; font-family:var(--ff); background:#f5f7fa; color:#333; padding:var(--pad);}
-    h2{margin:12px 0 16px; color:var(--primary); text-align:center;}
-    form{max-width:1000px; margin:0 auto 18px; background:#fff; border-radius:var(--radius); padding:var(--pad); box-shadow:0 4px 12px rgba(0,0,0,.1);}
-    fieldset{border:1px solid #ddd; border-radius:var(--radius); padding:var(--pad); margin-bottom:20px; position:relative;}
-    legend{font-weight:700; color:var(--primary); padding:0 8px;}
-
-    .row-2{
-      display:grid; grid-template-columns:repeat(2, minmax(320px, 1fr));
-      gap:18px 20px; align-items:start; margin-bottom:12px;
+    html{scroll-behavior:smooth;}
+    body{
+      margin:0;
+      min-height:100vh;
+      background:
+        radial-gradient(circle at 50% -10%, rgba(0,113,227,.08), transparent 34rem),
+        var(--bg);
+      color:var(--text);
+      font-family:var(--font);
+      -webkit-font-smoothing:antialiased;
     }
-    .field{display:flex; flex-direction:column;}
-    .label{font-weight:600; margin-bottom:6px;}
-    input,select{
-      padding:10px 12px; border:1px solid #ccc; border-radius:6px; font-size:16px;
-      background:#fff; color:#333;
+    button,input,select{font:inherit;}
+    button{touch-action:manipulation;}
+    [hidden]{display:none!important;}
+    button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid rgba(0,113,227,.28);outline-offset:2px;}
+
+    .app-shell{width:min(980px,calc(100% - 32px));margin:0 auto;padding:42px 0 120px;}
+    .hero{text-align:center;margin:0 auto 26px;max-width:720px;}
+    .eyebrow{display:inline-flex;align-items:center;gap:7px;color:var(--blue);font-size:13px;font-weight:700;letter-spacing:.04em;margin-bottom:10px;}
+    .eyebrow-dot{width:7px;height:7px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 5px rgba(0,113,227,.1);}
+    h1{font-size:clamp(34px,6vw,52px);line-height:1.08;letter-spacing:-.045em;margin:0 0 12px;font-weight:750;}
+    .hero p{font-size:17px;line-height:1.55;color:var(--muted);margin:0;}
+
+    .version-note{
+      display:flex;align-items:flex-start;gap:10px;
+      background:rgba(255,255,255,.7);border:1px solid var(--line);border-radius:16px;
+      padding:12px 14px;margin:20px auto 0;max-width:680px;text-align:left;
+      color:var(--muted);font-size:13px;line-height:1.45;
+    }
+    .version-note strong{color:var(--text);}
+    .info-icon{flex:0 0 auto;display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--blue-soft);color:var(--blue);font-size:12px;font-weight:800;}
+
+    .progress-card{
+      display:grid;grid-template-columns:repeat(4,1fr);gap:0;
+      background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.8);
+      box-shadow:0 8px 30px rgba(0,0,0,.04);border-radius:20px;padding:14px 12px;margin-bottom:18px;
+      backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    }
+    .progress-item{position:relative;text-align:center;color:var(--faint);font-size:12px;font-weight:650;transition:.25s ease;}
+    .progress-item:not(:last-child)::after{content:"";position:absolute;top:14px;left:65%;right:-35%;height:2px;background:#e5e5ea;z-index:0;}
+    .progress-item.complete:not(:last-child)::after{background:#74b5f4;}
+    .step-dot{position:relative;z-index:1;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;margin:0 auto 5px;background:#e5e5ea;color:#8e8e93;font-size:13px;transition:.25s ease;}
+    .progress-item.active{color:var(--text);}
+    .progress-item.active .step-dot{background:var(--blue);color:white;box-shadow:0 4px 12px rgba(0,113,227,.25);}
+    .progress-item.complete{color:var(--green);}
+    .progress-item.complete .step-dot{background:#e5f5e9;color:var(--green);}
+
+    .layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:18px;align-items:start;}
+    .form-stack{display:grid;gap:16px;}
+    .card{
+      background:var(--surface);border:1px solid rgba(255,255,255,.9);border-radius:var(--radius-xl);
+      box-shadow:var(--shadow);padding:24px;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+      transition:opacity .25s ease,transform .25s ease;
+    }
+    .card.locked{opacity:.56;box-shadow:none;}
+    .card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px;}
+    .card-title-wrap{display:flex;align-items:flex-start;gap:12px;}
+    .card-number{display:grid;place-items:center;flex:0 0 auto;width:32px;height:32px;border-radius:11px;background:var(--blue-soft);color:var(--blue);font-size:14px;font-weight:750;}
+    .card h2{font-size:20px;letter-spacing:-.02em;margin:1px 0 3px;}
+    .card-subtitle{font-size:13px;color:var(--muted);line-height:1.4;}
+    .lock-hint{display:flex;align-items:center;gap:5px;white-space:nowrap;font-size:12px;color:var(--muted);background:#f2f2f7;border-radius:99px;padding:6px 9px;}
+    .lock-hint.ready{color:var(--green);background:#eaf6ed;}
+
+    .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+    .field{display:grid;gap:7px;min-width:0;}
+    .field.full{grid-column:1/-1;}
+    label,.field-label{font-size:13px;font-weight:650;color:#3a3a3c;}
+    .required::after{content:" 必填";font-size:10px;color:var(--muted);font-weight:500;}
+    select,input[type="date"],input[type="time"]{
+      width:100%;min-height:50px;border:1px solid var(--line);border-radius:13px;background:#fff;
+      color:var(--text);padding:0 14px;font-size:16px;transition:border-color .18s,box-shadow .18s,background .18s;
+      -webkit-appearance:none;appearance:none;
+    }
+    select{padding-right:42px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='8' viewBox='0 0 14 8'%3E%3Cpath d='m1 1 6 6 6-6' fill='none' stroke='%236e6e73' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 15px center;}
+    select:hover,input:hover{border-color:rgba(60,60,67,.3);}
+    select:focus,input:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(0,113,227,.1);outline:none;}
+    select:disabled,input:disabled{background-color:#f2f2f7;color:#9b9ba0;cursor:not-allowed;}
+    .field-help{min-height:17px;font-size:12px;color:var(--muted);line-height:1.35;}
+    .field-error{color:var(--red);}
+    .invalid{border-color:var(--red)!important;box-shadow:0 0 0 4px rgba(215,0,21,.08)!important;}
+
+    .route-line{display:grid;grid-template-columns:1fr 34px 1fr;gap:10px;align-items:end;}
+    .route-arrow{display:grid;place-items:center;height:50px;color:var(--faint);font-size:21px;}
+    .date-time{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(100px,.8fr);gap:8px;}
+
+    .switch-list{display:grid;gap:10px;}
+    .switch-row{display:flex;align-items:center;justify-content:space-between;gap:18px;border:1px solid var(--line);background:#fff;border-radius:16px;padding:14px 15px;cursor:pointer;}
+    .switch-copy{display:grid;gap:3px;}
+    .switch-copy strong{font-size:15px;}
+    .switch-copy span{font-size:12px;color:var(--muted);line-height:1.4;}
+    .switch{position:relative;width:50px;height:30px;flex:0 0 auto;}
+    .switch input{position:absolute;opacity:0;pointer-events:none;}
+    .switch-track{position:absolute;inset:0;border-radius:99px;background:#d1d1d6;transition:.2s ease;}
+    .switch-track::after{content:"";position:absolute;width:26px;height:26px;left:2px;top:2px;border-radius:50%;background:white;box-shadow:0 2px 6px rgba(0,0,0,.22);transition:.2s ease;}
+    .switch input:checked + .switch-track{background:#34c759;}
+    .switch input:checked + .switch-track::after{transform:translateX(20px);}
+    .switch input:focus-visible + .switch-track{outline:3px solid rgba(0,113,227,.28);outline-offset:2px;}
+    .switch input:disabled + .switch-track{opacity:.45;}
+
+    .expo-picker{display:none;margin-top:12px;border-radius:16px;background:#f5f5f7;padding:14px;}
+    .expo-picker.show{display:block;animation:rise .2s ease;}
+    .expo-picker-title{font-size:13px;font-weight:650;margin-bottom:9px;}
+    .date-chips{display:flex;gap:7px;flex-wrap:wrap;}
+    .date-chip{border:1px solid var(--line);background:#fff;color:var(--text);border-radius:99px;padding:8px 11px;font-size:12px;cursor:pointer;}
+    .date-chip.active{background:var(--blue);border-color:var(--blue);color:#fff;}
+
+    .sidebar{position:sticky;top:18px;display:grid;gap:16px;}
+    .summary-card{background:#1d1d1f;color:#fff;border-radius:var(--radius-xl);padding:24px;box-shadow:0 20px 48px rgba(0,0,0,.16);}
+    .summary-label{color:#a1a1a6;font-size:13px;margin-bottom:8px;}
+    .amount{font-size:39px;line-height:1;font-weight:760;letter-spacing:-.045em;margin:0 0 9px;word-break:break-word;}
+    .summary-place{font-size:13px;color:#d1d1d6;min-height:18px;}
+    .meal-counts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:20px;padding-top:18px;border-top:1px solid rgba(255,255,255,.14);}
+    .meal-count{text-align:center;}
+    .meal-count strong{display:block;font-size:18px;margin-bottom:2px;}
+    .meal-count span{font-size:11px;color:#a1a1a6;}
+    .empty-summary{color:#a1a1a6;font-size:14px;line-height:1.55;margin:16px 0 4px;}
+
+    .primary-btn,.secondary-btn{
+      width:100%;min-height:52px;border:0;border-radius:14px;padding:0 18px;font-weight:700;cursor:pointer;transition:.18s ease;
+    }
+    .primary-btn{background:var(--blue);color:#fff;box-shadow:0 8px 18px rgba(0,113,227,.2);}
+    .primary-btn:hover:not(:disabled){background:var(--blue-hover);transform:translateY(-1px);}
+    .primary-btn:active:not(:disabled){transform:scale(.985);}
+    .primary-btn:disabled{background:#d1d1d6;color:#8e8e93;box-shadow:none;cursor:not-allowed;}
+    .secondary-btn{background:#e9e9ed;color:var(--text);margin-top:9px;}
+    .button-hint{text-align:center;color:#8e8e93;font-size:12px;line-height:1.4;margin-top:9px;min-height:17px;}
+    .text-btn{border:0;background:none;color:var(--blue);font-weight:650;padding:8px 4px;cursor:pointer;}
+    .utility-card{background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.8);border-radius:20px;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+    .utility-card span{font-size:12px;color:var(--muted);}
+
+    .results{display:none;margin-top:18px;}
+    .results.show{display:block;animation:rise .28s ease;}
+    .result-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;}
+    .result-head h2{font-size:24px;margin:0;letter-spacing:-.03em;}
+    .result-total-mobile{display:none;color:var(--blue);font-weight:750;}
+    .day-list{display:grid;gap:9px;}
+    .day-row{display:grid;grid-template-columns:120px repeat(3,1fr);align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:15px;padding:10px 12px;}
+    .day-header{background:transparent;border:0;padding:0 12px 2px;color:var(--muted);font-size:11px;text-align:center;}
+    .day-header span:first-child{text-align:left;}
+    .day-date{font-size:13px;font-weight:650;}
+    .meal-status{text-align:center;font-size:12px;padding:6px 5px;border-radius:9px;background:#f2f2f7;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .meal-status.included{background:#eaf6ed;color:var(--green);font-weight:650;}
+    .result-breakdown{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:12px;}
+    .breakdown-item{background:#f5f5f7;border-radius:14px;padding:12px;text-align:center;}
+    .breakdown-item span{display:block;color:var(--muted);font-size:11px;margin-bottom:4px;}
+    .breakdown-item strong{font-size:14px;}
+    .basis{margin-top:12px;color:var(--muted);font-size:12px;line-height:1.65;background:#f9f9fb;border-radius:14px;padding:12px;}
+
+    dialog{width:min(760px,calc(100% - 32px));max-height:min(86vh,820px);border:0;border-radius:26px;padding:0;background:#fff;color:var(--text);box-shadow:0 30px 90px rgba(0,0,0,.28);}
+    dialog::backdrop{background:rgba(0,0,0,.32);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);}
+    .dialog-head{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;padding:18px 20px;background:rgba(255,255,255,.9);border-bottom:1px solid var(--line);backdrop-filter:blur(18px);}
+    .dialog-head h2{font-size:20px;margin:0;}
+    .icon-btn{display:grid;place-items:center;width:34px;height:34px;border:0;border-radius:50%;background:#e9e9ed;color:#3a3a3c;font-size:20px;cursor:pointer;}
+    .dialog-body{padding:18px 20px 26px;}
+    .tabs{display:grid;grid-template-columns:1fr 1fr;background:#f2f2f7;border-radius:11px;padding:3px;margin-bottom:18px;}
+    .tab-btn{border:0;border-radius:9px;background:transparent;padding:8px;color:var(--muted);font-weight:650;cursor:pointer;}
+    .tab-btn.active{background:#fff;color:var(--text);box-shadow:0 2px 7px rgba(0,0,0,.08);}
+    .tab-panel{display:none;}
+    .tab-panel.active{display:block;}
+    .rule-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .rule-block{background:#f5f5f7;border-radius:16px;padding:15px;}
+    .rule-block h3{font-size:15px;margin:0 0 10px;}
+    .rule-list{display:grid;gap:8px;}
+    .rule-item{display:flex;justify-content:space-between;gap:12px;font-size:12px;line-height:1.4;border-bottom:1px solid var(--line);padding-bottom:8px;}
+    .rule-item:last-child{border:0;padding-bottom:0;}
+    .rule-item span:first-child{color:var(--muted);white-space:nowrap;}
+    .rate-filter{width:100%;min-height:44px;border-radius:12px;border:1px solid var(--line);padding:0 13px;margin-bottom:12px;font-size:15px;}
+    .rate-table-wrap{overflow:auto;max-height:54vh;border:1px solid var(--line);border-radius:14px;}
+    table{width:100%;border-collapse:collapse;font-size:13px;}
+    th,td{padding:10px 9px;border-bottom:1px solid var(--line);text-align:center;white-space:nowrap;}
+    th{position:sticky;top:0;background:#f5f5f7;color:var(--muted);font-size:11px;text-transform:none;z-index:1;}
+    tr:last-child td{border-bottom:0;}
+    td:nth-child(1),td:nth-child(2){text-align:left;}
+
+    .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));z-index:20;transform:translate(-50%,20px);background:rgba(29,29,31,.94);color:#fff;border-radius:99px;padding:11px 16px;font-size:13px;opacity:0;pointer-events:none;transition:.25s ease;box-shadow:0 8px 30px rgba(0,0,0,.2);}
+    .toast.show{opacity:1;transform:translate(-50%,0);}
+    .mobile-action{display:none;}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+    @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+    @media(max-width:780px){
+      .app-shell{width:min(100% - 24px,620px);padding:28px 0 110px;}
+      .hero{text-align:left;margin-bottom:20px;}
+      h1{font-size:36px;}
+      .hero p{font-size:15px;}
+      .version-note{margin-top:15px;}
+      .progress-card{padding:12px 5px;border-radius:17px;}
+      .progress-item{font-size:10px;}
+      .progress-item:not(:last-child)::after{left:62%;right:-38%;}
+      .layout{display:block;}
+      .sidebar{position:static;margin-top:16px;}
+      .summary-card{display:none;}
+      .utility-card{margin-bottom:14px;}
+      .card{padding:19px 16px;border-radius:22px;}
+      .card-head{margin-bottom:17px;}
+      .field-grid,.route-line{grid-template-columns:1fr;}
+      .route-arrow{height:18px;transform:rotate(90deg);}
+      .date-time{grid-template-columns:minmax(0,1.35fr) minmax(96px,.8fr);}
+      .results{margin-top:14px;}
+      .result-head{align-items:flex-end;}
+      .result-total-mobile{display:block;}
+      .day-row{grid-template-columns:1fr repeat(3,52px);gap:5px;padding:9px;}
+      .meal-status{font-size:11px;padding:6px 3px;}
+      .result-breakdown{grid-template-columns:1fr;}
+      .mobile-action{display:block;position:fixed;z-index:15;left:0;right:0;bottom:0;background:rgba(250,250,252,.9);border-top:1px solid var(--line);padding:10px 12px calc(10px + env(safe-area-inset-bottom));backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);}
+      .mobile-action-inner{display:flex;align-items:center;gap:12px;width:min(100%,620px);margin:auto;}
+      .mobile-action-copy{flex:1;min-width:0;}
+      .mobile-action-copy strong{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+      .mobile-action-copy span{display:block;color:var(--muted);font-size:11px;margin-top:2px;}
+      .mobile-action .primary-btn{width:132px;min-height:46px;flex:0 0 auto;}
+      .desktop-actions{display:none;}
+      dialog{width:100%;max-width:none;margin:auto 0 0;border-radius:24px 24px 0 0;max-height:90vh;}
+      .rule-grid{grid-template-columns:1fr;}
     }
 
-    /* 日期快選（文字輸入 + 自製日曆） */
-    .input-group{position:relative; display:flex; min-width:0;}
-    .input-group input{flex:1; padding-right:44px; min-width:0;}
-    .picker-btn{
-      position:absolute; right:6px; top:50%; transform:translateY(-50%);
-      border:1px solid #cfe0ff; background:#eef4ff; color:#2d5bd1;
-      border-radius:6px; padding:6px 8px; cursor:pointer; font-size:14px;
-    }
-    .picker-btn:hover{background:#dfeaff;}
-
-    .muted{color:#666; font-size:.92em;}
-
-    label.chk{display:flex; align-items:center; gap:4px; font-weight:600;}
-    .expo-dates{display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;}
-    .expo-dates button{
-      border:1px solid #cfe0ff;
-      background:#eef4ff;
-      color:#2d5bd1;
-      border-radius:6px;
-      padding:6px 8px;
-      cursor:pointer;
-      transition:background .2s, color .2s;
-    }
-    .expo-dates button.active{
-      background:#2d5bd1;
-      color:#fff;
-      border-color:#2d5bd1;
-      font-weight:700;
+    @media(max-width:390px){
+      .date-time{grid-template-columns:1fr;}
+      .lock-hint{display:none;}
+      .amount{font-size:34px;}
+      .mobile-action .primary-btn{width:116px;}
     }
 
-    /* 三顆按鈕同尺寸 */
-    .btn{display:inline-block; padding:10px 18px; font-size:16px; border-radius:8px; border:none; cursor:pointer; transition:background .2s;}
-    .btn-primary{ background:var(--primary); color:#fff; }
-    .btn-primary:hover{ background:#357abd; }
-    .btn-secondary{ background:#6c757d; color:#fff; }
-    .btn-secondary:hover{ background:#5b636a; }
-
-    .kpi{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:10px 0;}
-    .kpi div{background:#f9fbff; border:1px solid #e6eefc; border-radius:12px; padding:10px; text-align:center;}
-    .kpi .val{font-size:1.2em; font-weight:700;}
-
-    table{width:100%; border-collapse:collapse; margin:8px 0 12px; font-size:.95em;}
-    th,td{border:1px solid #e6e6e6; padding:8px; text-align:center;}
-    th{background:#f3f6fb;}
-    .err{color:#e74c3c; font-weight:700; text-align:center;}
-    .rationale{background:#fcfdff; border:1px solid #e6eefc; border-radius:12px; padding:12px; line-height:1.7; margin-top:8px;}
-
-    /* 規則與費率：彈出視窗 */
-    .modal-backdrop{display:none; position:fixed; inset:0; background:rgba(0,0,0,.35); align-items:center; justify-content:center; z-index:1000;}
-    .modal{background:#fff; width:min(900px,96vw); max-height:90vh; overflow:auto; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.25); padding:16px;}
-    .modal header{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;}
-    .modal h3{margin:0; color:var(--primary);}
-    .tabs{display:flex; gap:8px; margin:8px 0 12px;}
-    .tabs button{background:#eef4ff; color:#2d5bd1; border:1px solid #cfe0ff; border-radius:8px; padding:8px 12px; cursor:pointer;}
-    .tabs button.active{background:#dfeaff;}
-    .modal .section{display:none;}
-    .modal .section.active{display:block;}
-
-    .rules-btn{
-      position:relative;
-      display:block;
-      margin-left:auto;
-      margin-bottom:10px;
-    }
-
-    /* 時間選擇器 */
-    .time-overlay{display:none; position:fixed; inset:0; background:rgba(0,0,0,.2); align-items:center; justify-content:center; z-index:1200;}
-    .time-panel{background:#fff; width:min(260px,96vw); border-radius:12px; box-shadow:0 10px 24px rgba(0,0,0,.25); padding:12px; display:flex; gap:8px; justify-content:center;}
-    .time-panel select{padding:8px 6px; font-size:16px;}
-
-    /* 自製日曆（覆蓋層） */
-    .cal-overlay{display:none; position:fixed; inset:0; background:rgba(0,0,0,.2); align-items:center; justify-content:center; z-index:1200;}
-    .cal-panel{background:#fff; width:min(320px, 96vw); border-radius:12px; box-shadow:0 10px 24px rgba(0,0,0,.25); padding:12px;}
-    .cal-header{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;}
-    .cal-header button{padding:6px 10px; border:1px solid #ddd; border-radius:6px; background:#f7f7f7; cursor:pointer;}
-    .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:6px;}
-    .cal-grid div{padding:8px 0; border:1px solid #eee; border-radius:6px; cursor:pointer; user-select:none;}
-    .cal-grid .dow{background:#f3f6fb; font-weight:700; border-color:#e6eefc;}
-    .cal-grid .disabled{opacity:.35; cursor:default;}
-    .cal-grid .day:hover{background:#eef4ff; border-color:#cfe0ff;}
-    .cal-title{font-weight:700;}
-    @media (max-width:760px){ .row-2{grid-template-columns:1fr;} }
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important;}}
   </style>
 </head>
 <body>
-  <h2>出差伙食費計算器</h2>
-
-  <form id="mealForm" autocomplete="off">
-    <fieldset>
-      <legend>計算器</legend>
-      <button type="button" class="btn btn-primary rules-btn" id="openRulesBtn">查看規則與費率</button>
-
-      <div class="row-2">
-        <div class="field">
-          <div class="label">目的國家（依物價核定）</div>
-          <select id="country">
-            <option value="" selected>請選擇國家</option>
-            <option value="JP">日本 🇯🇵</option>
-            <option value="KR">韓國 🇰🇷</option>
-            <option value="TH">泰國 🇹🇭</option>
-            <option value="MY">馬來西亞 🇲🇾</option>
-            <option value="CN">中國大陸／港澳 🇨🇳</option>
-            <option value="AU">澳洲 🇦🇺</option>
-            <option value="KH">柬埔寨 🇰🇭</option>
-            <option value="VN">越南 🇻🇳</option>
-            <option value="DE">德國 🇩🇪</option>
-            <option value="GB">英國 🇬🇧</option>
-            <option value="CA">加拿大 🇨🇦</option>
-            <option value="US">美國 🇺🇸</option>
-            <option value="SG">新加坡 🇸🇬</option>
-            <option value="TW">台灣 🇹🇼</option>
-          </select>
-        </div>
-        <div class="field">
-          <div class="label">城市／地區</div>
-          <select id="city" disabled>
-            <option value="">請先選擇國家</option>
-          </select>
-        </div>
+  <main class="app-shell">
+    <header class="hero">
+      <div class="eyebrow"><span class="eyebrow-dot"></span>Jasper Travel</div>
+      <h1>出差伙食費，<br>幾秒鐘算清楚。</h1>
+      <p>依序選擇目的地與行程，系統會自動判斷可核給的早餐、午餐與晚餐。</p>
+      <div class="version-note">
+        <span class="info-icon">i</span>
+        <span><strong>目前採用 2025（民國 114 年）費率。</strong> 國外餐費沿用公司既有規則：早餐 4%、午餐 8%、晚餐 8%。</span>
       </div>
+    </header>
 
-      <!-- 抵達：日期｜時間 -->
-      <div class="row-2">
-        <div class="field">
-          <div class="label" id="arrDateLabel">抵達（落地）日期（YYYY-MM-DD）</div>
-          <div class="input-group">
-            <input type="text" id="arrDate" inputmode="numeric" autocomplete="off">
-            <button type="button" class="picker-btn date-picker-btn" data-target="arrDate">📅</button>
+    <nav class="progress-card" aria-label="填寫進度">
+      <div class="progress-item active" data-progress="1"><span class="step-dot">1</span><span>目的地</span></div>
+      <div class="progress-item" data-progress="2"><span class="step-dot">2</span><span>行程</span></div>
+      <div class="progress-item" data-progress="3"><span class="step-dot">3</span><span>供餐</span></div>
+      <div class="progress-item" data-progress="4"><span class="step-dot">4</span><span>結果</span></div>
+    </nav>
+
+    <div class="layout">
+      <div class="form-stack">
+        <section class="card" id="destinationCard">
+          <div class="card-head">
+            <div class="card-title-wrap">
+              <span class="card-number">1</span>
+              <div><h2>選擇目的地</h2><div class="card-subtitle">先選國家，才會顯示該國城市。</div></div>
+            </div>
+            <span class="lock-hint" id="destinationStatus">請選擇</span>
           </div>
-        </div>
-        <div class="field">
-          <div class="label" id="arrTimeLabel">抵達（落地）時間（HH:MM）</div>
-          <div class="input-group">
-            <input type="text" id="arrTime" inputmode="numeric" autocomplete="off">
-            <button type="button" class="picker-btn time-picker-btn" data-target="arrTime">⏰</button>
+          <div class="field-grid">
+            <div class="field">
+              <label class="required" for="country">國家／地區</label>
+              <select id="country" aria-describedby="countryHelp">
+                <option value="" selected>選擇國家／地區</option>
+                <option value="JP">日本 🇯🇵</option><option value="KR">韓國 🇰🇷</option>
+                <option value="TH">泰國 🇹🇭</option><option value="MY">馬來西亞 🇲🇾</option>
+                <option value="CN">中國大陸／港澳 🇨🇳</option><option value="AU">澳洲 🇦🇺</option>
+                <option value="KH">柬埔寨 🇰🇭</option><option value="VN">越南 🇻🇳</option>
+                <option value="DE">德國 🇩🇪</option><option value="GB">英國 🇬🇧</option>
+                <option value="CA">加拿大 🇨🇦</option><option value="US">美國 🇺🇸</option>
+                <option value="SG">新加坡 🇸🇬</option><option value="TW">台灣 🇹🇼</option>
+              </select>
+              <div class="field-help" id="countryHelp">選擇後將開放城市欄位。</div>
+            </div>
+            <div class="field">
+              <label class="required" for="city">城市／地區</label>
+              <select id="city" disabled aria-describedby="cityHelp"><option value="">請先選擇國家</option></select>
+              <div class="field-help" id="cityHelp">尚未選擇國家。</div>
+            </div>
           </div>
-        </div>
-      </div>
+        </section>
 
-      <!-- 離境：日期｜時間 -->
-      <div class="row-2">
-        <div class="field">
-          <div class="label" id="depDateLabel">離境（登機）日期（YYYY-MM-DD）</div>
-          <div class="input-group">
-            <input type="text" id="depDate" inputmode="numeric" autocomplete="off">
-            <button type="button" class="picker-btn date-picker-btn" data-target="depDate">📅</button>
+        <section class="card locked" id="tripCard" aria-disabled="true">
+          <div class="card-head">
+            <div class="card-title-wrap">
+              <span class="card-number">2</span>
+              <div><h2>輸入當地行程</h2><div class="card-subtitle">只需填寫國外抵達與離開時間。</div></div>
+            </div>
+            <span class="lock-hint" id="tripStatus">先選城市</span>
           </div>
-        </div>
-        <div class="field">
-          <div class="label" id="depTimeLabel">離境（登機）時間（HH:MM）</div>
-          <div class="input-group">
-            <input type="text" id="depTime" inputmode="numeric" autocomplete="off">
-            <button type="button" class="picker-btn time-picker-btn" data-target="depTime">⏰</button>
+          <fieldset id="tripFields" disabled style="border:0;padding:0;margin:0;min-width:0">
+            <div class="route-line">
+              <div class="field">
+                <span class="field-label required" id="arrivalLabel">抵達當地</span>
+                <div class="date-time">
+                  <label class="sr-only" for="arrDate">抵達日期</label><input type="date" id="arrDate">
+                  <label class="sr-only" for="arrTime">抵達時間</label><input type="time" id="arrTime" step="60">
+                </div>
+                <div class="field-help" id="arrivalHelp">航班落地的當地日期與時間。</div>
+              </div>
+              <div class="route-arrow" aria-hidden="true">→</div>
+              <div class="field">
+                <span class="field-label required" id="departureLabel">離開當地</span>
+                <div class="date-time">
+                  <label class="sr-only" for="depDate">離境日期</label><input type="date" id="depDate">
+                  <label class="sr-only" for="depTime">離境時間</label><input type="time" id="depTime" step="60">
+                </div>
+                <div class="field-help" id="departureHelp">回程航班登機的當地日期與時間。</div>
+              </div>
+            </div>
+          </fieldset>
+        </section>
+
+        <section class="card locked" id="mealsCard" aria-disabled="true">
+          <div class="card-head">
+            <div class="card-title-wrap">
+              <span class="card-number">3</span>
+              <div><h2>扣除已供餐食</h2><div class="card-subtitle">有提供再開啟，避免重複申領。</div></div>
+            </div>
+            <span class="lock-hint" id="mealsStatus">先填行程</span>
           </div>
+          <fieldset id="mealFields" disabled style="border:0;padding:0;margin:0;min-width:0">
+            <div class="switch-list">
+              <label class="switch-row" for="hotelBreakfast">
+                <span class="switch-copy"><strong>飯店有提供早餐</strong><span>抵達日以外的住宿日，早餐將自動扣除。</span></span>
+                <span class="switch"><input type="checkbox" id="hotelBreakfast"><span class="switch-track"></span></span>
+              </label>
+              <label class="switch-row" for="expoLunch">
+                <span class="switch-copy"><strong>展場有提供午餐</strong><span>開啟後，再選擇有供餐的展場日期。</span></span>
+                <span class="switch"><input type="checkbox" id="expoLunch"><span class="switch-track"></span></span>
+              </label>
+            </div>
+            <div class="expo-picker" id="expoPicker">
+              <div class="expo-picker-title">哪些日期有提供午餐？</div>
+              <div class="date-chips" id="expoDates"></div>
+            </div>
+          </fieldset>
+        </section>
+
+        <section class="card results" id="results" aria-live="polite">
+          <div class="result-head"><h2>計算結果</h2><span class="result-total-mobile" id="mobileResultTotal"></span></div>
+          <div class="day-list" id="dayList"></div>
+          <div class="result-breakdown" id="breakdown"></div>
+          <div class="basis" id="basis"></div>
+        </section>
+      </div>
+
+      <aside class="sidebar">
+        <section class="summary-card">
+          <div class="summary-label">預估伙食費</div>
+          <div class="amount" id="totalAmount">—</div>
+          <div class="summary-place" id="summaryPlace">完成左側步驟後即可計算</div>
+          <div class="empty-summary" id="emptySummary">系統會依照抵達、離境時間與已供餐食，自動算出可核給金額。</div>
+          <div class="meal-counts" id="mealCounts" hidden>
+            <div class="meal-count"><strong id="countB">0</strong><span>早餐</span></div>
+            <div class="meal-count"><strong id="countL">0</strong><span>午餐</span></div>
+            <div class="meal-count"><strong id="countD">0</strong><span>晚餐</span></div>
+          </div>
+        </section>
+        <div class="desktop-actions">
+          <button class="primary-btn" id="calculateBtn" type="button" disabled>計算伙食費</button>
+          <button class="secondary-btn" id="resetBtn" type="button">重新填寫</button>
+          <div class="button-hint" id="buttonHint">請先選擇國家與城市</div>
         </div>
-      </div>
+        <div class="utility-card"><span>需要確認規則或費率？</span><button class="text-btn" id="rulesBtn" type="button">查看詳情</button></div>
+      </aside>
+    </div>
+  </main>
 
-      <div class="row-2">
-        <label class="chk"><input type="checkbox" id="hotelBreakfast"> 飯店供早餐</label>
-        <label class="chk"><input type="checkbox" id="expoLunch"> 展場供午餐</label>
-      </div>
-      <div class="field" id="expoDateRow" style="display:none;">
-        <div class="label">展場日期（點選）</div>
-        <div id="expoDates" class="expo-dates"></div>
-      </div>
+  <div class="mobile-action">
+    <div class="mobile-action-inner">
+      <div class="mobile-action-copy"><strong id="mobileActionTitle">尚未完成</strong><span id="mobileActionHint">先選擇目的地</span></div>
+      <button class="primary-btn" id="mobileCalculateBtn" type="button" disabled>計算</button>
+    </div>
+  </div>
 
-      <div class="muted">提示：用不到桃園機場的時間，僅看國外抵達與離開。</div>
-
-      <div style="text-align:center; margin:16px 0;">
-        <button type="button" class="btn btn-primary" id="calcBtn">計算</button>
-        <button type="button" class="btn btn-secondary" id="resetBtn">重置</button>
+  <dialog id="rulesDialog">
+    <div class="dialog-head"><h2>規則與費率</h2><button class="icon-btn" id="closeDialogBtn" type="button" aria-label="關閉">×</button></div>
+    <div class="dialog-body">
+      <div class="tabs" role="tablist">
+        <button class="tab-btn active" data-tab="rulesPanel" type="button" role="tab">判斷規則</button>
+        <button class="tab-btn" data-tab="ratesPanel" type="button" role="tab">各地費率</button>
       </div>
-
-      <div class="kpi" id="kpiRow" style="display:none;">
-        <div><div class="muted">早餐份數</div><div class="val" id="kB">0</div></div>
-        <div><div class="muted">午餐份數</div><div class="val" id="kL">0</div></div>
-        <div><div class="muted">晚餐份數</div><div class="val" id="kD">0</div></div>
-        <div>
-          <div class="muted">合計（<span id="kCur">--</span>）</div>
-          <div class="val" id="kT">0</div>
+      <section class="tab-panel active" id="rulesPanel">
+        <div class="rule-grid">
+          <div class="rule-block"><h3>抵達當日・依落地時間</h3><div class="rule-list">
+            <div class="rule-item"><span>00:00–08:59</span><strong>早＋午＋晚</strong></div>
+            <div class="rule-item"><span>09:00–12:59</span><strong>午＋晚</strong></div>
+            <div class="rule-item"><span>13:00–20:59</span><strong>晚餐</strong></div>
+            <div class="rule-item"><span>21:00 以後</span><strong>不供餐</strong></div>
+          </div></div>
+          <div class="rule-block"><h3>離境當日・依登機時間</h3><div class="rule-list">
+            <div class="rule-item"><span>00:00–04:59</span><strong>不供餐</strong></div>
+            <div class="rule-item"><span>05:00–11:59</span><strong>早餐</strong></div>
+            <div class="rule-item"><span>12:00–18:59</span><strong>早＋午</strong></div>
+            <div class="rule-item"><span>19:00 以後</span><strong>早＋午＋晚</strong></div>
+          </div></div>
         </div>
-      </div>
-
-      <div>
-        <h4>判別與明細</h4>
-        <table id="detailTable">
-          <thead>
-            <tr>
-              <th>日期</th><th>早餐</th><th>午餐</th><th>晚餐</th>
-            </tr>
-          </thead>
-          <tbody><tr><td colspan="4" class="muted">請先按「計算」</td></tr></tbody>
-        </table>
-
-        <!-- 計價明細（顯示 單價 × 份數 = 小計） -->
-        <div id="pricingBox" class="rationale" style="display:none;"></div>
-
-        <!-- 區間判斷依據 -->
-        <div id="rationaleBox" class="rationale" style="display:none;"></div>
-      </div>
-
-      <div id="errorMsg" class="err"></div>
-      <p class="output">合計（<span id="outCur">--</span>）：<span id="totalAmt">--</span></p>
-    </fieldset>
-  </form>
-
-  <!-- 規則與費率：彈出視窗 -->
-  <div class="modal-backdrop" id="rulesModal">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="rulesTitle">
-      <header>
-        <h3 id="rulesTitle">規則與費率</h3>
-        <button class="btn btn-secondary" id="closeRulesBtn">關閉</button>
-      </header>
-      <div class="tabs">
-        <button class="tab-btn active" data-tab="tab-rules">判斷基準</button>
-        <button class="tab-btn" data-tab="tab-rates">各國費用</button>
-      </div>
-      <section id="tab-rules" class="section active">
-        <h4>抵達當日（依「落地時間」核給）</h4>
-        <table>
-          <thead><tr><th>時間區間</th><th>可核給餐別</th></tr></thead>
-          <tbody>
-            <tr><td>00:00–08:59</td><td>早餐＋午餐＋晚餐</td></tr>
-            <tr><td>09:00–12:59</td><td>午餐＋晚餐</td></tr>
-            <tr><td>13:00–20:59</td><td>晚餐</td></tr>
-            <tr><td>21:00–24:00</td><td>原則不給餐</td></tr>
-          </tbody>
-        </table>
-        <h4>離境當日（依「登機時間」核給）</h4>
-        <table>
-          <thead><tr><th>時間區間</th><th>可核給餐別</th></tr></thead>
-          <tbody>
-            <tr><td>00:00–04:59</td><td>原則不供餐</td></tr>
-            <tr><td>05:00–11:59</td><td>早餐</td></tr>
-            <tr><td>12:00–18:59</td><td>早餐＋午餐</td></tr>
-            <tr><td>19:00–24:00</td><td>早餐＋午餐＋晚餐</td></tr>
-          </tbody>
-        </table>
-        <p class="muted">跨日的完整在地天數 → 每天核給：早餐＋午餐＋晚餐。</p>
+        <div class="basis" style="margin-top:12px">中間完整在當地的日期，原則核給早餐、午餐與晚餐。飯店早餐及展場午餐會依你的選擇扣除。</div>
       </section>
-      <section id="tab-rates" class="section">
-        <h4>依物價核定之各國餐費</h4>
-        <table>
-          <thead><tr><th>國家</th><th>城市／地區</th><th>早餐</th><th>午餐</th><th>晚餐</th><th>合計</th><th>幣別</th></tr></thead>
-          <tbody id="ratesTableBody"></tbody>
-        </table>
+      <section class="tab-panel" id="ratesPanel">
+        <label class="sr-only" for="rateFilter">搜尋國家或城市</label>
+        <input class="rate-filter" id="rateFilter" type="search" placeholder="搜尋國家或城市">
+        <div class="rate-table-wrap"><table><thead><tr><th>國家</th><th>城市／地區</th><th>早餐</th><th>午餐</th><th>晚餐</th><th>幣別</th></tr></thead><tbody id="ratesTableBody"></tbody></table></div>
       </section>
     </div>
-  </div>
+  </dialog>
 
-  <!-- 自製日期選擇器（覆蓋層） -->
-  <div class="cal-overlay" id="calOverlay" aria-hidden="true">
-    <div class="cal-panel" role="dialog" aria-modal="true" aria-labelledby="calTitle">
-      <div class="cal-header">
-        <button type="button" id="calPrev">‹</button>
-        <div class="cal-title" id="calTitle">2025-07</div>
-        <button type="button" id="calNext">›</button>
-      </div>
-      <div class="cal-grid" id="calGrid"></div>
-    </div>
-  </div>
-
-  <!-- 時間選擇器（覆蓋層） -->
-  <div class="time-overlay" id="timeOverlay" aria-hidden="true">
-    <div class="time-panel">
-      <select id="hourSel"></select>
-      <select id="minTenSel"></select>
-      <select id="minOneSel"></select>
-    </div>
-  </div>
+  <div class="toast" id="toast" role="status"></div>
 
   <script>
-  (function(){
-    // === 費率 ===
-    const rates = {
-      JP:{
-        label:'日本',
-        cities:{
-          osaka:{label:'大阪', currency:'USD', B:10, L:20, D:20},
-          tokyo:{label:'東京', currency:'USD', B:12, L:24, D:24},
-          kyoto:{label:'京都', currency:'USD', B:12, L:24, D:24},
-          other:{label:'其他', currency:'USD', B:7, L:14, D:14}
-        }
-      },
-      KR:{
-        label:'韓國',
-        cities:{
-          seoul:{label:'首爾', currency:'USD', B:12, L:24, D:24},
-          other:{label:'其他', currency:'USD', B:10, L:21, D:21}
-        }
-      },
-      TH:{
-        label:'泰國',
-        cities:{
-          bangkok:{label:'曼谷', currency:'USD', B:10, L:21, D:21},
-          other:{label:'其他', currency:'USD', B:4, L:8, D:8}
-        }
-      },
-      MY:{
-        label:'馬來西亞',
-        cities:{
-          kualalumpur:{label:'吉隆玻', currency:'USD', B:9, L:19, D:19},
-          other:{label:'其他', currency:'USD', B:7, L:15, D:15}
-        }
-      },
-      // 依行政院主計總處 114 年 1 月 1 日生效之大陸地區、香港及澳門日支表。
-      // 沿用既有餐費邏輯：早餐為日支額 4%，午、晚餐各為 8%，各餐取整數部分。
-      CN:{
-        label:'中國大陸／港澳',
-        cities:{
-          beijing:{label:'北京', currency:'USD', B:9, L:18, D:18},
-          nanjing:{label:'南京', currency:'USD', B:7, L:14, D:14},
-          tianjin:{label:'天津', currency:'USD', B:7, L:14, D:14},
-          shanghai:{label:'上海', currency:'USD', B:10, L:21, D:21},
-          shenyang:{label:'瀋陽', currency:'USD', B:6, L:12, D:12},
-          harbin:{label:'哈爾濱', currency:'USD', B:6, L:13, D:13},
-          dalian:{label:'大連', currency:'USD', B:6, L:13, D:13},
-          jinan:{label:'濟南', currency:'USD', B:7, L:14, D:14},
-          qingdao:{label:'青島', currency:'USD', B:7, L:15, D:15},
-          wuhan:{label:'武漢', currency:'USD', B:7, L:14, D:14},
-          changsha:{label:'長沙', currency:'USD', B:7, L:14, D:14},
-          xian:{label:'西安', currency:'USD', B:7, L:14, D:14},
-          chengdu:{label:'成都', currency:'USD', B:8, L:16, D:16},
-          chongqing:{label:'重慶', currency:'USD', B:7, L:14, D:14},
-          guiyang:{label:'貴陽', currency:'USD', B:6, L:12, D:12},
-          zhengzhou:{label:'鄭州', currency:'USD', B:6, L:12, D:12},
-          shenzhen:{label:'深圳', currency:'USD', B:8, L:17, D:17},
-          guangzhou:{label:'廣州', currency:'USD', B:8, L:16, D:16},
-          dongguan:{label:'東莞', currency:'USD', B:6, L:12, D:12},
-          guilin:{label:'桂林', currency:'USD', B:6, L:13, D:13},
-          fuzhou:{label:'福州', currency:'USD', B:6, L:13, D:13},
-          haikou:{label:'海口', currency:'USD', B:7, L:14, D:14},
-          suzhou:{label:'蘇州', currency:'USD', B:6, L:13, D:13},
-          hangzhou:{label:'杭州', currency:'USD', B:8, L:17, D:17},
-          ningbo:{label:'寧波', currency:'USD', B:6, L:12, D:12},
-          lhasa:{label:'拉薩', currency:'USD', B:7, L:14, D:14},
-          urumqi:{label:'烏魯木齊', currency:'USD', B:6, L:12, D:12},
-          sanya:{label:'三亞', currency:'USD', B:8, L:16, D:16},
-          xiamen:{label:'廈門', currency:'USD', B:7, L:15, D:15},
-          kunshan:{label:'昆山', currency:'USD', B:6, L:12, D:12},
-          hongkong:{label:'香港', currency:'USD', B:10, L:21, D:21},
-          macau:{label:'澳門', currency:'USD', B:6, L:13, D:13},
-          other:{label:'其他（含內蒙古）', currency:'USD', B:6, L:12, D:12}
-        }
-      },
-      AU:{
-        label:'澳洲',
-        cities:{
-          major:{label:'雪梨／墨爾本／布里斯本', currency:'USD', B:13, L:27, D:27},
-          other:{label:'其他', currency:'USD', B:12, L:25, D:25}
-        }
-      },
-      KH:{
-        label:'柬埔寨',
-        cities:{
-          phnompenh:{label:'金邊', currency:'USD', B:6, L:12, D:12},
-          other:{label:'其他', currency:'USD', B:4, L:8, D:8}
-        }
-      },
-      VN:{
-        label:'越南',
-        cities:{
-          hanoi:{label:'河內', currency:'USD', B:6, L:13, D:13},
-          hochiminh:{label:'胡志明', currency:'USD', B:6, L:12, D:12},
-          other:{label:'其他', currency:'USD', B:4, L:8, D:8}
-        }
-      },
-      DE:{
-        label:'德國',
-        cities:{
-          nuremberg:{label:'紐倫堡', currency:'USD', B:12, L:25, D:25},
-          berlin:{label:'柏林', currency:'USD', B:14, L:28, D:28},
-          other:{label:'其他', currency:'USD', B:12, L:25, D:25}
-        }
-      },
-      GB:{
-        label:'英國',
-        cities:{
-          london:{label:'倫敦', currency:'USD', B:19, L:39, D:39},
-          other:{label:'其他', currency:'USD', B:12, L:25, D:25}
-        }
-      },
-      CA:{
-        label:'加拿大',
-        cities:{
-          major:{label:'溫哥華／多倫多', currency:'USD', B:16, L:32, D:32},
-          other:{label:'其他', currency:'USD', B:11, L:22, D:22}
-        }
-      },
-      US:{
-        label:'美國',
-        cities:{
-          lasvegas:{label:'拉斯維加斯', currency:'USD', B:12, L:25, D:25},
-          orlando:{label:'奧蘭多', currency:'USD', B:12, L:25, D:25},
-          losangeles:{label:'洛杉磯', currency:'USD', B:14, L:29, D:29},
-          newyork:{label:'紐約', currency:'USD', B:20, L:40, D:40},
-          other:{label:'其他', currency:'USD', B:12, L:25, D:25}
-        }
-      },
-      SG:{
-        label:'新加坡',
-        cities:{
-          singapore:{label:'新加坡', currency:'USD', B:17, L:35, D:35}
-        }
-      },
-      TW:{
-        label:'台灣',
-        cities:{
-          taiwan:{label:'台灣', currency:'TWD', B:100, L:200, D:200}
-        }
-      }
+  (()=>{
+    const rates={
+      JP:{label:'日本',cities:{osaka:{label:'大阪',currency:'USD',B:10,L:20,D:20},tokyo:{label:'東京',currency:'USD',B:12,L:24,D:24},kyoto:{label:'京都',currency:'USD',B:12,L:24,D:24},other:{label:'其他',currency:'USD',B:7,L:14,D:14}}},
+      KR:{label:'韓國',cities:{seoul:{label:'首爾',currency:'USD',B:12,L:24,D:24},other:{label:'其他',currency:'USD',B:10,L:21,D:21}}},
+      TH:{label:'泰國',cities:{bangkok:{label:'曼谷',currency:'USD',B:10,L:21,D:21},other:{label:'其他',currency:'USD',B:4,L:8,D:8}}},
+      MY:{label:'馬來西亞',cities:{kualalumpur:{label:'吉隆坡',currency:'USD',B:9,L:19,D:19},other:{label:'其他',currency:'USD',B:7,L:15,D:15}}},
+      CN:{label:'中國大陸／港澳',cities:{
+        beijing:{label:'北京',currency:'USD',B:9,L:18,D:18},nanjing:{label:'南京',currency:'USD',B:7,L:14,D:14},tianjin:{label:'天津',currency:'USD',B:7,L:14,D:14},shanghai:{label:'上海',currency:'USD',B:10,L:21,D:21},shenyang:{label:'瀋陽',currency:'USD',B:6,L:12,D:12},harbin:{label:'哈爾濱',currency:'USD',B:6,L:13,D:13},dalian:{label:'大連',currency:'USD',B:6,L:13,D:13},jinan:{label:'濟南',currency:'USD',B:7,L:14,D:14},qingdao:{label:'青島',currency:'USD',B:7,L:15,D:15},wuhan:{label:'武漢',currency:'USD',B:7,L:14,D:14},changsha:{label:'長沙',currency:'USD',B:7,L:14,D:14},xian:{label:'西安',currency:'USD',B:7,L:14,D:14},chengdu:{label:'成都',currency:'USD',B:8,L:16,D:16},chongqing:{label:'重慶',currency:'USD',B:7,L:14,D:14},guiyang:{label:'貴陽',currency:'USD',B:6,L:12,D:12},zhengzhou:{label:'鄭州',currency:'USD',B:6,L:12,D:12},shenzhen:{label:'深圳',currency:'USD',B:8,L:17,D:17},guangzhou:{label:'廣州',currency:'USD',B:8,L:16,D:16},dongguan:{label:'東莞',currency:'USD',B:6,L:12,D:12},guilin:{label:'桂林',currency:'USD',B:6,L:13,D:13},fuzhou:{label:'福州',currency:'USD',B:6,L:13,D:13},haikou:{label:'海口',currency:'USD',B:7,L:14,D:14},suzhou:{label:'蘇州',currency:'USD',B:6,L:13,D:13},hangzhou:{label:'杭州',currency:'USD',B:8,L:17,D:17},ningbo:{label:'寧波',currency:'USD',B:6,L:12,D:12},lhasa:{label:'拉薩',currency:'USD',B:7,L:14,D:14},urumqi:{label:'烏魯木齊',currency:'USD',B:6,L:12,D:12},sanya:{label:'三亞',currency:'USD',B:8,L:16,D:16},xiamen:{label:'廈門',currency:'USD',B:7,L:15,D:15},kunshan:{label:'昆山',currency:'USD',B:6,L:12,D:12},hongkong:{label:'香港',currency:'USD',B:10,L:21,D:21},macau:{label:'澳門',currency:'USD',B:6,L:13,D:13},other:{label:'其他（含內蒙古）',currency:'USD',B:6,L:12,D:12}}},
+      AU:{label:'澳洲',cities:{major:{label:'雪梨／墨爾本／布里斯本',currency:'USD',B:13,L:27,D:27},other:{label:'其他',currency:'USD',B:12,L:25,D:25}}},
+      KH:{label:'柬埔寨',cities:{phnompenh:{label:'金邊',currency:'USD',B:6,L:12,D:12},other:{label:'其他',currency:'USD',B:4,L:8,D:8}}},
+      VN:{label:'越南',cities:{hanoi:{label:'河內',currency:'USD',B:6,L:13,D:13},hochiminh:{label:'胡志明',currency:'USD',B:6,L:12,D:12},other:{label:'其他',currency:'USD',B:4,L:8,D:8}}},
+      DE:{label:'德國',cities:{nuremberg:{label:'紐倫堡',currency:'USD',B:12,L:25,D:25},berlin:{label:'柏林',currency:'USD',B:14,L:28,D:28},other:{label:'其他',currency:'USD',B:12,L:25,D:25}}},
+      GB:{label:'英國',cities:{london:{label:'倫敦',currency:'USD',B:19,L:39,D:39},other:{label:'其他',currency:'USD',B:12,L:25,D:25}}},
+      CA:{label:'加拿大',cities:{major:{label:'溫哥華／多倫多',currency:'USD',B:16,L:32,D:32},other:{label:'其他',currency:'USD',B:11,L:22,D:22}}},
+      US:{label:'美國',cities:{lasvegas:{label:'拉斯維加斯',currency:'USD',B:12,L:25,D:25},orlando:{label:'奧蘭多',currency:'USD',B:12,L:25,D:25},losangeles:{label:'洛杉磯',currency:'USD',B:14,L:29,D:29},newyork:{label:'紐約',currency:'USD',B:20,L:40,D:40},other:{label:'其他',currency:'USD',B:12,L:25,D:25}}},
+      SG:{label:'新加坡',cities:{singapore:{label:'新加坡',currency:'USD',B:17,L:35,D:35}}},
+      TW:{label:'台灣',cities:{taiwan:{label:'台灣',currency:'TWD',B:100,L:200,D:200}}}
     };
 
-    // DOM
-    const countrySel  = document.getElementById('country');
-    const citySel     = document.getElementById('city');
-    const arrDate = document.getElementById('arrDate');
-    const arrTime = document.getElementById('arrTime');
-    const depDate = document.getElementById('depDate');
-    const depTime = document.getElementById('depTime');
-    const arrDateLabel = document.getElementById('arrDateLabel');
-    const arrTimeLabel = document.getElementById('arrTimeLabel');
-    const depDateLabel = document.getElementById('depDateLabel');
-    const depTimeLabel = document.getElementById('depTimeLabel');
+    const $=id=>document.getElementById(id);
+    const el={country:$('country'),city:$('city'),arrDate:$('arrDate'),arrTime:$('arrTime'),depDate:$('depDate'),depTime:$('depTime'),tripCard:$('tripCard'),tripFields:$('tripFields'),mealsCard:$('mealsCard'),mealFields:$('mealFields'),hotelBreakfast:$('hotelBreakfast'),expoLunch:$('expoLunch'),expoPicker:$('expoPicker'),expoDates:$('expoDates'),calculateBtn:$('calculateBtn'),mobileCalculateBtn:$('mobileCalculateBtn'),buttonHint:$('buttonHint'),mobileActionTitle:$('mobileActionTitle'),mobileActionHint:$('mobileActionHint'),results:$('results'),dayList:$('dayList'),breakdown:$('breakdown'),basis:$('basis'),totalAmount:$('totalAmount'),summaryPlace:$('summaryPlace'),emptySummary:$('emptySummary'),mealCounts:$('mealCounts'),countB:$('countB'),countL:$('countL'),countD:$('countD'),mobileResultTotal:$('mobileResultTotal'),destinationStatus:$('destinationStatus'),tripStatus:$('tripStatus'),mealsStatus:$('mealsStatus'),arrivalLabel:$('arrivalLabel'),departureLabel:$('departureLabel'),arrivalHelp:$('arrivalHelp'),departureHelp:$('departureHelp'),rulesDialog:$('rulesDialog'),ratesTableBody:$('ratesTableBody'),rateFilter:$('rateFilter'),toast:$('toast')};
+    let expoSelection=new Set();
 
-    const hotelBreakfast = document.getElementById('hotelBreakfast');
-    const expoLunch      = document.getElementById('expoLunch');
-    const expoDateRow    = document.getElementById('expoDateRow');
-    const expoDatesDiv   = document.getElementById('expoDates');
+    const pad=n=>String(n).padStart(2,'0');
+    const dateKey=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    const addDays=(d,n)=>{const copy=new Date(d);copy.setDate(copy.getDate()+n);return copy;};
+    const dateOnly=d=>new Date(d.getFullYear(),d.getMonth(),d.getDate());
+    const sameDay=(a,b)=>dateKey(a)===dateKey(b);
+    const formatDate=d=>new Intl.DateTimeFormat('zh-TW',{month:'short',day:'numeric',weekday:'short'}).format(d);
+    const formatMoney=(value,currency)=>new Intl.NumberFormat('zh-TW',{style:'currency',currency,minimumFractionDigits:currency==='TWD'?0:2,maximumFractionDigits:currency==='TWD'?0:2}).format(value);
 
-    const calcBtn  = document.getElementById('calcBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    const errorMsg = document.getElementById('errorMsg');
-    const detailBody  = document.getElementById('detailTable').querySelector('tbody');
-    const totalAmt    = document.getElementById('totalAmt');
-    const kpiRow      = document.getElementById('kpiRow');
-    const kB          = document.getElementById('kB');
-    const kL          = document.getElementById('kL');
-    const kD          = document.getElementById('kD');
-    const kT          = document.getElementById('kT');
-    const kCur        = document.getElementById('kCur');
-    const outCur      = document.getElementById('outCur');
-    const rationaleBox= document.getElementById('rationaleBox');
-    const pricingBox  = document.getElementById('pricingBox');
-    const ratesTableBody = document.getElementById('ratesTableBody');
+    function parseDateTime(dateValue,timeValue){
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(dateValue)||!/^\d{2}:\d{2}$/.test(timeValue))return null;
+      const [y,m,d]=dateValue.split('-').map(Number);const [h,min]=timeValue.split(':').map(Number);
+      const result=new Date(y,m-1,d,h,min,0,0);
+      if(result.getFullYear()!==y||result.getMonth()!==m-1||result.getDate()!==d||result.getHours()!==h||result.getMinutes()!==min)return null;
+      return result;
+    }
+
+    function getTrip(){return{arr:parseDateTime(el.arrDate.value,el.arrTime.value),dep:parseDateTime(el.depDate.value,el.depTime.value)};}
+    function tripValidation(){
+      const {arr,dep}=getTrip();
+      if(!el.arrDate.value||!el.arrTime.value||!el.depDate.value||!el.depTime.value)return{valid:false,message:'請填完整抵達與離開時間'};
+      if(!arr||!dep)return{valid:false,message:'日期或時間格式不正確'};
+      if(dep<=arr)return{valid:false,message:'離開時間必須晚於抵達時間'};
+      const days=(dateOnly(dep)-dateOnly(arr))/86400000;
+      if(days>120)return{valid:false,message:'單次行程最多可計算 120 天'};
+      return{valid:true,arr,dep};
+    }
+
+    function setCardState(card,fieldset,enabled){card.classList.toggle('locked',!enabled);card.setAttribute('aria-disabled',String(!enabled));fieldset.disabled=!enabled;}
+    function setStatus(target,text,ready){target.textContent=ready?'✓ '+text:text;target.classList.toggle('ready',ready);}
+    function setProgress(stage){
+      document.querySelectorAll('.progress-item').forEach((item,i)=>{const n=i+1;item.classList.toggle('active',n===stage);item.classList.toggle('complete',n<stage);item.querySelector('.step-dot').textContent=n<stage?'✓':n;});
+    }
+
+    function clearResult(){
+      el.results.classList.remove('show');el.totalAmount.textContent='—';el.summaryPlace.textContent='完成左側步驟後即可計算';el.emptySummary.hidden=false;el.mealCounts.hidden=true;el.mobileResultTotal.textContent='';
+    }
 
     function populateCities(){
-      const country = rates[countrySel.value];
-      if(!country){
-        citySel.innerHTML = '<option value="">請先選擇國家</option>';
-        citySel.value = '';
-        citySel.disabled = true;
-        return;
-      }
-      const opts = ['<option value="" disabled selected>請選擇城市／地區</option>'];
-      Object.entries(country.cities).forEach(([value, city])=>{
-        opts.push(`<option value="${value}">${city.label}</option>`);
-      });
-      citySel.innerHTML = opts.join('');
-      citySel.disabled = false;
-      citySel.selectedIndex = 0;
+      const country=rates[el.country.value];
+      el.city.innerHTML=country?'<option value="">選擇城市／地區</option>'+Object.entries(country.cities).map(([key,city])=>`<option value="${key}">${city.label}</option>`).join(''):'<option value="">請先選擇國家</option>';
+      el.city.disabled=!country;
+      $('cityHelp').textContent=country?`已載入 ${Object.keys(country.cities).length} 個城市／地區。`:'尚未選擇國家。';
+      if(country)setTimeout(()=>el.city.focus(),80);
     }
 
     function updateLabels(){
-      if(countrySel.value==='TW'){
-        arrDateLabel.textContent='抵達（高鐵）日期（YYYY-MM-DD）';
-        arrTimeLabel.textContent='抵達（高鐵）時間（HH:MM）';
-        depDateLabel.textContent='離境（高鐵）日期（YYYY-MM-DD）';
-        depTimeLabel.textContent='離境（高鐵）時間（HH:MM）';
-      }else{
-        arrDateLabel.textContent='抵達（落地）日期（YYYY-MM-DD）';
-        arrTimeLabel.textContent='抵達（落地）時間（HH:MM）';
-        depDateLabel.textContent='離境（登機）日期（YYYY-MM-DD）';
-        depTimeLabel.textContent='離境（登機）時間（HH:MM）';
-      }
-    }
-    countrySel.addEventListener('change', () => {
-      updateLabels();
-      populateCities();
-    });
-    updateLabels();
-    populateCities();
-
-    function renderRatesTable(){
-      if(!ratesTableBody) return;
-      const rows = [];
-      Object.values(rates).forEach(country => {
-        Object.values(country.cities).forEach(city => {
-          const total = city.B + city.L + city.D;
-          rows.push(`<tr><td>${country.label}</td><td>${city.label}</td><td>${city.B}</td><td>${city.L}</td><td>${city.D}</td><td>${total}</td><td>${city.currency}</td></tr>`);
-        });
-      });
-      ratesTableBody.innerHTML = rows.join('');
-    }
-    renderRatesTable();
-
-    // Modal
-    const rulesModal   = document.getElementById('rulesModal');
-    const openRulesBtn = document.getElementById('openRulesBtn');
-    const closeRulesBtn= document.getElementById('closeRulesBtn');
-    const tabBtns      = document.querySelectorAll('.tab-btn');
-    const sections     = document.querySelectorAll('.modal .section');
-
-    // ====== Input Mask（位數夠才補分隔符；每打一碼都看得到） ======
-    function maskDate(el){
-      const d = el.value.replace(/\D/g,'').slice(0,8);
-      const y = d.slice(0,4), m = d.slice(4,6), da = d.slice(6,8);
-      let out = '';
-      if (d.length <= 4) out = y;
-      else if (d.length <= 6) out = y + '-' + m;
-      else out = y + '-' + m + '-' + da;
-      el.value = out;
-    }
-    function maskTime(el){
-      const t  = el.value.replace(/\D/g,'').slice(0,4);
-      const hh = t.slice(0,2), mm = t.slice(2,4);
-      el.value = (t.length <= 2) ? hh : (hh + ':' + mm);
-    }
-    [arrDate, depDate].forEach(el=> el.addEventListener('input', ()=>maskDate(el)));
-    [arrTime, depTime].forEach(el=> el.addEventListener('input', ()=>maskTime(el)));
-
-    function generateExpoDates(){
-      expoDatesDiv.innerHTML = '';
-      if(!expoLunch.checked) return;
-      if(!/^\d{4}-\d{2}-\d{2}$/.test(arrDate.value) || !/^\d{4}-\d{2}-\d{2}$/.test(depDate.value)) return;
-      let d = dateOnly(parseLocal(arrDate.value,'00:00'));
-      const end = dateOnly(parseLocal(depDate.value,'00:00'));
-      while(d<=end){
-        const lbl = dateLabel(d);
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.textContent = lbl;
-        btn.dataset.date = lbl;
-        btn.addEventListener('click', ()=> btn.classList.toggle('active'));
-        expoDatesDiv.appendChild(btn);
-        d = addDays(d,1);
-      }
+      const tw=el.country.value==='TW';
+      el.arrivalLabel.textContent=tw?'抵達目的地（高鐵）':'抵達當地（航班落地）';
+      el.departureLabel.textContent=tw?'離開目的地（高鐵）':'離開當地（航班登機）';
+      el.arrivalHelp.textContent=tw?'高鐵抵達的日期與時間。':'航班落地的當地日期與時間。';
+      el.departureHelp.textContent=tw?'高鐵離開的日期與時間。':'回程航班登機的當地日期與時間。';
     }
 
-    expoLunch.addEventListener('change', () => {
-      expoDateRow.style.display = expoLunch.checked ? 'block' : 'none';
-      generateExpoDates();
-    });
-    [arrDate, depDate].forEach(el=> el.addEventListener('change', ()=>{ if(expoLunch.checked) generateExpoDates(); }));
-
-    // ====== 自製日期選擇器（通用） ======
-    const overlay = document.getElementById('calOverlay');
-    const grid    = document.getElementById('calGrid');
-    const titleEl = document.getElementById('calTitle');
-    const prevBtn = document.getElementById('calPrev');
-    const nextBtn = document.getElementById('calNext');
-    const timeOverlay = document.getElementById('timeOverlay');
-    const hourSel   = document.getElementById('hourSel');
-    const minTenSel = document.getElementById('minTenSel');
-    const minOneSel = document.getElementById('minOneSel');
-    let activeInput = null;
-    let activeTimeInput = null;
-    let viewY=0, viewM=0; // month 0-11
-
-    function openCalendar(targetInputId){
-      activeInput = document.getElementById(targetInputId);
-      let base = new Date();
-      const v = activeInput.value;
-      if(/^\d{4}-\d{2}-\d{2}$/.test(v)){
-        const [yy,mm,dd] = v.split('-').map(n=>parseInt(n,10));
-        base = new Date(yy, mm-1, dd);
-      }
-      viewY = base.getFullYear();
-      viewM = base.getMonth();
-      renderCalendar();
-      overlay.style.display = 'flex';
-      overlay.setAttribute('aria-hidden','false');
-    }
-    function closeCalendar(){
-      overlay.style.display = 'none';
-      overlay.setAttribute('aria-hidden','true');
-      activeInput = null;
-    }
-    function openTimePicker(target){
-      activeTimeInput = document.getElementById(target);
-      const v = activeTimeInput.value;
-      let hh='00', mm='00';
-      if(/^\d{2}:\d{2}$/.test(v)){ hh=v.slice(0,2); mm=v.slice(3,5); }
-      hourSel.value = hh;
-      minTenSel.value = Math.floor(Number(mm)/10);
-      minOneSel.value = Number(mm)%10;
-      timeOverlay.style.display='flex';
-      timeOverlay.setAttribute('aria-hidden','false');
-    }
-    function closeTimePicker(){
-      timeOverlay.style.display='none';
-      timeOverlay.setAttribute('aria-hidden','true');
-      activeTimeInput=null;
-    }
-    function buildTimeSelects(){
-      hourSel.innerHTML = Array.from({length:25},(_,i)=>`<option value="${String(i).padStart(2,'0')}">${String(i).padStart(2,'0')}</option>`).join('');
-      minTenSel.innerHTML = Array.from({length:6},(_,i)=>`<option value="${i}">${i}</option>`).join('');
-      minOneSel.innerHTML = Array.from({length:10},(_,i)=>`<option value="${i}">${i}</option>`).join('');
-    }
-    function updateTime(){
-      if(!activeTimeInput) return;
-      const hh = hourSel.value.padStart(2,'0');
-      const mm = String(Number(minTenSel.value)*10 + Number(minOneSel.value)).padStart(2,'0');
-      activeTimeInput.value = `${hh}:${mm}`;
-    }
-    function pad2(n){ return String(n).padStart(2,'0'); }
-    function renderCalendar(){
-      titleEl.textContent = `${viewY}-${pad2(viewM+1)}`;
-      const first = new Date(viewY, viewM, 1);
-      const last  = new Date(viewY, viewM+1, 0);
-      const startDow = first.getDay(); // 0-6
-      const days = last.getDate();
-
-      const dows = ['日','一','二','三','四','五','六'];
-      let html = dows.map(w=>`<div class="dow">${w}</div>`).join('');
-      for(let i=0;i<startDow;i++){ html += `<div class="disabled"></div>`; }
-      for(let d=1; d<=days; d++){ html += `<div class="day" data-day="${d}">${d}</div>`; }
-      grid.innerHTML = html;
-
-      grid.querySelectorAll('.day').forEach(cell=>{
-        cell.addEventListener('click', ()=>{
-          if(!activeInput) return;
-          const d = Number(cell.dataset.day);
-          activeInput.value = `${viewY}-${pad2(viewM+1)}-${pad2(d)}`;
-          closeCalendar();
-        });
-      });
-    }
-    prevBtn.addEventListener('click', ()=>{ viewM--; if(viewM<0){viewM=11; viewY--;} renderCalendar(); });
-    nextBtn.addEventListener('click', ()=>{ viewM++; if(viewM>11){viewM=0; viewY++;} renderCalendar(); });
-    overlay.addEventListener('click', (e)=>{ if(e.target===overlay) closeCalendar(); });
-    timeOverlay.addEventListener('click', e=>{ if(e.target===timeOverlay) closeTimePicker(); });
-    buildTimeSelects();
-    hourSel.addEventListener('change', updateTime);
-    minTenSel.addEventListener('change', updateTime);
-    minOneSel.addEventListener('change', ()=>{ updateTime(); closeTimePicker(); });
-
-    document.querySelectorAll('.date-picker-btn').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        const id = btn.getAttribute('data-target');
-        openCalendar(id);
-      });
-    });
-
-    document.querySelectorAll('.time-picker-btn').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        const id = btn.getAttribute('data-target');
-        openTimePicker(id);
-      });
-    });
-
-    // ====== 計算工具 ======
-    function parseLocal(dateStr,timeStr){
-      if(!/^\d{4}-\d{2}-\d{2}$/.test(dateStr) || !/^\d{2}:\d{2}$/.test(timeStr)) return new Date('invalid');
-      const [y,m,d] = dateStr.split('-').map(n=>parseInt(n,10));
-      const [hh,mm] = timeStr.split(':').map(n=>parseInt(n,10));
-      return new Date(y,(m||1)-1,d||1,hh||0,mm||0,0,0);
-    }
-    const pad2x = n => String(n).padStart(2,'0');
-    const dateOnly = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
-    const sameDay = (a,b)=> a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
-    const addDays = (d,n)=>{const x=new Date(d); x.setDate(x.getDate()+n); return x;};
-    const dateLabel = d => `${d.getFullYear()}-${pad2x(d.getMonth()+1)}-${pad2x(d.getDate())}`;
-    const timeLabel = d => `${pad2x(d.getHours())}:${pad2x(d.getMinutes())}`;
-
-    // === 新標準：抵達（落地） ===
-    // 00:00–08:59 → B,L,D；09:00–12:59 → L,D；13:00–20:59 → D；21:00–24:00 → none
-    function arrivalMinIndex(dt){
-      const m = dt.getHours()*60 + dt.getMinutes();
-      if (m <=  8*60+59) return 0;
-      if (m <= 12*60+59) return 1;
-      if (m <= 20*60+59) return 2;
-      return 3;
-    }
-    function arrivalRangeText(idx){
-      if(idx===0) return '00:00–08:59 → 早餐＋午餐＋晚餐';
-      if(idx===1) return '09:00–12:59 → 午餐＋晚餐';
-      if(idx===2) return '13:00–20:59 → 晚餐';
-      return '21:00–24:00 → 原則不供餐';
+    function renderExpoDates(){
+      const check=tripValidation();
+      if(!check.valid){el.expoDates.innerHTML='<span class="field-help">請先完成有效行程。</span>';return;}
+      const validKeys=new Set();let cursor=dateOnly(check.arr);const end=dateOnly(check.dep);const buttons=[];
+      while(cursor<=end){const key=dateKey(cursor);validKeys.add(key);buttons.push(`<button type="button" class="date-chip${expoSelection.has(key)?' active':''}" data-date="${key}" aria-pressed="${expoSelection.has(key)}">${formatDate(cursor)}</button>`);cursor=addDays(cursor,1);}
+      expoSelection=new Set([...expoSelection].filter(key=>validKeys.has(key)));el.expoDates.innerHTML=buttons.join('');
     }
 
-    // === 新標準：離境（登機） ===
-    // 00:00–04:59 → none；05:00–11:59 → B；12:00–18:59 → B,L；19:00–24:00 → B,L,D
-    function departureMaxIndex(dt){
-      const m = dt.getHours()*60 + dt.getMinutes();
-      if (m <=  4*60+59) return -1;
-      if (m <= 11*60+59) return  0;
-      if (m <= 18*60+59) return  1;
-      return 2;
-    }
-    function departureRangeText(idx){
-      if(idx<0)  return '00:00–04:59 → 原則不供餐';
-      if(idx===0) return '05:00–11:59 → 早餐';
-      if(idx===1) return '12:00–18:59 → 早餐＋午餐';
-      return '19:00–24:00 → 早餐＋午餐＋晚餐';
-    }
-
-    function renderRows(rows){
-      if(!rows.length){
-        detailBody.innerHTML = '<tr><td colspan="4" class="muted">無可核給餐別</td></tr>';
-        return;
-      }
-      detailBody.innerHTML = rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join('');
+    function updateState(){
+      const hasCountry=Boolean(el.country.value);const hasCity=hasCountry&&Boolean(el.city.value);const check=tripValidation();
+      setStatus(el.destinationStatus,hasCity?`${rates[el.country.value].label}・${rates[el.country.value].cities[el.city.value].label}`:(hasCountry?'請選城市':'請選擇'),hasCity);
+      setCardState(el.tripCard,el.tripFields,hasCity);setStatus(el.tripStatus,hasCity?(check.valid?'行程已完成':'請填日期時間'):'先選城市',check.valid);
+      setCardState(el.mealsCard,el.mealFields,hasCity&&check.valid);setStatus(el.mealsStatus,check.valid?'可選填':'先填行程',check.valid);
+      const canCalculate=hasCity&&check.valid;el.calculateBtn.disabled=!canCalculate;el.mobileCalculateBtn.disabled=!canCalculate;
+      if(!hasCountry){el.buttonHint.textContent='請先選擇國家與城市';el.mobileActionTitle.textContent='尚未完成';el.mobileActionHint.textContent='先選擇目的地';setProgress(1);}
+      else if(!hasCity){el.buttonHint.textContent='接著選擇城市／地區';el.mobileActionTitle.textContent=rates[el.country.value].label;el.mobileActionHint.textContent='接著選擇城市';setProgress(1);}
+      else if(!check.valid){el.buttonHint.textContent=check.message;el.mobileActionTitle.textContent='填寫行程';el.mobileActionHint.textContent=check.message;setProgress(2);}
+      else{el.buttonHint.textContent='資料完整，可以計算';el.mobileActionTitle.textContent=`${rates[el.country.value].cities[el.city.value].label}・${Math.round((check.dep-check.arr)/3600000)} 小時`;el.mobileActionHint.textContent='可選填供餐，再開始計算';setProgress(3);}
+      if(el.arrDate.value)el.depDate.min=el.arrDate.value;else el.depDate.removeAttribute('min');
+      [el.arrDate,el.arrTime,el.depDate,el.depTime].forEach(input=>input.classList.remove('invalid'));
+      el.departureHelp.classList.remove('field-error');
+      if(hasCity&&el.arrDate.value&&el.arrTime.value&&el.depDate.value&&el.depTime.value&&!check.valid){el.depDate.classList.add('invalid');el.depTime.classList.add('invalid');el.departureHelp.textContent=check.message;el.departureHelp.classList.add('field-error');}
+      else updateLabels();
+      if(el.expoLunch.checked&&check.valid)renderExpoDates();
     }
 
+    function arrivalMinIndex(dt){const m=dt.getHours()*60+dt.getMinutes();if(m<=539)return 0;if(m<=779)return 1;if(m<=1259)return 2;return 3;}
+    function departureMaxIndex(dt){const m=dt.getHours()*60+dt.getMinutes();if(m<=299)return-1;if(m<=719)return 0;if(m<=1139)return 1;return 2;}
+    function arrivalRule(i){return['00:00–08:59，核給三餐','09:00–12:59，核給午、晚餐','13:00–20:59，核給晚餐','21:00 後，不核給餐費'][i];}
+    function departureRule(i){return i<0?'00:00–04:59，不核給餐費':['05:00–11:59，核給早餐','12:00–18:59，核給早、午餐','19:00 後，核給三餐'][i];}
+
+    function mealBadge(status){const included=status==='✓';return `<span class="meal-status${included?' included':''}" title="${status}">${status}</span>`;}
     function compute(){
-      errorMsg.textContent = "";
-      totalAmt.textContent = "--";
-      kpiRow.style.display = 'none';
-      rationaleBox.style.display = 'none';
-      rationaleBox.innerHTML = '';
-      pricingBox.style.display = 'none';
-      pricingBox.innerHTML = '';
-      detailBody.innerHTML = '<tr><td colspan="4" class="muted">計算中…</td></tr>';
-
-      if(!countrySel.value){
-        errorMsg.textContent = "請先選擇目的國家。";
-        detailBody.innerHTML = '<tr><td colspan="4" class="muted">未選擇國家</td></tr>';
-        return;
+      const check=tripValidation();const country=rates[el.country.value];const city=country?.cities[el.city.value];
+      if(!country||!city||!check.valid){updateState();showToast(check.message||'請先完成必填資料');return;}
+      const arrIdx=arrivalMinIndex(check.arr),depIdx=departureMaxIndex(check.dep),arrDay=dateOnly(check.arr),depDay=dateOnly(check.dep);
+      const counts={B:0,L:0,D:0};const rows=[];
+      function processDay(day,minIdx,maxIdx,isArrival){
+        const key=dateKey(day);const statuses=[];
+        if(0>=minIdx&&0<=maxIdx){if(!isArrival&&el.hotelBreakfast.checked)statuses.push('飯店供餐');else{statuses.push('✓');counts.B++;}}else statuses.push(0<minIdx?'抵達較晚':'離境較早');
+        if(1>=minIdx&&1<=maxIdx){if(el.expoLunch.checked&&expoSelection.has(key))statuses.push('展場供餐');else{statuses.push('✓');counts.L++;}}else statuses.push(1<minIdx?'抵達較晚':'離境較早');
+        if(2>=minIdx&&2<=maxIdx){statuses.push('✓');counts.D++;}else statuses.push(2<minIdx?'抵達較晚':'離境較早');
+        rows.push({day:new Date(day),statuses});
       }
-      if(citySel.disabled || !citySel.value){
-        errorMsg.textContent = "請先選擇城市或地區。";
-        detailBody.innerHTML = '<tr><td colspan="4" class="muted">未選擇城市／地區</td></tr>';
-        return;
-      }
-
-      if(!arrDate.value || !arrTime.value || !depDate.value || !depTime.value){
-        errorMsg.textContent = "請完整輸入抵達與離境的日期與時間（YYYY-MM-DD／HH:MM）。";
-        detailBody.innerHTML = '<tr><td colspan="4" class="muted">未完整輸入</td></tr>';
-        return;
-      }
-      const arr = parseLocal(arrDate.value, arrTime.value);
-      const dep = parseLocal(depDate.value, depTime.value);
-      if(isNaN(arr) || isNaN(dep)){
-        errorMsg.textContent = "格式不正確，請用 2025-07-10 / 10:00 這種格式。";
-        detailBody.innerHTML = '<tr><td colspan="4" class="muted">格式錯誤</td></tr>';
-        return;
-      }
-      if(dep<=arr){
-        errorMsg.textContent = "離境時間需晚於抵達時間。";
-        detailBody.innerHTML = '<tr><td colspan="4" class="muted">時間邏輯錯誤</td></tr>';
-        return;
-      }
-
-      const country = rates[countrySel.value];
-      const cityRate = country && country.cities ? country.cities[citySel.value] : null;
-      if(!country || !cityRate){
-        errorMsg.textContent = "找不到對應的餐費設定，請重新選擇。";
-        detailBody.innerHTML = '<tr><td colspan="4" class="muted">無對應餐費</td></tr>';
-        return;
-      }
-
-      const price = {B:cityRate.B, L:cityRate.L, D:cityRate.D};
-      const fmt = n => (cityRate.currency==='TWD' ? Math.round(n).toString() : n.toFixed(2));
-
-      let cnt = {B:0, L:0, D:0};
-      let rows = [];
-
-      const expoSet = new Set();
-      if(expoLunch.checked){
-        expoDatesDiv.querySelectorAll('button.active').forEach(btn => expoSet.add(btn.dataset.date));
-      }
-
-      const arrMin = arrivalMinIndex(arr);
-      const depMax = departureMaxIndex(dep);
-
-      const arrD = dateOnly(arr), depD = dateOnly(dep);
-
-      const processDay = (d, arrIdx, depIdx, isArr)=>{
-        const label = dateLabel(d);
-        const chkExpo = expoSet.has(label);
-        const reasonLate = '抵達晚';
-        const reasonEarly = '登機早';
-        let b,l,dn;
-
-        // 早餐
-        if(0>=arrIdx && 0<=depIdx){
-          if(!isArr && hotelBreakfast.checked){
-            b='飯店供早餐';
-          }else{
-            b='✓';
-            cnt.B++;
-          }
-        }else{
-          b = (0<arrIdx) ? reasonLate : reasonEarly;
-        }
-
-        // 午餐
-        if(1>=arrIdx && 1<=depIdx){
-          if(chkExpo){
-            l='展場供午餐';
-          }else{
-            l='✓';
-            cnt.L++;
-          }
-        }else{
-          l = (1<arrIdx) ? reasonLate : reasonEarly;
-        }
-
-        // 晚餐
-        if(2>=arrIdx && 2<=depIdx){
-          dn='✓';
-          cnt.D++;
-        }else{
-          dn = (2<arrIdx) ? reasonLate : reasonEarly;
-        }
-
-        rows.push([label,b,l,dn]);
-      };
-
-      if (sameDay(arrD,depD)){
-        processDay(arrD, arrMin, depMax, true);
-      }else{
-        processDay(arrD, arrMin, 2, true);
-        let d=addDays(arrD,1);
-        while(d<depD){
-          processDay(d, 0, 2, false);
-          d=addDays(d,1);
-        }
-        processDay(depD, 0, depMax, false);
-      }
-
-      const subB = cnt.B*price.B;
-      const subL = cnt.L*price.L;
-      const subD = cnt.D*price.D;
-      const total = subB + subL + subD;
-
-      renderRows(rows);
-      kB.textContent = cnt.B; kL.textContent = cnt.L; kD.textContent = cnt.D;
-      kT.textContent = fmt(total);
-      kCur.textContent = cityRate.currency;
-      totalAmt.textContent = fmt(total);
-      outCur.textContent = cityRate.currency;
-      kpiRow.style.display = 'grid';
-
-      pricingBox.innerHTML =
-        `<strong>計價明細（${country.label}－${cityRate.label}，${cityRate.currency}）</strong><br>
-         早餐：${price.B} × ${cnt.B} = <strong>${fmt(subB)}</strong><br>
-         午餐：${price.L} × ${cnt.L} = <strong>${fmt(subL)}</strong><br>
-         晚餐：${price.D} × ${cnt.D} = <strong>${fmt(subD)}</strong>`;
-      pricingBox.style.display = 'block';
-
-      rationaleBox.innerHTML =
-        `<strong>判斷依據</strong><br>
-         抵達當日：${countrySel.value==='TW'?'高鐵時間':'落地時間'} <strong>${timeLabel(arr)}</strong> ，屬於「${arrivalRangeText(arrMin)}」。<br>
-         離境當日：${countrySel.value==='TW'?'高鐵時間':'登機時間'} <strong>${timeLabel(dep)}</strong> ，屬於「${departureRangeText(depMax)}」。<br>
-         <span class="muted">（中間每一個完整在當地的日期，核給：早餐＋午餐＋晚餐）</span>`;
-      rationaleBox.style.display = 'block';
+      if(sameDay(arrDay,depDay))processDay(arrDay,arrIdx,depIdx,true);else{processDay(arrDay,arrIdx,2,true);for(let day=addDays(arrDay,1);day<depDay;day=addDays(day,1))processDay(day,0,2,false);processDay(depDay,0,depIdx,false);}
+      const subtotals={B:counts.B*city.B,L:counts.L*city.L,D:counts.D*city.D};const total=subtotals.B+subtotals.L+subtotals.D;
+      el.dayList.innerHTML='<div class="day-row day-header"><span>日期</span><span>早餐</span><span>午餐</span><span>晚餐</span></div>'+rows.map(r=>`<div class="day-row"><span class="day-date">${formatDate(r.day)}</span>${r.statuses.map(mealBadge).join('')}</div>`).join('');
+      el.breakdown.innerHTML=[['早餐',city.B,counts.B,subtotals.B],['午餐',city.L,counts.L,subtotals.L],['晚餐',city.D,counts.D,subtotals.D]].map(([label,price,count,subtotal])=>`<div class="breakdown-item"><span>${label}・${formatMoney(price,city.currency)} × ${count}</span><strong>${formatMoney(subtotal,city.currency)}</strong></div>`).join('');
+      el.basis.innerHTML=`<strong>判斷依據</strong><br>抵達 ${pad(check.arr.getHours())}:${pad(check.arr.getMinutes())}：${arrivalRule(arrIdx)}。<br>離境 ${pad(check.dep.getHours())}:${pad(check.dep.getMinutes())}：${departureRule(depIdx)}。`;
+      const formatted=formatMoney(total,city.currency);el.totalAmount.textContent=formatted;el.mobileResultTotal.textContent=formatted;el.summaryPlace.textContent=`${country.label}・${city.label}`;el.emptySummary.hidden=true;el.mealCounts.hidden=false;el.countB.textContent=counts.B;el.countL.textContent=counts.L;el.countD.textContent=counts.D;el.results.classList.add('show');setProgress(4);
+      el.results.scrollIntoView({behavior:'smooth',block:'start'});showToast('計算完成');
     }
 
-    // 事件
-    calcBtn.addEventListener('click', compute);
-    resetBtn.addEventListener('click', ()=>{
-      countrySel.value='';
-      populateCities();
-      updateLabels();
-      [arrDate,arrTime,depDate,depTime].forEach(el=> el.value='');
-      hotelBreakfast.checked=false;
-      expoLunch.checked=false;
-      expoDateRow.style.display='none';
-      expoDatesDiv.innerHTML='';
-      errorMsg.textContent=""; detailBody.innerHTML='<tr><td colspan="4" class="muted">請先按「計算」</td></tr>';
-      totalAmt.textContent="--"; kpiRow.style.display='none';
-      kCur.textContent='--';
-      outCur.textContent='--';
-      rationaleBox.style.display='none'; rationaleBox.innerHTML='';
-      pricingBox.style.display='none'; pricingBox.innerHTML='';
-    });
+    function showToast(message){el.toast.textContent=message;el.toast.classList.add('show');clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>el.toast.classList.remove('show'),1800);}
+    function renderRates(filter=''){
+      const term=filter.trim().toLowerCase();const rows=[];
+      Object.values(rates).forEach(country=>Object.values(country.cities).forEach(city=>{if(!term||`${country.label} ${city.label}`.toLowerCase().includes(term))rows.push(`<tr><td>${country.label}</td><td>${city.label}</td><td>${city.B}</td><td>${city.L}</td><td>${city.D}</td><td>${city.currency}</td></tr>`);}));
+      el.ratesTableBody.innerHTML=rows.length?rows.join(''):'<tr><td colspan="6" style="text-align:center;color:var(--muted)">找不到符合的地區</td></tr>';
+    }
 
-    // 規則與費率 Modal
-    openRulesBtn.addEventListener('click', ()=> rulesModal.style.display='flex');
-    closeRulesBtn.addEventListener('click', ()=> rulesModal.style.display='none');
-    rulesModal.addEventListener('click', e=>{ if(e.target===rulesModal) rulesModal.style.display='none'; });
-    tabBtns.forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        tabBtns.forEach(b=>b.classList.remove('active'));
-        sections.forEach(s=>s.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById(btn.dataset.tab).classList.add('active');
-      });
-    });
+    el.country.addEventListener('change',()=>{el.city.value='';populateCities();updateLabels();clearResult();updateState();});
+    el.city.addEventListener('change',()=>{clearResult();updateState();if(el.city.value)setTimeout(()=>el.arrDate.focus(),80);});
+    [el.arrDate,el.arrTime,el.depDate,el.depTime].forEach(input=>input.addEventListener('change',()=>{clearResult();updateState();}));
+    el.hotelBreakfast.addEventListener('change',()=>{clearResult();updateState();});
+    el.expoLunch.addEventListener('change',()=>{el.expoPicker.classList.toggle('show',el.expoLunch.checked);if(el.expoLunch.checked)renderExpoDates();else expoSelection.clear();clearResult();updateState();});
+    el.expoDates.addEventListener('click',event=>{const button=event.target.closest('.date-chip');if(!button)return;const key=button.dataset.date;if(expoSelection.has(key))expoSelection.delete(key);else expoSelection.add(key);button.classList.toggle('active');button.setAttribute('aria-pressed',String(button.classList.contains('active')));clearResult();updateState();});
+    el.calculateBtn.addEventListener('click',compute);el.mobileCalculateBtn.addEventListener('click',compute);
+    $('resetBtn').addEventListener('click',()=>{el.country.value='';el.city.innerHTML='<option value="">請先選擇國家</option>';el.city.disabled=true;[el.arrDate,el.arrTime,el.depDate,el.depTime].forEach(input=>input.value='');el.hotelBreakfast.checked=false;el.expoLunch.checked=false;el.expoPicker.classList.remove('show');el.expoDates.innerHTML='';expoSelection.clear();clearResult();updateLabels();updateState();window.scrollTo({top:0,behavior:'smooth'});showToast('已重新填寫');});
+
+    $('rulesBtn').addEventListener('click',()=>{renderRates();el.rulesDialog.showModal();});$('closeDialogBtn').addEventListener('click',()=>el.rulesDialog.close());el.rulesDialog.addEventListener('click',event=>{if(event.target===el.rulesDialog)el.rulesDialog.close();});
+    document.querySelectorAll('.tab-btn').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));button.classList.add('active');$(button.dataset.tab).classList.add('active');}));
+    el.rateFilter.addEventListener('input',()=>renderRates(el.rateFilter.value));
+
+    renderRates();updateLabels();updateState();
   })();
   </script>
 </body>
