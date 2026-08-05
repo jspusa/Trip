@@ -50,8 +50,11 @@
     .hero-top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:10px;}
     .eyebrow{display:inline-flex;align-items:center;gap:7px;color:var(--blue);font-size:13px;font-weight:700;letter-spacing:.04em;}
     .eyebrow-dot{width:7px;height:7px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 5px rgba(0,113,227,.1);}
+    .hero-actions{display:flex;align-items:center;justify-content:flex-end;gap:7px;}
     .rules-corner{display:inline-flex;align-items:center;gap:5px;min-height:32px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.8);color:var(--muted);padding:0 10px;font-size:12px;font-weight:650;cursor:pointer;transition:.18s ease;}
     .rules-corner:hover{background:#fff;color:var(--blue);border-color:rgba(0,113,227,.24);}
+    .secretary-corner{background:var(--blue-soft);border-color:rgba(0,113,227,.16);color:var(--blue);}
+    .secretary-corner:hover{background:#dcecff;}
     h1{font-size:clamp(28px,4vw,36px);line-height:1.15;letter-spacing:-.035em;margin:0 0 9px;font-weight:750;}
     .hero p{font-size:15px;line-height:1.55;color:var(--muted);margin:0;}
 
@@ -240,6 +243,45 @@
     tr:last-child td{border-bottom:0;}
     td:nth-child(1),td:nth-child(2){text-align:left;}
 
+    .secretary-dialog{width:min(680px,calc(100% - 32px));overflow:hidden;}
+    .secretary-title{display:flex;align-items:center;gap:10px;min-width:0;}
+    .secretary-title-icon{display:grid;place-items:center;width:35px;height:35px;flex:0 0 auto;border-radius:12px;background:var(--blue-soft);font-size:18px;}
+    .secretary-title-copy{display:grid;gap:2px;min-width:0;}
+    .secretary-title-copy h2{font-size:19px;}
+    .secretary-step{color:var(--muted);font-size:11px;font-weight:600;}
+    .secretary-body{display:grid;grid-template-rows:minmax(120px,1fr) auto;max-height:calc(86vh - 72px);min-height:450px;}
+    .secretary-chat{display:grid;align-content:start;gap:10px;overflow:auto;padding:20px;background:linear-gradient(180deg,#f8fbff 0%,#fff 58%);scroll-behavior:smooth;}
+    .chat-message{display:flex;align-items:flex-start;gap:8px;max-width:88%;animation:rise .2s ease;}
+    .chat-message.user{justify-self:end;flex-direction:row-reverse;}
+    .chat-avatar{display:grid;place-items:center;width:28px;height:28px;flex:0 0 auto;border-radius:10px;background:var(--blue-soft);font-size:14px;}
+    .chat-message.user .chat-avatar{background:#e9e9ed;}
+    .chat-bubble{border:1px solid var(--line);border-radius:5px 16px 16px 16px;background:#fff;padding:10px 12px;font-size:14px;line-height:1.55;white-space:pre-line;box-shadow:0 5px 18px rgba(0,0,0,.035);}
+    .chat-message.user .chat-bubble{border-color:var(--blue);border-radius:16px 5px 16px 16px;background:var(--blue);color:#fff;}
+    .secretary-panel{max-height:min(58vh,520px);overflow:auto;border-top:1px solid var(--line);background:#fff;padding:16px 20px 20px;}
+    .secretary-form{display:grid;gap:7px;}
+    .secretary-form label{font-size:12px;color:var(--muted);}
+    .secretary-composer{display:block;}
+    .secretary-input{width:100%;min-width:0;min-height:50px;border:1px solid var(--line);border-radius:13px;background:#fff;padding:0 14px;font-size:16px;}
+    .secretary-input:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(0,113,227,.1);outline:none;}
+    .secretary-send{min-width:82px;border:0;border-radius:13px;background:var(--blue);color:#fff;padding:0 16px;font-weight:700;cursor:pointer;}
+    .secretary-hint{min-height:17px;color:var(--muted);font-size:11px;line-height:1.4;}
+    .secretary-hint.error{color:var(--red);}
+    .secretary-meals{display:grid;gap:12px;}
+    .secretary-meals .switch-list{gap:8px;}
+    .secretary-meals .switch-row{padding:11px 13px;}
+    .secretary-lunch-dates{border-radius:14px;background:#f5f5f7;padding:12px;}
+    .secretary-actions{display:grid;grid-template-columns:auto 1fr 1.4fr;gap:8px;margin-top:2px;}
+    .secretary-actions button{min-height:46px;border:0;border-radius:12px;padding:0 14px;font-weight:700;cursor:pointer;}
+    .secretary-actions button:disabled{opacity:.42;cursor:not-allowed;}
+    .secretary-back,.secretary-reset{background:#f2f2f7;color:var(--text);}
+    .secretary-next,.secretary-confirm{background:var(--blue);color:#fff;}
+    .secretary-review{display:grid;gap:12px;}
+    .review-grid{display:grid;gap:8px;}
+    .review-row{display:grid;grid-template-columns:92px 1fr;gap:12px;align-items:start;border-radius:13px;background:#f5f5f7;padding:10px 12px;}
+    .review-row span{color:var(--muted);font-size:12px;}
+    .review-row strong{font-size:13px;line-height:1.5;text-align:right;word-break:break-word;}
+    .review-note{color:var(--muted);font-size:11px;line-height:1.5;text-align:center;}
+
     .picker-dialog{width:min(520px,calc(100% - 24px));overflow:hidden;}
     .picker-dialog .dialog-body{padding:16px 20px 22px;}
     .calendar-nav{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;gap:8px;margin-bottom:12px;}
@@ -288,6 +330,8 @@
       .app-shell{width:min(100% - 24px,620px);padding:28px 0 110px;}
       .hero{text-align:center;margin-bottom:18px;}
       .hero-top{margin-bottom:12px;}
+      .hero-actions{gap:5px;}
+      .rules-corner{padding:0 8px;font-size:11px;}
       h1{font-size:28px;}
       .hero p{font-size:15px;}
       .version-note{margin-top:15px;}
@@ -314,6 +358,10 @@
       .mobile-action .primary-btn{width:132px;min-height:46px;flex:0 0 auto;}
       .desktop-actions{display:none;}
       dialog{width:100%;max-width:none;margin:auto 0 0;border-radius:24px 24px 0 0;max-height:90vh;}
+      .secretary-dialog{width:100%;}
+      .secretary-body{max-height:calc(90vh - 72px);min-height:min(540px,calc(90vh - 72px));}
+      .secretary-chat{padding:16px;}
+      .secretary-panel{max-height:62vh;padding:14px 16px calc(16px + env(safe-area-inset-bottom));}
       .rule-grid{grid-template-columns:1fr;}
       .picker-dialog{width:100%;}
       .picker-dialog .dialog-body{padding:14px 16px calc(18px + env(safe-area-inset-bottom));}
@@ -322,10 +370,19 @@
     }
 
     @media(max-width:390px){
+      .hero-top{gap:8px;}
+      .eyebrow{font-size:12px;}
+      .hero-actions{gap:4px;}
+      .rules-corner{justify-content:center;min-height:30px;padding:0 6px;font-size:10px;}
       .date-time{grid-template-columns:1fr;}
       .lock-hint{display:none;}
       .amount{font-size:34px;}
       .mobile-action .primary-btn{width:116px;}
+      .secretary-composer{grid-template-columns:1fr;}
+      .secretary-send{min-height:46px;}
+      .secretary-actions{grid-template-columns:1fr 1fr;}
+      .secretary-actions .secretary-next,.secretary-actions .secretary-confirm{grid-column:1/-1;}
+      .review-row{grid-template-columns:76px 1fr;}
     }
 
     @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important;}}
@@ -336,7 +393,10 @@
     <header class="hero">
       <div class="hero-top">
         <div class="eyebrow"><span class="eyebrow-dot"></span>Jasper Travel</div>
-        <button class="rules-corner" id="rulesBtn" type="button" aria-label="查看規則與費率">ⓘ 規則與費率</button>
+        <div class="hero-actions">
+          <button class="rules-corner secretary-corner" id="secretaryBtn" type="button" aria-label="開啟秘書模式">✦ 秘書模式</button>
+          <button class="rules-corner" id="rulesBtn" type="button" aria-label="查看規則與費率">ⓘ 規則與費率</button>
+        </div>
       </div>
       <h1>出差伙食費計算機</h1>
       <p>依序選擇目的地與行程，系統會自動判斷可核給的早餐、午餐與晚餐。</p>
@@ -429,7 +489,7 @@
                     <button class="picker-trigger" type="button" data-time-target="depTime" aria-label="開啟離境時間滾輪">◷</button>
                   </div>
                 </div>
-                <div class="field-help" id="departureHelp">回程航班登機的當地日期與時間；時間可直接輸入 1230。</div>
+                <div class="field-help" id="departureHelp">回程航班起飛的當地日期與時間；時間可直接輸入 1230。</div>
               </div>
             </div>
           </fieldset>
@@ -504,6 +564,66 @@
     </div>
   </div>
 
+  <dialog class="secretary-dialog" id="secretaryDialog" aria-labelledby="secretaryDialogTitle">
+    <div class="dialog-head">
+      <div class="secretary-title">
+        <span class="secretary-title-icon" aria-hidden="true">✦</span>
+        <div class="secretary-title-copy"><h2 id="secretaryDialogTitle">秘書模式</h2><span class="secretary-step" id="secretaryStep">第 1／5 步・目的地</span></div>
+      </div>
+      <button class="icon-btn" id="closeSecretaryBtn" type="button" aria-label="關閉秘書模式">×</button>
+    </div>
+    <div class="secretary-body">
+      <div class="secretary-chat" id="secretaryChat" role="log" aria-live="polite" aria-label="秘書模式對話"></div>
+      <div class="secretary-panel">
+        <form class="secretary-form" id="secretaryForm">
+          <label for="secretaryInput" id="secretaryInputLabel">國家或國家＋城市</label>
+          <div class="secretary-composer"><input class="secretary-input" id="secretaryInput" type="text" autocomplete="off" aria-describedby="secretaryHint" aria-invalid="false" placeholder="例如：日本東京"></div>
+          <div class="secretary-hint" id="secretaryHint" role="status" aria-live="polite">也可以輸入「東京日本」或只輸入「東京」。</div>
+          <div class="secretary-actions">
+            <button class="secretary-back" id="secretaryBackBtn" type="button">上一步</button>
+            <button class="secretary-reset" id="secretaryResetBtn" type="button">重新開始</button>
+            <button class="secretary-send secretary-next" type="submit">送出</button>
+          </div>
+        </form>
+
+        <section class="secretary-meals" id="secretaryMeals" hidden aria-labelledby="secretaryMealsTitle">
+          <h3 class="sr-only" id="secretaryMealsTitle">選擇已提供餐食</h3>
+          <div class="switch-list">
+            <label class="switch-row" for="secretaryBreakfast">
+              <span class="switch-copy"><strong>飯店有提供早餐</strong><span>抵達日以外的住宿日會自動扣除早餐。</span></span>
+              <span class="switch"><input type="checkbox" id="secretaryBreakfast"><span class="switch-track"></span></span>
+            </label>
+            <label class="switch-row" for="secretaryLunch">
+              <span class="switch-copy"><strong>展場有提供午餐</strong><span>勾選後可調整實際供餐日期。</span></span>
+              <span class="switch"><input type="checkbox" id="secretaryLunch"><span class="switch-track"></span></span>
+            </label>
+          </div>
+          <div class="secretary-lunch-dates" id="secretaryLunchDatesWrap" hidden>
+            <div class="expo-picker-title">哪些日期有提供午餐？</div>
+            <div class="date-chips" id="secretaryLunchDates"></div>
+          </div>
+          <div class="secretary-hint" id="secretaryMealHint" role="status" aria-live="polite">沒有供餐就維持未勾選。</div>
+          <div class="secretary-actions">
+            <button class="secretary-back" id="secretaryMealBackBtn" type="button">上一步</button>
+            <button class="secretary-reset" id="secretaryMealResetBtn" type="button">重新開始</button>
+            <button class="secretary-next" id="secretaryMealNextBtn" type="button">確認餐食</button>
+          </div>
+        </section>
+
+        <section class="secretary-review" id="secretaryReview" hidden aria-labelledby="secretaryReviewTitle">
+          <h3 class="sr-only" id="secretaryReviewTitle">確認出差資訊</h3>
+          <div class="review-grid" id="secretaryReviewGrid"></div>
+          <div class="review-note">確認後會自動填入原表單，並立即計算伙食費。</div>
+          <div class="secretary-actions">
+            <button class="secretary-back" id="secretaryReviewBackBtn" type="button">返回修改</button>
+            <button class="secretary-reset" id="secretaryReviewResetBtn" type="button">重新開始</button>
+            <button class="secretary-confirm" id="secretaryConfirmBtn" type="button">確認並計算</button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </dialog>
+
   <dialog class="picker-dialog" id="dateDialog">
     <div class="dialog-head"><h2 id="dateDialogTitle">選擇日期</h2><button class="icon-btn" id="closeDateBtn" type="button" aria-label="關閉日期月曆">×</button></div>
     <div class="dialog-body">
@@ -549,7 +669,7 @@
             <div class="rule-item"><span>13:00–20:59</span><strong>晚餐</strong></div>
             <div class="rule-item"><span>21:00 以後</span><strong>不供餐</strong></div>
           </div></div>
-          <div class="rule-block"><h3>離境當日・依登機時間</h3><div class="rule-list">
+          <div class="rule-block"><h3>離境當日・依起飛時間</h3><div class="rule-list">
             <div class="rule-item"><span>00:00–04:59</span><strong>不供餐</strong></div>
             <div class="rule-item"><span>05:00–11:59</span><strong>早餐</strong></div>
             <div class="rule-item"><span>12:00–18:59</span><strong>早＋午</strong></div>
@@ -590,11 +710,17 @@
 
     const $=id=>document.getElementById(id);
     const el={country:$('country'),countrySearch:$('countrySearch'),countryCombo:$('countryCombo'),countryMenu:$('countryMenu'),city:$('city'),citySearch:$('citySearch'),cityCombo:$('cityCombo'),cityMenu:$('cityMenu'),arrDate:$('arrDate'),arrTime:$('arrTime'),depDate:$('depDate'),depTime:$('depTime'),tripCard:$('tripCard'),tripFields:$('tripFields'),mealsCard:$('mealsCard'),mealFields:$('mealFields'),hotelBreakfast:$('hotelBreakfast'),expoLunch:$('expoLunch'),expoPicker:$('expoPicker'),expoDates:$('expoDates'),calculateBtn:$('calculateBtn'),mobileCalculateBtn:$('mobileCalculateBtn'),buttonHint:$('buttonHint'),mobileActionTitle:$('mobileActionTitle'),mobileActionHint:$('mobileActionHint'),results:$('results'),resultToggle:$('resultToggle'),resultToggleLabel:$('resultToggleLabel'),resultDetails:$('resultDetails'),dayList:$('dayList'),breakdown:$('breakdown'),basis:$('basis'),totalAmount:$('totalAmount'),summaryPlace:$('summaryPlace'),emptySummary:$('emptySummary'),mealCounts:$('mealCounts'),countB:$('countB'),countL:$('countL'),countD:$('countD'),destinationStatus:$('destinationStatus'),tripStatus:$('tripStatus'),mealsStatus:$('mealsStatus'),arrivalLabel:$('arrivalLabel'),departureLabel:$('departureLabel'),arrivalHelp:$('arrivalHelp'),departureHelp:$('departureHelp'),dateDialog:$('dateDialog'),dateDialogTitle:$('dateDialogTitle'),calendarMonth:$('calendarMonth'),calendarGrid:$('calendarGrid'),timeDialog:$('timeDialog'),timeDialogTitle:$('timeDialogTitle'),hourWheel:$('hourWheel'),minuteWheel:$('minuteWheel'),rulesDialog:$('rulesDialog'),ratesTableBody:$('ratesTableBody'),rateFilter:$('rateFilter'),toast:$('toast')};
+    const secretaryEl={dialog:$('secretaryDialog'),step:$('secretaryStep'),chat:$('secretaryChat'),form:$('secretaryForm'),input:$('secretaryInput'),inputLabel:$('secretaryInputLabel'),hint:$('secretaryHint'),back:$('secretaryBackBtn'),meals:$('secretaryMeals'),breakfast:$('secretaryBreakfast'),lunch:$('secretaryLunch'),lunchWrap:$('secretaryLunchDatesWrap'),lunchDates:$('secretaryLunchDates'),mealHint:$('secretaryMealHint'),mealBack:$('secretaryMealBackBtn'),review:$('secretaryReview'),reviewGrid:$('secretaryReviewGrid'),reviewBack:$('secretaryReviewBackBtn')};
     let expoSelection=new Set();
     let activeDateInput=null;
     let activeTimeInput=null;
     let calendarView=new Date(new Date().getFullYear(),new Date().getMonth(),1);
     const comboState={country:{index:-1},city:{index:-1}};
+    let secretaryDraft=null;
+    let secretaryMessages=[];
+    let secretaryStep='destination';
+    let secretaryStack=[];
+    let secretaryComposing=false;
 
     const pad=n=>String(n).padStart(2,'0');
     const dateKey=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
@@ -603,6 +729,214 @@
     const sameDay=(a,b)=>dateKey(a)===dateKey(b);
     const formatDate=d=>new Intl.DateTimeFormat('zh-TW',{month:'short',day:'numeric',weekday:'short'}).format(d);
     const formatMoney=(value,currency)=>new Intl.NumberFormat('zh-TW',{style:'currency',currency,minimumFractionDigits:currency==='TWD'?0:2,maximumFractionDigits:currency==='TWD'?0:2}).format(value);
+
+    const secretaryCountryAliases={
+      JP:['日本','japan'],KR:['韓國','南韓','korea','south korea'],TH:['泰國','thailand'],MY:['馬來西亞','malaysia'],
+      CN:['中國大陸','中國','大陸','港澳','香港','澳門','china','hong kong','hongkong','macau','macao'],AU:['澳洲','澳大利亞','australia'],
+      KH:['柬埔寨','cambodia'],VN:['越南','vietnam'],DE:['德國','germany'],GB:['英國','uk','united kingdom'],
+      CA:['加拿大','canada'],US:['美國','usa','united states'],SG:['新加坡','singapore'],TW:['台灣','臺灣','taiwan']
+    };
+    const secretaryCityExtraAliases={
+      'AU:major':['sydney','melbourne','brisbane'],'CA:major':['vancouver','toronto'],
+      'CN:hongkong':['hong kong','hongkong','hk'],'CN:macau':['macau','macao'],
+      'US:lasvegas':['las vegas'],'US:losangeles':['los angeles'],'US:newyork':['new york'],
+      'VN:hochiminh':['ho chi minh','ho chi minh city']
+    };
+
+    function normalizeSecretaryText(value){
+      return String(value||'').normalize('NFKC').toLowerCase().replace(/臺/g,'台').replace(/[\s，,、。．.・:：;；'"「」『』()（）\[\]【】/／_\-]/g,'');
+    }
+
+    function secretaryAliasMatches(text,alias){
+      const normalized=normalizeSecretaryText(alias);if(!normalized)return false;
+      return /^[a-z]+$/.test(normalized)?text===normalized||text.startsWith(normalized)||text.endsWith(normalized):text.includes(normalized);
+    }
+
+    function secretaryCountryAliasList(countryKey){return[rates[countryKey].label,...(secretaryCountryAliases[countryKey]||[]),countryKey];}
+
+    function secretaryCityAliases(countryKey,cityKey){
+      const label=rates[countryKey].cities[cityKey].label;
+      const aliases=[label,cityKey,...label.replace(/（.*?）/g,'').split(/[／/]/),...(secretaryCityExtraAliases[`${countryKey}:${cityKey}`]||[])];
+      if(cityKey==='other')aliases.push('其他');
+      return [...new Set(aliases.map(normalizeSecretaryText).filter(Boolean))];
+    }
+
+    function secretaryCityMatches(text,pool){
+      const matches=[];pool.forEach(countryKey=>Object.keys(rates[countryKey].cities).forEach(cityKey=>{
+        const hits=secretaryCityAliases(countryKey,cityKey).filter(alias=>secretaryAliasMatches(text,alias));
+        const score=hits.reduce((max,alias)=>Math.max(max,alias.length),0);if(score)matches.push({countryKey,cityKey,score});
+      }));return matches.sort((a,b)=>b.score-a.score);
+    }
+
+    function secretaryUnknownCityDisplay(answer,countryKey){
+      let display=String(answer||'').normalize('NFKC');secretaryCountryAliasList(countryKey).sort((a,b)=>String(b).length-String(a).length).forEach(alias=>{
+        const escaped=String(alias).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');display=display.replace(new RegExp(escaped,'ig'),' ');
+      });
+      return display.replace(/[，,、。．・:：;；'"「」『』()（）\[\]【】/／_\-]/g,' ').replace(/\s+/g,' ').trim();
+    }
+
+    function parseSecretaryDestination(answer,preferredCountry=null){
+      const text=normalizeSecretaryText(answer);if(!text)return{error:'請輸入國家或城市。'};
+      const countryMatches=Object.keys(rates).map(countryKey=>{
+        const aliases=secretaryCountryAliasList(countryKey);
+        const hits=aliases.map(normalizeSecretaryText).filter(alias=>secretaryAliasMatches(text,alias));
+        return{countryKey,score:hits.reduce((max,alias)=>Math.max(max,alias.length),0)};
+      }).filter(item=>item.score).sort((a,b)=>b.score-a.score);
+      const explicitCountry=countryMatches[0]?.countryKey||null;
+      if(preferredCountry&&explicitCountry&&explicitCountry!==preferredCountry)return{error:`這個國家和剛才選的「${rates[preferredCountry].label}」不同，請再確認一次。`};
+      const countryKey=preferredCountry||explicitCountry;
+      const pool=countryKey?[countryKey]:Object.keys(rates),cityMatches=secretaryCityMatches(text,pool);
+      if(cityMatches.length){
+        const bestScore=cityMatches[0].score;const best=cityMatches.filter(item=>item.score===bestScore);
+        const unique=[...new Map(best.map(item=>[`${item.countryKey}:${item.cityKey}`,item])).values()];
+        if(unique.length>1)return{error:'這個城市名稱可能對應多個國家，請把國家和城市一起輸入。'};
+        const city=unique[0];return{countryKey:countryKey||city.countryKey,cityKey:city.cityKey,cityDisplay:rates[city.countryKey].cities[city.cityKey].label};
+      }
+      if(countryKey){
+        const foreign=secretaryCityMatches(text,Object.keys(rates).filter(key=>key!==countryKey));
+        if(foreign.length){const match=foreign[0];return{error:`「${rates[match.countryKey].cities[match.cityKey].label}」不屬於「${rates[countryKey].label}」，請再確認國家與城市。`};}
+        const customCity=secretaryUnknownCityDisplay(answer,countryKey),otherKey=Object.prototype.hasOwnProperty.call(rates[countryKey].cities,'other')?'other':null;
+        if(customCity&&otherKey)return{countryKey,cityKey:otherKey,cityDisplay:customCity,usesOtherRate:true};
+        if(customCity)return{error:`目前沒有「${customCity}」的費率，請改選這個國家已有的城市或地區。`};
+        return{countryKey,cityKey:null};
+      }
+      return{error:'我還找不到這個目的地，請輸入例如「日本」、「東京」或「日本東京」。'};
+    }
+
+    function secretaryDateParts(value){
+      const text=String(value||'').normalize('NFKC');let match=text.match(/(\d{4})\s*(?:年|[/.\-])\s*(\d{1,2})\s*(?:月|[/.\-])\s*(\d{1,2})\s*日?/);
+      if(match)return{year:Number(match[1]),month:Number(match[2]),day:Number(match[3]),assumedYear:false};
+      match=text.match(/(\d{1,2})\s*[/.\-]\s*(\d{1,2})\s*[/.\-]\s*(\d{4})/);
+      if(match)return{year:Number(match[3]),month:Number(match[1]),day:Number(match[2]),assumedYear:false};
+      match=text.match(/(?:^|\D)(\d{4})(\d{2})(\d{2})(?!\d)/);
+      if(match)return{year:Number(match[1]),month:Number(match[2]),day:Number(match[3]),assumedYear:false};
+      match=text.match(/(\d{1,2})\s*(?:月|[/.\-])\s*(\d{1,2})\s*日?/);
+      if(match)return{year:new Date().getFullYear(),month:Number(match[1]),day:Number(match[2]),assumedYear:true};
+      return null;
+    }
+
+    function secretaryTimeParts(value){
+      const text=String(value||'').normalize('NFKC');let match=text.match(/(上午|早上|下午|晚上|晚間)\s*([01]?\d|2[0-3])(?:\s*:\s*([0-5]\d)|\s*(?:點|時)(?:\s*([0-5]?\d)\s*分?)?)/);
+      if(match){let hour=Number(match[2]);const minute=Number(match[3]||match[4]||0),isLate=['下午','晚上','晚間'].includes(match[1]);if(isLate&&hour>0&&hour<12)hour+=12;if(!isLate&&hour===12)hour=0;return{hour,minute};}
+      match=text.match(/(?:^|\D)([01]?\d|2[0-3])(?:\s*:\s*([0-5]\d))?\s*(am|pm)\b/i);
+      if(match){let hour=Number(match[1]);const minute=Number(match[2]||0),isPm=match[3].toLowerCase()==='pm';if(isPm&&hour>0&&hour<12)hour+=12;if(!isPm&&hour===12)hour=0;return{hour,minute};}
+      match=text.match(/(?:^|\D)([01]?\d|2[0-3])\s*:\s*([0-5]\d)(?!\d)/);
+      if(match)return{hour:Number(match[1]),minute:Number(match[2])};
+      match=text.match(/(?:^|\D)([01]?\d|2[0-3])\s*(?:點|時)(?:\s*([0-5]?\d)\s*分?)?/);
+      if(match)return{hour:Number(match[1]),minute:Number(match[2]||0)};
+      const compact=[...text.matchAll(/(?:^|[^\d/.\-年月])(\d{3,4})(?![\d/.\-年月日])/g)];
+      if(compact.length){const digits=compact[compact.length-1][1];const hour=Number(digits.length===3?digits.slice(0,1):digits.slice(0,2)),minute=Number(digits.slice(-2));if(hour<=23&&minute<=59)return{hour,minute};}
+      return null;
+    }
+
+    function secretaryHasTimeLike(value){
+      const text=String(value||'').normalize('NFKC');if(/\d{1,2}\s*:\s*\d{1,2}/.test(text)||/\d{1,2}\s*(?:點|時)/.test(text)||/\d{1,2}(?:\s*:\s*\d{1,2})?\s*(?:am|pm)\b/i.test(text))return true;
+      return[...text.matchAll(/(?:^|[^\d/.\-年月])(\d{3,4})(?![\d/.\-年月日])/g)].length>0;
+    }
+
+    function parseSecretaryDateTime(value){
+      const date=secretaryDateParts(value),time=secretaryTimeParts(value);
+      if(!date&&!time)return{error:'請一起提供日期與時間，例如「08/14，20:00」。'};
+      if(!date)return{error:'我有看到時間，但還需要日期，例如「08/14，20:00」。'};
+      if(!time)return{error:secretaryHasTimeLike(value)?'時間格式不正確，請使用例如「20:00」或「晚上 8 點」。':'我有看到日期，但還需要時間，例如「08/14，20:00」。'};
+      const result=new Date(date.year,date.month-1,date.day,time.hour,time.minute,0,0);
+      if(result.getFullYear()!==date.year||result.getMonth()!==date.month-1||result.getDate()!==date.day)return{error:'這個日期不存在，請再確認一次。'};
+      return{date:result,dateValue:dateKey(result),timeValue:`${pad(time.hour)}:${pad(time.minute)}`,assumedYear:date.assumedYear};
+    }
+
+    function formatSecretaryDateTime(date){return`${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日（週${'日一二三四五六'[date.getDay()]}）${pad(date.getHours())}:${pad(date.getMinutes())}`;}
+    function formatSecretaryDateOnly(date){return`${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日（週${'日一二三四五六'[date.getDay()]}）`;}
+    function newSecretaryDraft(){return{countryKey:null,cityKey:null,cityDisplay:null,usesOtherRate:false,arrival:null,departure:null,breakfast:false,lunch:false,lunchDates:new Set()};}
+    function cloneSecretaryDraft(draft=secretaryDraft){return{...draft,arrival:draft?.arrival?{...draft.arrival,date:new Date(draft.arrival.date)}:null,departure:draft?.departure?{...draft.departure,date:new Date(draft.departure.date)}:null,lunchDates:new Set(draft?.lunchDates||[])};}
+    function pushSecretaryMessage(role,text){secretaryMessages.push({role,text});}
+    function saveSecretaryState(){secretaryStack.push({step:secretaryStep,draft:cloneSecretaryDraft(),messages:secretaryMessages.map(message=>({...message}))});}
+
+    function renderSecretaryMessages(){
+      secretaryEl.chat.replaceChildren();secretaryMessages.forEach(message=>{
+        const row=document.createElement('div');row.className=`chat-message ${message.role}`;
+        const avatar=document.createElement('span');avatar.className='chat-avatar';avatar.setAttribute('aria-hidden','true');avatar.textContent=message.role==='user'?'你':'✦';
+        const bubble=document.createElement('div');bubble.className='chat-bubble';bubble.textContent=message.text;row.append(avatar,bubble);secretaryEl.chat.append(row);
+      });
+      requestAnimationFrame(()=>{secretaryEl.chat.scrollTop=secretaryEl.chat.scrollHeight;});
+    }
+
+    function setSecretaryHint(message,isError=false){
+      const target=secretaryStep==='meals'?secretaryEl.mealHint:secretaryEl.hint;target.textContent=message;target.classList.toggle('error',isError);if(target===secretaryEl.hint)secretaryEl.input.setAttribute('aria-invalid',String(isError));
+    }
+
+    function secretaryLocation(){
+      const country=secretaryDraft.countryKey?rates[secretaryDraft.countryKey]:null,city=country&&secretaryDraft.cityKey?country.cities[secretaryDraft.cityKey]:null;
+      return{country,city,displayCity:secretaryDraft.cityDisplay||city?.label||''};
+    }
+
+    function secretaryArrivalQuestion(){const {displayCity}=secretaryLocation();return secretaryDraft.countryKey==='TW'?`高鐵抵達「${displayCity}」的日期與時間？`:`飛機抵達「${displayCity}」的日期與時間？`;}
+    function secretaryDepartureQuestion(){const {displayCity}=secretaryLocation();return secretaryDraft.countryKey==='TW'?`離開「${displayCity}」的高鐵會在什麼日期、幾點發車？`:`離開「${displayCity}」的飛機會在什麼日期、幾點起飛？`;}
+    function secretaryTripDates(){
+      if(!secretaryDraft.arrival||!secretaryDraft.departure)return[];const dates=[];let cursor=dateOnly(secretaryDraft.arrival.date),end=dateOnly(secretaryDraft.departure.date);
+      while(cursor<=end){dates.push(new Date(cursor));cursor=addDays(cursor,1);}return dates;
+    }
+
+    function renderSecretaryLunchDates(){
+      const dates=secretaryTripDates();secretaryEl.lunchWrap.hidden=!secretaryDraft.lunch;secretaryEl.lunchDates.replaceChildren();
+      if(!secretaryDraft.lunch)return;
+      dates.forEach(date=>{const key=dateKey(date),button=document.createElement('button');button.type='button';button.className=`date-chip${secretaryDraft.lunchDates.has(key)?' active':''}`;button.dataset.date=key;button.setAttribute('aria-pressed',String(secretaryDraft.lunchDates.has(key)));button.textContent=formatDate(date);secretaryEl.lunchDates.append(button);});
+    }
+
+    function renderSecretaryReview(){
+      const {country,displayCity}=secretaryLocation();const departureLabel=secretaryDraft.countryKey==='TW'?'發車':'起飛',destination=`${country.label}・${displayCity}${secretaryDraft.usesOtherRate?'（套用其他地區費率）':''}`;
+      const lunch=secretaryDraft.lunch?`有：${secretaryTripDates().filter(date=>secretaryDraft.lunchDates.has(dateKey(date))).map(formatSecretaryDateOnly).join('、')}`:'無';
+      const rows=[['目的地',destination],['抵達',formatSecretaryDateTime(secretaryDraft.arrival.date)],[departureLabel,formatSecretaryDateTime(secretaryDraft.departure.date)],['飯店早餐',secretaryDraft.breakfast?'有':'無'],['展場午餐',lunch]];
+      secretaryEl.reviewGrid.replaceChildren();rows.forEach(([label,value])=>{const row=document.createElement('div');row.className='review-row';const name=document.createElement('span');name.textContent=label;const content=document.createElement('strong');content.textContent=value;row.append(name,content);secretaryEl.reviewGrid.append(row);});
+    }
+
+    function renderSecretaryStep(){
+      const textStep=['destination','city','arrival','departure'].includes(secretaryStep);secretaryEl.form.hidden=!textStep;secretaryEl.meals.hidden=secretaryStep!=='meals';secretaryEl.review.hidden=secretaryStep!=='review';
+      const progress={destination:'第 1／5 步・目的地',city:'第 1／5 步・目的地',arrival:'第 2／5 步・抵達',departure:'第 3／5 步・起飛',meals:'第 4／5 步・供餐',review:'第 5／5 步・確認'};secretaryEl.step.textContent=progress[secretaryStep];
+      secretaryEl.back.disabled=!secretaryStack.length;secretaryEl.mealBack.disabled=!secretaryStack.length;secretaryEl.reviewBack.disabled=!secretaryStack.length;
+      if(secretaryStep==='destination'){secretaryEl.inputLabel.textContent='國家或國家＋城市';secretaryEl.input.placeholder='例如：日本東京';setSecretaryHint('也可以輸入「東京日本」或只輸入「東京」。');}
+      if(secretaryStep==='city'){const country=rates[secretaryDraft.countryKey];secretaryEl.inputLabel.textContent='城市／地區';secretaryEl.input.placeholder=`例如：${Object.values(country.cities)[0].label}`;setSecretaryHint(`請輸入 ${country.label} 的城市或地區。`);}
+      if(secretaryStep==='arrival'){secretaryEl.inputLabel.textContent='抵達日期與時間';secretaryEl.input.placeholder='例如：08/14，20:00';setSecretaryHint(`未提供年份時，會預設為 ${new Date().getFullYear()} 年。`);}
+      if(secretaryStep==='departure'){secretaryEl.inputLabel.textContent=secretaryDraft.countryKey==='TW'?'發車日期與時間':'起飛日期與時間';secretaryEl.input.placeholder='例如：08/17，19:00';setSecretaryHint('請同時提供日期與時間，離開時間須晚於抵達時間。');}
+      if(secretaryStep==='meals'){secretaryEl.breakfast.checked=secretaryDraft.breakfast;secretaryEl.lunch.checked=secretaryDraft.lunch;setSecretaryHint('沒有供餐就維持未勾選。');renderSecretaryLunchDates();}
+      if(secretaryStep==='review')renderSecretaryReview();
+      renderSecretaryMessages();
+      requestAnimationFrame(()=>{if(textStep)secretaryEl.input.focus();else if(secretaryStep==='meals')secretaryEl.breakfast.focus();else if(secretaryStep==='review')$('secretaryConfirmBtn').focus();});
+    }
+
+    function resetSecretary(){
+      secretaryDraft=newSecretaryDraft();secretaryMessages=[];secretaryStack=[];secretaryStep='destination';secretaryComposing=false;secretaryEl.input.value='';pushSecretaryMessage('assistant','請問這次要到哪個國家出差？\n也可以直接輸入國家＋城市，例如「日本東京」。');renderSecretaryStep();
+    }
+
+    function secretaryGoBack(){
+      const previous=secretaryStack.pop();if(!previous)return;secretaryStep=previous.step;secretaryDraft=cloneSecretaryDraft(previous.draft);secretaryMessages=previous.messages.map(message=>({...message}));secretaryEl.input.value='';renderSecretaryStep();
+    }
+
+    function submitSecretaryAnswer(answer){
+      if(secretaryStep==='destination'||secretaryStep==='city'){
+        const parsed=parseSecretaryDestination(answer,secretaryStep==='city'?secretaryDraft.countryKey:null);if(parsed.error){setSecretaryHint(parsed.error,true);return;}
+        if(secretaryStep==='city'&&!parsed.cityKey){setSecretaryHint(`找不到「${rates[secretaryDraft.countryKey].label}」的這個城市，請再輸入一次。`,true);return;}
+        saveSecretaryState();pushSecretaryMessage('user',answer);secretaryDraft.countryKey=parsed.countryKey;secretaryDraft.cityKey=parsed.cityKey;secretaryDraft.cityDisplay=parsed.cityDisplay||null;secretaryDraft.usesOtherRate=Boolean(parsed.usesOtherRate);
+        if(!parsed.cityKey){secretaryStep='city';pushSecretaryMessage('assistant',`好的，${rates[parsed.countryKey].label}。請問這次要到哪個城市？`);}
+        else{secretaryStep='arrival';const {country,displayCity}=secretaryLocation();pushSecretaryMessage('assistant',`好的，目的地是 ${country.label}・${displayCity}${secretaryDraft.usesOtherRate?'，將套用其他地區費率':''}。\n${secretaryArrivalQuestion()}`);}
+      }else if(secretaryStep==='arrival'){
+        const parsed=parseSecretaryDateTime(answer);if(parsed.error){setSecretaryHint(parsed.error,true);return;}
+        saveSecretaryState();pushSecretaryMessage('user',answer);secretaryDraft.arrival=parsed;secretaryStep='departure';pushSecretaryMessage('assistant',`已記下抵達時間：${formatSecretaryDateTime(parsed.date)}${parsed.assumedYear?'（未填年份，已採今年）':''}\n${secretaryDepartureQuestion()}`);
+      }else if(secretaryStep==='departure'){
+        const parsed=parseSecretaryDateTime(answer);if(parsed.error){setSecretaryHint(parsed.error,true);return;}
+        if(parsed.date<=secretaryDraft.arrival.date){setSecretaryHint('離開時間必須晚於抵達時間；若是跨年行程，請一併輸入年份。',true);return;}
+        const days=(dateOnly(parsed.date)-dateOnly(secretaryDraft.arrival.date))/86400000;if(days>120){setSecretaryHint('單次行程最多可計算 120 天。',true);return;}
+        saveSecretaryState();pushSecretaryMessage('user',answer);secretaryDraft.departure=parsed;secretaryStep='meals';pushSecretaryMessage('assistant',`已記下離開時間：${formatSecretaryDateTime(parsed.date)}${parsed.assumedYear?'（未填年份，已採今年）':''}\n最後請勾選這次是否已有提供早餐或午餐。`);
+      }
+      secretaryEl.input.value='';renderSecretaryStep();
+    }
+
+    function applySecretaryDraft(){
+      const {country,city,displayCity}=secretaryLocation();el.country.value=secretaryDraft.countryKey;el.countrySearch.value=[...el.country.options].find(option=>option.value===secretaryDraft.countryKey)?.textContent.trim()||country.label;
+      populateCities(false);el.city.value=secretaryDraft.cityKey;el.citySearch.value=city.label;
+      el.arrDate.value=secretaryDraft.arrival.dateValue;el.arrTime.value=secretaryDraft.arrival.timeValue;el.depDate.value=secretaryDraft.departure.dateValue;el.depTime.value=secretaryDraft.departure.timeValue;
+      el.hotelBreakfast.checked=secretaryDraft.breakfast;el.expoLunch.checked=secretaryDraft.lunch;expoSelection=new Set(secretaryDraft.lunchDates);el.expoPicker.classList.toggle('show',secretaryDraft.lunch);
+      if(secretaryDraft.lunch)renderExpoDates();else el.expoDates.innerHTML='';clearResult();updateLabels();updateState();secretaryEl.dialog.close();compute();if(secretaryDraft.usesOtherRate){setStatus(el.destinationStatus,`${country.label}・${displayCity}（其他費率）`,true);el.summaryPlace.textContent=`${country.label}・${displayCity}（其他費率）`;}
+    }
 
     function parseDateValue(value){
       if(!/^\d{4}-\d{2}-\d{2}$/.test(value))return null;
@@ -774,21 +1108,21 @@
       el.results.classList.remove('show','expanded');el.resultDetails.hidden=true;el.resultToggle.setAttribute('aria-expanded','false');el.resultToggleLabel.textContent='展開';el.totalAmount.textContent='—';el.summaryPlace.textContent='完成上方步驟後即可計算';el.emptySummary.hidden=false;el.mealCounts.hidden=true;
     }
 
-    function populateCities(){
+    function populateCities(focusInput=true){
       const country=rates[el.country.value];
       el.city.innerHTML=country?'<option value="">選擇城市／地區</option>'+Object.entries(country.cities).map(([key,city])=>`<option value="${key}">${city.label}</option>`).join(''):'<option value="">請先選擇國家</option>';
       el.city.disabled=!country;el.citySearch.disabled=!country;el.cityCombo.querySelector('.combo-toggle').disabled=!country;el.citySearch.value='';closeCombo('city');
       el.citySearch.placeholder=country?'輸入或選擇城市':'請先選擇國家';
       $('cityHelp').textContent=country?`可輸入關鍵字搜尋，共 ${Object.keys(country.cities).length} 個城市／地區。`:'尚未選擇國家。';
-      if(country)setTimeout(()=>el.citySearch.focus(),80);
+      if(country&&focusInput)setTimeout(()=>el.citySearch.focus(),80);
     }
 
     function updateLabels(){
       const tw=el.country.value==='TW';
       el.arrivalLabel.textContent=tw?'抵達目的地（高鐵）':'抵達當地（航班落地）';
-      el.departureLabel.textContent=tw?'離開目的地（高鐵）':'離開當地（航班登機）';
+      el.departureLabel.textContent=tw?'離開目的地（高鐵）':'離開當地（航班起飛）';
       el.arrivalHelp.textContent=tw?'高鐵抵達的日期與時間；時間可直接輸入 1230。':'航班落地的當地日期與時間；時間可直接輸入 1230。';
-      el.departureHelp.textContent=tw?'高鐵離開的日期與時間；時間可直接輸入 1230。':'回程航班登機的當地日期與時間；時間可直接輸入 1230。';
+      el.departureHelp.textContent=tw?'高鐵離開的日期與時間；時間可直接輸入 1230。':'回程航班起飛的當地日期與時間；時間可直接輸入 1230。';
     }
 
     function renderExpoDates(){
@@ -890,6 +1224,27 @@
     $('resetBtn').addEventListener('click',()=>{el.country.value='';el.countrySearch.value='';el.city.innerHTML='<option value="">請先選擇國家</option>';el.city.value='';el.city.disabled=true;el.citySearch.value='';el.citySearch.disabled=true;el.cityCombo.querySelector('.combo-toggle').disabled=true;closeCombo('country');closeCombo('city');[el.arrDate,el.arrTime,el.depDate,el.depTime].forEach(input=>input.value='');el.hotelBreakfast.checked=false;el.expoLunch.checked=false;el.expoPicker.classList.remove('show');el.expoDates.innerHTML='';expoSelection.clear();clearResult();updateLabels();updateState();window.scrollTo({top:0,behavior:'smooth'});showToast('已重新填寫');});
 
     document.addEventListener('pointerdown',event=>{if(!el.countryCombo.contains(event.target))closeCombo('country');if(!el.cityCombo.contains(event.target))closeCombo('city');});
+
+    $('secretaryBtn').addEventListener('click',()=>{secretaryEl.dialog.showModal();resetSecretary();});
+    $('closeSecretaryBtn').addEventListener('click',()=>secretaryEl.dialog.close());
+    secretaryEl.dialog.addEventListener('click',event=>{if(event.target===secretaryEl.dialog)secretaryEl.dialog.close();});
+    secretaryEl.input.addEventListener('compositionstart',()=>{secretaryComposing=true;});
+    secretaryEl.input.addEventListener('compositionend',()=>{secretaryComposing=false;});
+    secretaryEl.input.addEventListener('keydown',event=>{if(event.key!=='Enter'||event.isComposing||secretaryComposing)return;event.preventDefault();secretaryEl.form.requestSubmit();});
+    secretaryEl.input.addEventListener('input',()=>{secretaryEl.hint.classList.remove('error');secretaryEl.input.setAttribute('aria-invalid','false');});
+    secretaryEl.form.addEventListener('submit',event=>{event.preventDefault();if(secretaryComposing)return;const answer=secretaryEl.input.value.trim();if(!answer){setSecretaryHint('請先輸入答案。',true);return;}submitSecretaryAnswer(answer);});
+    [secretaryEl.back,secretaryEl.mealBack,secretaryEl.reviewBack].forEach(button=>button.addEventListener('click',secretaryGoBack));
+    ['secretaryResetBtn','secretaryMealResetBtn','secretaryReviewResetBtn'].forEach(id=>$(id).addEventListener('click',resetSecretary));
+    secretaryEl.breakfast.addEventListener('change',()=>{secretaryDraft.breakfast=secretaryEl.breakfast.checked;secretaryEl.mealHint.classList.remove('error');});
+    secretaryEl.lunch.addEventListener('change',()=>{
+      secretaryDraft.lunch=secretaryEl.lunch.checked;if(secretaryDraft.lunch&&!secretaryDraft.lunchDates.size)secretaryDraft.lunchDates=new Set(secretaryTripDates().map(dateKey));if(!secretaryDraft.lunch)secretaryDraft.lunchDates.clear();renderSecretaryLunchDates();secretaryEl.mealHint.classList.remove('error');
+    });
+    secretaryEl.lunchDates.addEventListener('click',event=>{const button=event.target.closest('.date-chip');if(!button)return;const key=button.dataset.date;if(secretaryDraft.lunchDates.has(key))secretaryDraft.lunchDates.delete(key);else secretaryDraft.lunchDates.add(key);button.classList.toggle('active');button.setAttribute('aria-pressed',String(button.classList.contains('active')));secretaryEl.mealHint.classList.remove('error');});
+    $('secretaryMealNextBtn').addEventListener('click',()=>{
+      secretaryDraft.breakfast=secretaryEl.breakfast.checked;secretaryDraft.lunch=secretaryEl.lunch.checked;if(secretaryDraft.lunch&&!secretaryDraft.lunchDates.size){setSecretaryHint('請至少選擇一個有提供午餐的日期，或取消午餐勾選。',true);return;}
+      saveSecretaryState();const lunchSummary=secretaryDraft.lunch?`${secretaryDraft.lunchDates.size} 天`:'無';pushSecretaryMessage('user',`飯店早餐：${secretaryDraft.breakfast?'有':'無'}\n展場午餐：${lunchSummary}`);secretaryStep='review';pushSecretaryMessage('assistant','資料都整理好了，請確認抵達、起飛日期與供餐資訊。');renderSecretaryStep();
+    });
+    $('secretaryConfirmBtn').addEventListener('click',applySecretaryDraft);
 
     $('rulesBtn').addEventListener('click',()=>{renderRates();el.rulesDialog.showModal();});$('closeDialogBtn').addEventListener('click',()=>el.rulesDialog.close());el.rulesDialog.addEventListener('click',event=>{if(event.target===el.rulesDialog)el.rulesDialog.close();});
     document.querySelectorAll('.tab-btn').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));button.classList.add('active');$(button.dataset.tab).classList.add('active');}));
