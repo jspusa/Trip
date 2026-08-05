@@ -47,8 +47,11 @@
 
     .app-shell{width:min(820px,calc(100% - 32px));margin:0 auto;padding:32px 0 120px;}
     .hero{text-align:center;margin:0 auto 22px;max-width:720px;animation:heroIn .55s cubic-bezier(.22,1,.36,1) both;}
-    .eyebrow{display:inline-flex;align-items:center;gap:7px;color:var(--blue);font-size:13px;font-weight:700;letter-spacing:.04em;margin-bottom:10px;}
+    .hero-top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:10px;}
+    .eyebrow{display:inline-flex;align-items:center;gap:7px;color:var(--blue);font-size:13px;font-weight:700;letter-spacing:.04em;}
     .eyebrow-dot{width:7px;height:7px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 5px rgba(0,113,227,.1);}
+    .rules-corner{display:inline-flex;align-items:center;gap:5px;min-height:32px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.8);color:var(--muted);padding:0 10px;font-size:12px;font-weight:650;cursor:pointer;transition:.18s ease;}
+    .rules-corner:hover{background:#fff;color:var(--blue);border-color:rgba(0,113,227,.24);}
     h1{font-size:clamp(28px,4vw,36px);line-height:1.15;letter-spacing:-.035em;margin:0 0 9px;font-weight:750;}
     .hero p{font-size:15px;line-height:1.55;color:var(--muted);margin:0;}
 
@@ -161,7 +164,7 @@
     .date-chip.active{background:var(--blue);border-color:var(--blue);color:#fff;}
 
     .sidebar{position:static;display:grid;gap:14px;margin-top:16px;}
-    .summary-card{background:linear-gradient(145deg,#f6faff,#eaf4ff);color:var(--text);border:1px solid rgba(0,113,227,.12);border-radius:var(--radius-xl);padding:23px;text-align:center;box-shadow:0 14px 38px rgba(0,86,179,.08);}
+    .summary-card{margin-top:14px;background:linear-gradient(145deg,#f6faff,#eaf4ff);color:var(--text);border:1px solid rgba(0,113,227,.12);border-radius:var(--radius-xl);padding:23px;text-align:center;box-shadow:0 14px 38px rgba(0,86,179,.08);}
     .summary-label{color:var(--blue);font-size:13px;font-weight:700;margin-bottom:8px;}
     .amount{color:#005bbb;font-size:36px;line-height:1;font-weight:760;letter-spacing:-.045em;margin:0 0 9px;word-break:break-word;}
     .summary-place{font-size:13px;color:#557085;min-height:18px;}
@@ -183,14 +186,15 @@
     .text-btn{border:0;background:none;color:var(--blue);font-weight:650;padding:8px 4px;cursor:pointer;}
     .desktop-actions{display:grid;grid-template-columns:2fr 1fr;gap:10px;}
     .desktop-actions .button-hint{grid-column:1/-1;margin-top:0;}
-    .utility-card{background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.8);border-radius:20px;padding:10px 16px;display:flex;align-items:center;justify-content:center;gap:12px;}
-    .utility-card span{font-size:12px;color:var(--muted);}
-
     .results{display:none;margin-top:18px;}
     .results.show{display:block;animation:rise .28s ease;}
-    .result-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;}
-    .result-head h2{font-size:24px;margin:0;letter-spacing:-.03em;}
-    .result-total-mobile{display:none;color:var(--blue);font-weight:750;}
+    .result-toggle-row{display:flex;align-items:center;justify-content:space-between;gap:14px;}
+    .result-toggle-row h2{font-size:24px;margin:0;letter-spacing:-.03em;}
+    .result-toggle-row small{display:block;color:var(--muted);font-size:12px;font-weight:500;margin-top:3px;}
+    .result-toggle{display:flex;align-items:center;gap:8px;border:0;border-radius:10px;background:var(--blue-soft);color:var(--blue);padding:8px 10px;font-size:13px;font-weight:700;cursor:pointer;}
+    .result-chevron{font-size:20px;line-height:1;transition:transform .22s ease;}
+    .results.expanded .result-chevron{transform:rotate(180deg);}
+    .result-details{padding-top:16px;animation:rise .22s ease;}
     .day-list{display:grid;gap:9px;}
     .day-row{display:grid;grid-template-columns:120px repeat(3,1fr);align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:15px;padding:10px 12px;}
     .day-header{background:transparent;border:0;padding:0 12px 2px;color:var(--muted);font-size:11px;text-align:center;}
@@ -279,6 +283,7 @@
     @media(max-width:780px){
       .app-shell{width:min(100% - 24px,620px);padding:28px 0 110px;}
       .hero{text-align:center;margin-bottom:18px;}
+      .hero-top{margin-bottom:12px;}
       h1{font-size:28px;}
       .hero p{font-size:15px;}
       .version-note{margin-top:15px;}
@@ -287,15 +292,13 @@
       .progress-item:not(:last-child)::after{left:62%;right:-38%;}
       .sidebar{margin-top:14px;}
       .summary-card{display:block;padding:20px 16px;}
-      .utility-card{margin-bottom:14px;}
       .card{padding:19px 16px;border-radius:22px;}
       .card-head{margin-bottom:17px;}
       .field-grid,.route-line{grid-template-columns:1fr;}
       .route-arrow{height:18px;transform:rotate(90deg);}
       .date-time{grid-template-columns:minmax(0,1.35fr) minmax(96px,.8fr);}
       .results{margin-top:14px;}
-      .result-head{align-items:flex-end;}
-      .result-total-mobile{display:block;}
+      .result-toggle-row h2{font-size:21px;}
       .day-row{grid-template-columns:1fr repeat(3,52px);gap:5px;padding:9px;}
       .meal-status{font-size:11px;padding:6px 3px;}
       .result-breakdown{grid-template-columns:1fr;}
@@ -327,7 +330,10 @@
 <body>
   <main class="app-shell">
     <header class="hero">
-      <div class="eyebrow"><span class="eyebrow-dot"></span>Jasper Travel</div>
+      <div class="hero-top">
+        <div class="eyebrow"><span class="eyebrow-dot"></span>Jasper Travel</div>
+        <button class="rules-corner" id="rulesBtn" type="button" aria-label="查看規則與費率">ⓘ 規則與費率</button>
+      </div>
       <h1>出差伙食費計算機</h1>
       <p>依序選擇目的地與行程，系統會自動判斷可核給的早餐、午餐與晚餐。</p>
     </header>
@@ -454,30 +460,35 @@
       </div>
 
       <aside class="sidebar">
-        <section class="summary-card">
-          <div class="summary-label">預估伙食費</div>
-          <div class="amount" id="totalAmount">—</div>
-          <div class="summary-place" id="summaryPlace">完成上方步驟後即可計算</div>
-          <div class="empty-summary" id="emptySummary">系統會依照抵達、離境時間與已供餐食，自動算出可核給金額。</div>
-          <div class="meal-counts" id="mealCounts" hidden>
-            <div class="meal-count"><strong id="countB">0</strong><span>早餐</span></div>
-            <div class="meal-count"><strong id="countL">0</strong><span>午餐</span></div>
-            <div class="meal-count"><strong id="countD">0</strong><span>晚餐</span></div>
-          </div>
-        </section>
         <div class="desktop-actions">
           <button class="primary-btn" id="calculateBtn" type="button" disabled>計算伙食費</button>
           <button class="secondary-btn" id="resetBtn" type="button">重新填寫</button>
           <div class="button-hint" id="buttonHint">請先選擇國家與城市</div>
         </div>
-        <div class="utility-card"><span>需要確認規則或費率？</span><button class="text-btn" id="rulesBtn" type="button">查看詳情</button></div>
       </aside>
 
       <section class="card results" id="results" aria-live="polite">
-        <div class="result-head"><h2>計算結果</h2><span class="result-total-mobile" id="mobileResultTotal"></span></div>
-        <div class="day-list" id="dayList"></div>
-        <div class="result-breakdown" id="breakdown"></div>
-        <div class="basis" id="basis"></div>
+        <div class="result-toggle-row">
+          <div><h2>計算結果</h2><small>查看每日餐費明細</small></div>
+          <button class="result-toggle" id="resultToggle" type="button" aria-expanded="false" aria-controls="resultDetails"><span id="resultToggleLabel">展開</span><span class="result-chevron">⌄</span></button>
+        </div>
+        <div class="result-details" id="resultDetails" hidden>
+          <div class="day-list" id="dayList"></div>
+          <div class="result-breakdown" id="breakdown"></div>
+          <div class="basis" id="basis"></div>
+        </div>
+      </section>
+
+      <section class="summary-card">
+        <div class="summary-label">預估伙食費</div>
+        <div class="amount" id="totalAmount">—</div>
+        <div class="summary-place" id="summaryPlace">完成上方步驟後即可計算</div>
+        <div class="empty-summary" id="emptySummary">系統會依照抵達、離境時間與已供餐食，自動算出可核給金額。</div>
+        <div class="meal-counts" id="mealCounts" hidden>
+          <div class="meal-count"><strong id="countB">0</strong><span>早餐</span></div>
+          <div class="meal-count"><strong id="countL">0</strong><span>午餐</span></div>
+          <div class="meal-count"><strong id="countD">0</strong><span>晚餐</span></div>
+        </div>
       </section>
     </div>
   </main>
@@ -574,7 +585,7 @@
     };
 
     const $=id=>document.getElementById(id);
-    const el={country:$('country'),countrySearch:$('countrySearch'),countryCombo:$('countryCombo'),countryMenu:$('countryMenu'),city:$('city'),citySearch:$('citySearch'),cityCombo:$('cityCombo'),cityMenu:$('cityMenu'),arrDate:$('arrDate'),arrTime:$('arrTime'),depDate:$('depDate'),depTime:$('depTime'),tripCard:$('tripCard'),tripFields:$('tripFields'),mealsCard:$('mealsCard'),mealFields:$('mealFields'),hotelBreakfast:$('hotelBreakfast'),expoLunch:$('expoLunch'),expoPicker:$('expoPicker'),expoDates:$('expoDates'),calculateBtn:$('calculateBtn'),mobileCalculateBtn:$('mobileCalculateBtn'),buttonHint:$('buttonHint'),mobileActionTitle:$('mobileActionTitle'),mobileActionHint:$('mobileActionHint'),results:$('results'),dayList:$('dayList'),breakdown:$('breakdown'),basis:$('basis'),totalAmount:$('totalAmount'),summaryPlace:$('summaryPlace'),emptySummary:$('emptySummary'),mealCounts:$('mealCounts'),countB:$('countB'),countL:$('countL'),countD:$('countD'),mobileResultTotal:$('mobileResultTotal'),destinationStatus:$('destinationStatus'),tripStatus:$('tripStatus'),mealsStatus:$('mealsStatus'),arrivalLabel:$('arrivalLabel'),departureLabel:$('departureLabel'),arrivalHelp:$('arrivalHelp'),departureHelp:$('departureHelp'),dateDialog:$('dateDialog'),dateDialogTitle:$('dateDialogTitle'),calendarMonth:$('calendarMonth'),calendarGrid:$('calendarGrid'),timeDialog:$('timeDialog'),timeDialogTitle:$('timeDialogTitle'),hourWheel:$('hourWheel'),minuteWheel:$('minuteWheel'),rulesDialog:$('rulesDialog'),ratesTableBody:$('ratesTableBody'),rateFilter:$('rateFilter'),toast:$('toast')};
+    const el={country:$('country'),countrySearch:$('countrySearch'),countryCombo:$('countryCombo'),countryMenu:$('countryMenu'),city:$('city'),citySearch:$('citySearch'),cityCombo:$('cityCombo'),cityMenu:$('cityMenu'),arrDate:$('arrDate'),arrTime:$('arrTime'),depDate:$('depDate'),depTime:$('depTime'),tripCard:$('tripCard'),tripFields:$('tripFields'),mealsCard:$('mealsCard'),mealFields:$('mealFields'),hotelBreakfast:$('hotelBreakfast'),expoLunch:$('expoLunch'),expoPicker:$('expoPicker'),expoDates:$('expoDates'),calculateBtn:$('calculateBtn'),mobileCalculateBtn:$('mobileCalculateBtn'),buttonHint:$('buttonHint'),mobileActionTitle:$('mobileActionTitle'),mobileActionHint:$('mobileActionHint'),results:$('results'),resultToggle:$('resultToggle'),resultToggleLabel:$('resultToggleLabel'),resultDetails:$('resultDetails'),dayList:$('dayList'),breakdown:$('breakdown'),basis:$('basis'),totalAmount:$('totalAmount'),summaryPlace:$('summaryPlace'),emptySummary:$('emptySummary'),mealCounts:$('mealCounts'),countB:$('countB'),countL:$('countL'),countD:$('countD'),destinationStatus:$('destinationStatus'),tripStatus:$('tripStatus'),mealsStatus:$('mealsStatus'),arrivalLabel:$('arrivalLabel'),departureLabel:$('departureLabel'),arrivalHelp:$('arrivalHelp'),departureHelp:$('departureHelp'),dateDialog:$('dateDialog'),dateDialogTitle:$('dateDialogTitle'),calendarMonth:$('calendarMonth'),calendarGrid:$('calendarGrid'),timeDialog:$('timeDialog'),timeDialogTitle:$('timeDialogTitle'),hourWheel:$('hourWheel'),minuteWheel:$('minuteWheel'),rulesDialog:$('rulesDialog'),ratesTableBody:$('ratesTableBody'),rateFilter:$('rateFilter'),toast:$('toast')};
     let expoSelection=new Set();
     let activeDateInput=null;
     let activeTimeInput=null;
@@ -756,7 +767,7 @@
     }
 
     function clearResult(){
-      el.results.classList.remove('show');el.totalAmount.textContent='—';el.summaryPlace.textContent='完成上方步驟後即可計算';el.emptySummary.hidden=false;el.mealCounts.hidden=true;el.mobileResultTotal.textContent='';
+      el.results.classList.remove('show','expanded');el.resultDetails.hidden=true;el.resultToggle.setAttribute('aria-expanded','false');el.resultToggleLabel.textContent='展開';el.totalAmount.textContent='—';el.summaryPlace.textContent='完成上方步驟後即可計算';el.emptySummary.hidden=false;el.mealCounts.hidden=true;
     }
 
     function populateCities(){
@@ -825,7 +836,7 @@
       el.dayList.innerHTML='<div class="day-row day-header"><span>日期</span><span>早餐</span><span>午餐</span><span>晚餐</span></div>'+rows.map(r=>`<div class="day-row"><span class="day-date">${formatDate(r.day)}</span>${r.statuses.map(mealBadge).join('')}</div>`).join('');
       el.breakdown.innerHTML=[['早餐',city.B,counts.B,subtotals.B],['午餐',city.L,counts.L,subtotals.L],['晚餐',city.D,counts.D,subtotals.D]].map(([label,price,count,subtotal])=>`<div class="breakdown-item"><span>${label}・${formatMoney(price,city.currency)} × ${count}</span><strong>${formatMoney(subtotal,city.currency)}</strong></div>`).join('');
       el.basis.innerHTML=`<strong>判斷依據</strong><br>抵達 ${pad(check.arr.getHours())}:${pad(check.arr.getMinutes())}：${arrivalRule(arrIdx)}。<br>離境 ${pad(check.dep.getHours())}:${pad(check.dep.getMinutes())}：${departureRule(depIdx)}。`;
-      const formatted=formatMoney(total,city.currency);el.totalAmount.textContent=formatted;el.totalAmount.classList.remove('updated');void el.totalAmount.offsetWidth;el.totalAmount.classList.add('updated');el.mobileResultTotal.textContent=formatted;el.summaryPlace.textContent=`${country.label}・${city.label}`;el.emptySummary.hidden=true;el.mealCounts.hidden=false;el.countB.textContent=counts.B;el.countL.textContent=counts.L;el.countD.textContent=counts.D;el.results.classList.add('show');setProgress(4);
+      const formatted=formatMoney(total,city.currency);el.totalAmount.textContent=formatted;el.totalAmount.classList.remove('updated');void el.totalAmount.offsetWidth;el.totalAmount.classList.add('updated');el.summaryPlace.textContent=`${country.label}・${city.label}`;el.emptySummary.hidden=true;el.mealCounts.hidden=false;el.countB.textContent=counts.B;el.countL.textContent=counts.L;el.countD.textContent=counts.D;el.results.classList.add('show');el.results.classList.remove('expanded');el.resultDetails.hidden=true;el.resultToggle.setAttribute('aria-expanded','false');el.resultToggleLabel.textContent='展開';setProgress(4);
       el.results.scrollIntoView({behavior:'smooth',block:'start'});showToast('計算完成');
     }
 
@@ -869,6 +880,7 @@
     el.expoLunch.addEventListener('change',()=>{el.expoPicker.classList.toggle('show',el.expoLunch.checked);if(el.expoLunch.checked)renderExpoDates();else expoSelection.clear();clearResult();updateState();});
     el.expoDates.addEventListener('click',event=>{const button=event.target.closest('.date-chip');if(!button)return;const key=button.dataset.date;if(expoSelection.has(key))expoSelection.delete(key);else expoSelection.add(key);button.classList.toggle('active');button.setAttribute('aria-pressed',String(button.classList.contains('active')));clearResult();updateState();});
     el.calculateBtn.addEventListener('click',compute);el.mobileCalculateBtn.addEventListener('click',compute);
+    el.resultToggle.addEventListener('click',()=>{const expanded=el.resultToggle.getAttribute('aria-expanded')==='true';el.resultToggle.setAttribute('aria-expanded',String(!expanded));el.resultToggleLabel.textContent=expanded?'展開':'收合';el.resultDetails.hidden=expanded;el.results.classList.toggle('expanded',!expanded);});
     $('resetBtn').addEventListener('click',()=>{el.country.value='';el.countrySearch.value='';el.city.innerHTML='<option value="">請先選擇國家</option>';el.city.value='';el.city.disabled=true;el.citySearch.value='';el.citySearch.disabled=true;el.cityCombo.querySelector('.combo-toggle').disabled=true;closeCombo('country');closeCombo('city');[el.arrDate,el.arrTime,el.depDate,el.depTime].forEach(input=>input.value='');el.hotelBreakfast.checked=false;el.expoLunch.checked=false;el.expoPicker.classList.remove('show');el.expoDates.innerHTML='';expoSelection.clear();clearResult();updateLabels();updateState();window.scrollTo({top:0,behavior:'smooth'});showToast('已重新填寫');});
 
     document.addEventListener('pointerdown',event=>{if(!el.countryCombo.contains(event.target))closeCombo('country');if(!el.cityCombo.contains(event.target))closeCombo('city');});
