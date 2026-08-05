@@ -46,7 +46,7 @@
     button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid rgba(0,113,227,.28);outline-offset:2px;}
 
     .app-shell{width:min(820px,calc(100% - 32px));margin:0 auto;padding:32px 0 120px;}
-    .hero{text-align:center;margin:0 auto 22px;max-width:720px;}
+    .hero{text-align:center;margin:0 auto 22px;max-width:720px;animation:heroIn .55s cubic-bezier(.22,1,.36,1) both;}
     .eyebrow{display:inline-flex;align-items:center;gap:7px;color:var(--blue);font-size:13px;font-weight:700;letter-spacing:.04em;margin-bottom:10px;}
     .eyebrow-dot{width:7px;height:7px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 5px rgba(0,113,227,.1);}
     h1{font-size:clamp(28px,4vw,36px);line-height:1.15;letter-spacing:-.035em;margin:0 0 9px;font-weight:750;}
@@ -66,6 +66,7 @@
       background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.8);
       box-shadow:0 8px 30px rgba(0,0,0,.04);border-radius:20px;padding:14px 12px;margin-bottom:18px;
       backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+      animation:riseIn .55s .08s cubic-bezier(.22,1,.36,1) both;
     }
     .progress-item{position:relative;text-align:center;color:var(--faint);font-size:12px;font-weight:650;transition:.25s ease;}
     .progress-item:not(:last-child)::after{content:"";position:absolute;top:14px;left:65%;right:-35%;height:2px;background:#e5e5ea;z-index:0;}
@@ -82,7 +83,12 @@
       background:var(--surface);border:1px solid rgba(255,255,255,.9);border-radius:var(--radius-xl);
       box-shadow:var(--shadow);padding:24px;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
       transition:opacity .25s ease,transform .25s ease;
+      animation:riseIn .55s cubic-bezier(.22,1,.36,1) both;
     }
+    .form-stack .card:nth-child(1){animation-delay:.14s;}
+    .form-stack .card:nth-child(2){animation-delay:.20s;}
+    .form-stack .card:nth-child(3){animation-delay:.26s;}
+    .card.just-unlocked{animation:unlockCard .48s cubic-bezier(.22,1,.36,1);}
     .card.locked{opacity:.56;box-shadow:none;}
     .card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px;}
     .card-title-wrap{display:flex;align-items:flex-start;gap:12px;}
@@ -90,22 +96,33 @@
     .card h2{font-size:20px;letter-spacing:-.02em;margin:1px 0 3px;}
     .card-subtitle{font-size:13px;color:var(--muted);line-height:1.4;}
     .lock-hint{display:flex;align-items:center;gap:5px;white-space:nowrap;font-size:12px;color:var(--muted);background:#f2f2f7;border-radius:99px;padding:6px 9px;}
-    .lock-hint.ready{color:var(--blue);background:var(--blue-soft);}
+    .lock-hint.ready{color:var(--green);background:#eaf6ed;}
+    .lock-hint.ready.optional{color:var(--blue);background:var(--blue-soft);}
 
     .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
     .field{display:grid;gap:7px;min-width:0;}
     .field.full{grid-column:1/-1;}
     label,.field-label{font-size:13px;font-weight:650;color:#3a3a3c;}
     .required::after{content:" 必填";font-size:10px;color:var(--muted);font-weight:500;}
-    select,.date-control input,.time-control input{
+    select,.combo-input,.date-control input,.time-control input{
       width:100%;min-height:50px;border:1px solid var(--line);border-radius:13px;background:#fff;
       color:var(--text);padding:0 14px;font-size:16px;transition:border-color .18s,box-shadow .18s,background .18s;
       -webkit-appearance:none;appearance:none;
     }
     select{padding-right:42px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='8' viewBox='0 0 14 8'%3E%3Cpath d='m1 1 6 6 6-6' fill='none' stroke='%236e6e73' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 15px center;}
-    select:hover,.date-control input:hover,.time-control input:hover{border-color:rgba(60,60,67,.3);}
-    select:focus,.date-control input:focus,.time-control input:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(0,113,227,.1);outline:none;}
-    select:disabled,.date-control input:disabled,.time-control input:disabled{background-color:#f2f2f7;color:#9b9ba0;cursor:not-allowed;}
+    select:hover,.combo-input:hover,.date-control input:hover,.time-control input:hover{border-color:rgba(60,60,67,.3);}
+    select:focus,.combo-input:focus,.date-control input:focus,.time-control input:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(0,113,227,.1);outline:none;}
+    select:disabled,.combo-input:disabled,.date-control input:disabled,.time-control input:disabled{background-color:#f2f2f7;color:#9b9ba0;cursor:not-allowed;}
+    .combo{position:relative;min-width:0;}
+    .combo-input{padding-right:44px;}
+    .combo-toggle{position:absolute;right:5px;top:5px;width:40px;height:40px;border:0;border-radius:10px;background:#f2f2f7;color:var(--muted);font-size:17px;cursor:pointer;transition:.2s ease;}
+    .combo.open .combo-toggle{transform:rotate(180deg);background:var(--blue-soft);color:var(--blue);}
+    .combo-menu{display:none;position:absolute;z-index:12;left:0;right:0;top:calc(100% + 7px);max-height:260px;overflow:auto;background:rgba(255,255,255,.97);border:1px solid var(--line);border-radius:15px;padding:6px;box-shadow:0 18px 45px rgba(0,0,0,.16);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);}
+    .combo.open .combo-menu{display:grid;gap:2px;animation:menuIn .22s cubic-bezier(.22,1,.36,1);}
+    .combo-option{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:42px;border:0;border-radius:10px;background:transparent;color:var(--text);padding:8px 10px;text-align:left;cursor:pointer;}
+    .combo-option:hover,.combo-option.highlighted{background:var(--blue-soft);color:var(--blue);}
+    .combo-option.selected::after{content:'✓';color:var(--blue);font-weight:800;}
+    .combo-empty{padding:14px;text-align:center;color:var(--muted);font-size:13px;}
     .field-help{min-height:17px;font-size:12px;color:var(--muted);line-height:1.35;}
     .field-error{color:var(--red);}
     .invalid{border-color:var(--red)!important;box-shadow:0 0 0 4px rgba(215,0,21,.08)!important;}
@@ -115,7 +132,7 @@
     .date-time{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(100px,.8fr);gap:8px;}
     .date-control,.time-control{position:relative;min-width:0;}
     .date-control input,.time-control input{padding-right:44px;}
-    .date-control input{cursor:pointer;}
+    .date-control input{cursor:text;}
     .picker-trigger{position:absolute;right:5px;top:5px;width:40px;height:40px;border:0;border-radius:10px;background:#f2f2f7;color:var(--blue);font-size:18px;cursor:pointer;}
     .picker-trigger:hover{background:var(--blue-soft);}
 
@@ -185,6 +202,8 @@
     .basis{margin-top:12px;color:var(--muted);font-size:12px;line-height:1.65;background:#f9f9fb;border-radius:14px;padding:12px;}
 
     dialog{width:min(760px,calc(100% - 32px));max-height:min(86vh,820px);border:0;border-radius:26px;padding:0;background:#fff;color:var(--text);box-shadow:0 30px 90px rgba(0,0,0,.28);}
+    dialog[open]{animation:dialogIn .3s cubic-bezier(.22,1,.36,1);}
+    dialog[open]::backdrop{animation:backdropIn .25s ease both;}
     dialog::backdrop{background:rgba(0,0,0,.32);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);}
     .dialog-head{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;padding:18px 20px;background:rgba(255,255,255,.9);border-bottom:1px solid var(--line);backdrop-filter:blur(18px);}
     .dialog-head h2{font-size:20px;margin:0;}
@@ -224,8 +243,6 @@
     .calendar-day.selected{background:var(--blue);color:#fff;font-weight:700;box-shadow:0 5px 12px rgba(0,113,227,.23);}
     .calendar-day:disabled{opacity:.24;cursor:not-allowed;}
     .calendar-spacer{aspect-ratio:1;}
-    .calendar-footer{display:flex;justify-content:center;margin-top:14px;}
-    .calendar-today{border:0;border-radius:99px;background:var(--blue-soft);color:var(--blue);font-weight:700;padding:9px 18px;cursor:pointer;}
 
     .time-picker-title{text-align:center;color:var(--muted);font-size:13px;margin:0 0 8px;}
     .wheel-picker{position:relative;display:grid;grid-template-columns:1fr 34px 1fr;align-items:center;max-width:330px;margin:0 auto;height:238px;overflow:hidden;}
@@ -233,9 +250,10 @@
     .wheel-picker::before{top:0;background:linear-gradient(#fff,rgba(255,255,255,.2));}
     .wheel-picker::after{bottom:0;background:linear-gradient(rgba(255,255,255,.2),#fff);}
     .wheel-highlight{position:absolute;z-index:0;left:10px;right:10px;top:97px;height:44px;border-radius:13px;background:#f2f2f7;border:1px solid var(--line);pointer-events:none;}
-    .wheel-column{position:relative;z-index:1;height:238px;overflow-y:auto;scroll-snap-type:y mandatory;padding:97px 0;scrollbar-width:none;overscroll-behavior:contain;}
+    .wheel-column{position:relative;z-index:1;height:238px;overflow-y:auto;scroll-snap-type:y mandatory;padding:97px 0;scrollbar-width:none;overscroll-behavior:contain;touch-action:none;cursor:grab;}
+    .wheel-column.dragging{scroll-snap-type:none!important;cursor:grabbing;}
     .wheel-column::-webkit-scrollbar{display:none;}
-    .wheel-option{display:block;width:100%;height:44px;scroll-snap-align:center;border:0;background:transparent;color:var(--text);font-size:24px;font-weight:600;cursor:pointer;}
+    .wheel-option{display:grid;place-items:center;width:100%;height:44px;scroll-snap-align:center;background:transparent;color:var(--text);font-size:24px;font-weight:600;cursor:grab;user-select:none;-webkit-user-select:none;}
     .wheel-separator{position:relative;z-index:1;text-align:center;font-size:26px;font-weight:700;}
     .time-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
     .time-actions button{min-height:48px;border:0;border-radius:13px;font-weight:700;cursor:pointer;}
@@ -247,6 +265,14 @@
     .mobile-action{display:none;}
     .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
     @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+    @keyframes riseIn{from{opacity:0;transform:translateY(18px);filter:blur(4px)}to{opacity:1;transform:none;filter:none}}
+    @keyframes heroIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+    @keyframes menuIn{from{opacity:0;transform:translateY(-6px) scale(.985)}to{opacity:1;transform:none}}
+    @keyframes dialogIn{from{opacity:0;transform:translateY(18px) scale(.96)}to{opacity:1;transform:none}}
+    @keyframes backdropIn{from{opacity:0}to{opacity:1}}
+    @keyframes unlockCard{0%{transform:scale(.985)}55%{transform:scale(1.012)}100%{transform:none}}
+    @keyframes amountPop{0%{transform:scale(.94);opacity:.5}65%{transform:scale(1.04)}100%{transform:none;opacity:1}}
+    .amount.updated{animation:amountPop .45s cubic-bezier(.22,1,.36,1);}
 
     @media(max-width:780px){
       .app-shell{width:min(100% - 24px,620px);padding:28px 0 110px;}
@@ -302,10 +328,6 @@
       <div class="eyebrow"><span class="eyebrow-dot"></span>Jasper Travel</div>
       <h1>出差伙食費計算機</h1>
       <p>依序選擇目的地與行程，系統會自動判斷可核給的早餐、午餐與晚餐。</p>
-      <div class="version-note">
-        <span class="info-icon">i</span>
-        <span><strong>目前採用 2025（民國 114 年）費率。</strong></span>
-      </div>
     </header>
 
     <nav class="progress-card" aria-label="填寫進度">
@@ -327,8 +349,8 @@
           </div>
           <div class="field-grid">
             <div class="field">
-              <label class="required" for="country">國家／地區</label>
-              <select id="country" aria-describedby="countryHelp">
+              <label class="required" for="countrySearch">國家／地區</label>
+              <select id="country" hidden aria-hidden="true" tabindex="-1">
                 <option value="" selected>選擇國家／地區</option>
                 <option value="JP">日本 🇯🇵</option><option value="KR">韓國 🇰🇷</option>
                 <option value="TH">泰國 🇹🇭</option><option value="MY">馬來西亞 🇲🇾</option>
@@ -338,11 +360,21 @@
                 <option value="CA">加拿大 🇨🇦</option><option value="US">美國 🇺🇸</option>
                 <option value="SG">新加坡 🇸🇬</option><option value="TW">台灣 🇹🇼</option>
               </select>
-              <div class="field-help" id="countryHelp">選擇後將開放城市欄位。</div>
+              <div class="combo" id="countryCombo">
+                <input class="combo-input" id="countrySearch" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="countryMenu" aria-describedby="countryHelp" placeholder="輸入或選擇國家" autocomplete="off">
+                <button class="combo-toggle" type="button" aria-label="展開國家選項">⌄</button>
+                <div class="combo-menu" id="countryMenu" role="listbox"></div>
+              </div>
+              <div class="field-help" id="countryHelp">可直接輸入關鍵字搜尋。</div>
             </div>
             <div class="field">
-              <label class="required" for="city">城市／地區</label>
-              <select id="city" disabled aria-describedby="cityHelp"><option value="">請先選擇國家</option></select>
+              <label class="required" for="citySearch">城市／地區</label>
+              <select id="city" hidden disabled aria-hidden="true" tabindex="-1"><option value="">請先選擇國家</option></select>
+              <div class="combo" id="cityCombo">
+                <input class="combo-input" id="citySearch" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="cityMenu" aria-describedby="cityHelp" placeholder="請先選擇國家" autocomplete="off" disabled>
+                <button class="combo-toggle" type="button" aria-label="展開城市選項" disabled>⌄</button>
+                <div class="combo-menu" id="cityMenu" role="listbox"></div>
+              </div>
               <div class="field-help" id="cityHelp">尚未選擇國家。</div>
             </div>
           </div>
@@ -362,7 +394,7 @@
                 <span class="field-label required" id="arrivalLabel">抵達當地</span>
                 <div class="date-time">
                   <div class="date-control">
-                    <label class="sr-only" for="arrDate">抵達日期</label><input type="text" id="arrDate" placeholder="選擇日期" readonly>
+                    <label class="sr-only" for="arrDate">抵達日期</label><input type="text" id="arrDate" inputmode="numeric" maxlength="10" placeholder="YYYYMMDD" autocomplete="off">
                     <button class="picker-trigger" type="button" data-date-target="arrDate" aria-label="開啟抵達日期月曆">▦</button>
                   </div>
                   <div class="time-control">
@@ -377,7 +409,7 @@
                 <span class="field-label required" id="departureLabel">離開當地</span>
                 <div class="date-time">
                   <div class="date-control">
-                    <label class="sr-only" for="depDate">離境日期</label><input type="text" id="depDate" placeholder="選擇日期" readonly>
+                    <label class="sr-only" for="depDate">離境日期</label><input type="text" id="depDate" inputmode="numeric" maxlength="10" placeholder="YYYYMMDD" autocomplete="off">
                     <button class="picker-trigger" type="button" data-date-target="depDate" aria-label="開啟離境日期月曆">▦</button>
                   </div>
                   <div class="time-control">
@@ -465,7 +497,6 @@
       </div>
       <div class="calendar-weekdays"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
       <div class="calendar-grid" id="calendarGrid"></div>
-      <div class="calendar-footer"><button class="calendar-today" id="calendarToday" type="button">選擇今天</button></div>
     </div>
   </dialog>
 
@@ -541,11 +572,12 @@
     };
 
     const $=id=>document.getElementById(id);
-    const el={country:$('country'),city:$('city'),arrDate:$('arrDate'),arrTime:$('arrTime'),depDate:$('depDate'),depTime:$('depTime'),tripCard:$('tripCard'),tripFields:$('tripFields'),mealsCard:$('mealsCard'),mealFields:$('mealFields'),hotelBreakfast:$('hotelBreakfast'),expoLunch:$('expoLunch'),expoPicker:$('expoPicker'),expoDates:$('expoDates'),calculateBtn:$('calculateBtn'),mobileCalculateBtn:$('mobileCalculateBtn'),buttonHint:$('buttonHint'),mobileActionTitle:$('mobileActionTitle'),mobileActionHint:$('mobileActionHint'),results:$('results'),dayList:$('dayList'),breakdown:$('breakdown'),basis:$('basis'),totalAmount:$('totalAmount'),summaryPlace:$('summaryPlace'),emptySummary:$('emptySummary'),mealCounts:$('mealCounts'),countB:$('countB'),countL:$('countL'),countD:$('countD'),mobileResultTotal:$('mobileResultTotal'),destinationStatus:$('destinationStatus'),tripStatus:$('tripStatus'),mealsStatus:$('mealsStatus'),arrivalLabel:$('arrivalLabel'),departureLabel:$('departureLabel'),arrivalHelp:$('arrivalHelp'),departureHelp:$('departureHelp'),dateDialog:$('dateDialog'),dateDialogTitle:$('dateDialogTitle'),calendarMonth:$('calendarMonth'),calendarGrid:$('calendarGrid'),timeDialog:$('timeDialog'),timeDialogTitle:$('timeDialogTitle'),hourWheel:$('hourWheel'),minuteWheel:$('minuteWheel'),rulesDialog:$('rulesDialog'),ratesTableBody:$('ratesTableBody'),rateFilter:$('rateFilter'),toast:$('toast')};
+    const el={country:$('country'),countrySearch:$('countrySearch'),countryCombo:$('countryCombo'),countryMenu:$('countryMenu'),city:$('city'),citySearch:$('citySearch'),cityCombo:$('cityCombo'),cityMenu:$('cityMenu'),arrDate:$('arrDate'),arrTime:$('arrTime'),depDate:$('depDate'),depTime:$('depTime'),tripCard:$('tripCard'),tripFields:$('tripFields'),mealsCard:$('mealsCard'),mealFields:$('mealFields'),hotelBreakfast:$('hotelBreakfast'),expoLunch:$('expoLunch'),expoPicker:$('expoPicker'),expoDates:$('expoDates'),calculateBtn:$('calculateBtn'),mobileCalculateBtn:$('mobileCalculateBtn'),buttonHint:$('buttonHint'),mobileActionTitle:$('mobileActionTitle'),mobileActionHint:$('mobileActionHint'),results:$('results'),dayList:$('dayList'),breakdown:$('breakdown'),basis:$('basis'),totalAmount:$('totalAmount'),summaryPlace:$('summaryPlace'),emptySummary:$('emptySummary'),mealCounts:$('mealCounts'),countB:$('countB'),countL:$('countL'),countD:$('countD'),mobileResultTotal:$('mobileResultTotal'),destinationStatus:$('destinationStatus'),tripStatus:$('tripStatus'),mealsStatus:$('mealsStatus'),arrivalLabel:$('arrivalLabel'),departureLabel:$('departureLabel'),arrivalHelp:$('arrivalHelp'),departureHelp:$('departureHelp'),dateDialog:$('dateDialog'),dateDialogTitle:$('dateDialogTitle'),calendarMonth:$('calendarMonth'),calendarGrid:$('calendarGrid'),timeDialog:$('timeDialog'),timeDialogTitle:$('timeDialogTitle'),hourWheel:$('hourWheel'),minuteWheel:$('minuteWheel'),rulesDialog:$('rulesDialog'),ratesTableBody:$('ratesTableBody'),rateFilter:$('rateFilter'),toast:$('toast')};
     let expoSelection=new Set();
     let activeDateInput=null;
     let activeTimeInput=null;
     let calendarView=new Date(new Date().getFullYear(),new Date().getMonth(),1);
+    const comboState={country:{index:-1},city:{index:-1}};
 
     const pad=n=>String(n).padStart(2,'0');
     const dateKey=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
@@ -561,6 +593,13 @@
       return result.getFullYear()===y&&result.getMonth()===m-1&&result.getDate()===d?result:null;
     }
 
+    function maskDateInput(input,finalize=false){
+      const digits=input.value.replace(/\D/g,'').slice(0,8);
+      input.value=digits.length<=4?digits:digits.length<=6?`${digits.slice(0,4)}-${digits.slice(4)}`:`${digits.slice(0,4)}-${digits.slice(4,6)}-${digits.slice(6)}`;
+      const valid=!finalize||!digits||Boolean(parseDateValue(input.value));
+      input.classList.toggle('invalid',!valid);return valid;
+    }
+
     function setDateValue(input,date){
       input.value=dateKey(date);input.dispatchEvent(new Event('change',{bubbles:true}));
     }
@@ -571,11 +610,11 @@
       const selected=activeDateInput?parseDateValue(activeDateInput.value):null;
       const minDate=activeDateInput===el.depDate?parseDateValue(el.arrDate.value):null;
       const firstDay=new Date(year,month,1).getDay();const daysInMonth=new Date(year,month+1,0).getDate();
-      const today=dateOnly(new Date());const cells=[];
+      const cells=[];
       for(let i=0;i<firstDay;i++)cells.push('<span class="calendar-spacer"></span>');
       for(let day=1;day<=daysInMonth;day++){
         const date=new Date(year,month,day);const disabled=minDate&&date<minDate;
-        const classes=['calendar-day'];if(sameDay(date,today))classes.push('today');if(selected&&sameDay(date,selected))classes.push('selected');
+        const classes=['calendar-day'];if(selected&&sameDay(date,selected))classes.push('selected');
         cells.push(`<button type="button" class="${classes.join(' ')}" data-date="${dateKey(date)}"${disabled?' disabled':''}>${day}</button>`);
       }
       el.calendarGrid.innerHTML=cells.join('');
@@ -598,7 +637,7 @@
       input.classList.toggle('invalid',!valid);return valid;
     }
 
-    function fillWheel(wheel,count){wheel.innerHTML=Array.from({length:count},(_,i)=>`<button class="wheel-option" type="button" data-index="${i}">${pad(i)}</button>`).join('');}
+    function fillWheel(wheel,count){wheel.innerHTML=Array.from({length:count},(_,i)=>`<div class="wheel-option" role="option" data-index="${i}">${pad(i)}</div>`).join('');}
     function wheelIndex(wheel,max){return Math.max(0,Math.min(max,Math.round(wheel.scrollTop/44)));}
     function scrollWheel(wheel,index,behavior='auto'){
       if(behavior==='auto'){
@@ -621,6 +660,25 @@
       activeTimeInput.dispatchEvent(new Event('change',{bubbles:true}));activeTimeInput=null;
     }
 
+    function enableWheelDrag(wheel,max){
+      let drag=null;
+      wheel.addEventListener('pointerdown',event=>{
+        drag={id:event.pointerId,startY:event.clientY,startScroll:wheel.scrollTop,lastY:event.clientY,lastTime:performance.now(),velocity:0,moved:false};
+        wheel.classList.add('dragging');wheel.setPointerCapture(event.pointerId);
+      });
+      wheel.addEventListener('pointermove',event=>{
+        if(!drag||event.pointerId!==drag.id)return;const now=performance.now(),delta=event.clientY-drag.lastY,elapsed=Math.max(1,now-drag.lastTime);
+        if(Math.abs(event.clientY-drag.startY)>3)drag.moved=true;
+        drag.velocity=(-delta)/elapsed;drag.lastY=event.clientY;drag.lastTime=now;wheel.scrollTop=drag.startScroll-(event.clientY-drag.startY);event.preventDefault();
+      });
+      const finish=event=>{
+        if(!drag||event.pointerId!==drag.id)return;const projected=wheel.scrollTop+drag.velocity*150,index=Math.max(0,Math.min(max,Math.round(projected/44)));
+        if(drag.moved)wheel.suppressClickUntil=performance.now()+250;
+        wheel.classList.remove('dragging');try{wheel.releasePointerCapture(event.pointerId);}catch{}scrollWheel(wheel,index,'smooth');drag=null;
+      };
+      wheel.addEventListener('pointerup',finish);wheel.addEventListener('pointercancel',finish);
+    }
+
     function parseDateTime(dateValue,timeValue){
       if(!/^\d{4}-\d{2}-\d{2}$/.test(dateValue)||!/^\d{2}:\d{2}$/.test(timeValue))return null;
       const [y,m,d]=dateValue.split('-').map(Number);const [h,min]=timeValue.split(':').map(Number);
@@ -640,8 +698,58 @@
       return{valid:true,arr,dep};
     }
 
-    function setCardState(card,fieldset,enabled){card.classList.toggle('locked',!enabled);card.setAttribute('aria-disabled',String(!enabled));fieldset.disabled=!enabled;}
-    function setStatus(target,text,ready){target.textContent=ready?'✓ '+text:text;target.classList.toggle('ready',ready);}
+    function comboParts(kind){return kind==='country'?{select:el.country,input:el.countrySearch,combo:el.countryCombo,menu:el.countryMenu}:{select:el.city,input:el.citySearch,combo:el.cityCombo,menu:el.cityMenu};}
+    function comboChoices(kind){
+      const {select}=comboParts(kind);
+      return [...select.options].filter(option=>option.value).map(option=>({value:option.value,label:option.textContent.trim(),search:`${option.textContent} ${option.value}`.toLowerCase()}));
+    }
+    function renderComboOptions(kind,query=''){
+      const parts=comboParts(kind),term=query.trim().toLowerCase();
+      const choices=comboChoices(kind).filter(choice=>!term||choice.search.includes(term));
+      comboState[kind].choices=choices;comboState[kind].index=choices.length?0:-1;
+      parts.menu.innerHTML=choices.length?choices.map((choice,index)=>`<button class="combo-option${index===0?' highlighted':''}${parts.select.value===choice.value?' selected':''}" type="button" role="option" data-value="${choice.value}" aria-selected="${parts.select.value===choice.value}">${choice.label}</button>`).join(''):'<div class="combo-empty">找不到符合的選項</div>';
+    }
+    function openCombo(kind){
+      const parts=comboParts(kind);if(parts.input.disabled)return;
+      renderComboOptions(kind,parts.input.value);parts.combo.classList.add('open');parts.input.setAttribute('aria-expanded','true');
+    }
+    function closeCombo(kind){const parts=comboParts(kind);parts.combo.classList.remove('open');parts.input.setAttribute('aria-expanded','false');}
+    function selectCombo(kind,value){
+      const parts=comboParts(kind),choice=comboChoices(kind).find(item=>item.value===value);if(!choice)return;
+      parts.select.value=value;parts.input.value=choice.label;parts.input.classList.remove('invalid');closeCombo(kind);parts.select.dispatchEvent(new Event('change',{bubbles:true}));
+    }
+    function moveComboHighlight(kind,direction){
+      const state=comboState[kind],parts=comboParts(kind);if(!state.choices?.length)return;
+      state.index=(state.index+direction+state.choices.length)%state.choices.length;
+      parts.menu.querySelectorAll('.combo-option').forEach((option,index)=>option.classList.toggle('highlighted',index===state.index));
+      parts.menu.querySelector('.highlighted')?.scrollIntoView({block:'nearest'});
+    }
+    function registerCombo(kind){
+      const parts=comboParts(kind),toggle=parts.combo.querySelector('.combo-toggle');
+      parts.input.addEventListener('input',()=>{
+        if(parts.select.value){parts.select.value='';parts.select.dispatchEvent(new Event('change',{bubbles:true}));}
+        renderComboOptions(kind,parts.input.value);parts.combo.classList.add('open');parts.input.setAttribute('aria-expanded','true');clearResult();updateState();
+      });
+      parts.input.addEventListener('focus',()=>openCombo(kind));
+      parts.input.addEventListener('keydown',event=>{
+        if(event.key==='ArrowDown'||event.key==='ArrowUp'){event.preventDefault();if(!parts.combo.classList.contains('open'))openCombo(kind);else moveComboHighlight(kind,event.key==='ArrowDown'?1:-1);}
+        if(event.key==='Enter'){event.preventDefault();const state=comboState[kind],choice=state.choices?.[Math.max(0,state.index)];if(choice)selectCombo(kind,choice.value);}
+        if(event.key==='Escape')closeCombo(kind);
+      });
+      parts.input.addEventListener('blur',()=>setTimeout(()=>{
+        const exact=comboChoices(kind).find(choice=>choice.label.toLowerCase()===parts.input.value.trim().toLowerCase()||choice.value.toLowerCase()===parts.input.value.trim().toLowerCase());
+        if(exact&&!parts.select.value)selectCombo(kind,exact.value);else closeCombo(kind);
+      },140));
+      toggle.addEventListener('click',()=>{parts.input.focus();parts.combo.classList.contains('open')?closeCombo(kind):openCombo(kind);});
+      parts.menu.addEventListener('mousedown',event=>event.preventDefault());
+      parts.menu.addEventListener('click',event=>{const option=event.target.closest('.combo-option');if(option)selectCombo(kind,option.dataset.value);});
+    }
+
+    function setCardState(card,fieldset,enabled){
+      const wasDisabled=fieldset.disabled;card.classList.toggle('locked',!enabled);card.setAttribute('aria-disabled',String(!enabled));fieldset.disabled=!enabled;
+      if(wasDisabled&&enabled){card.classList.remove('just-unlocked');void card.offsetWidth;card.classList.add('just-unlocked');setTimeout(()=>card.classList.remove('just-unlocked'),520);}
+    }
+    function setStatus(target,text,ready,tone='complete'){target.textContent=ready?'✓ '+text:text;target.classList.toggle('ready',ready);target.classList.toggle('optional',ready&&tone==='optional');}
     function setProgress(stage){
       document.querySelectorAll('.progress-item').forEach((item,i)=>{const n=i+1;item.classList.toggle('active',n===stage);item.classList.toggle('complete',n<stage);item.querySelector('.step-dot').textContent=n<stage?'✓':n;});
     }
@@ -653,9 +761,10 @@
     function populateCities(){
       const country=rates[el.country.value];
       el.city.innerHTML=country?'<option value="">選擇城市／地區</option>'+Object.entries(country.cities).map(([key,city])=>`<option value="${key}">${city.label}</option>`).join(''):'<option value="">請先選擇國家</option>';
-      el.city.disabled=!country;
-      $('cityHelp').textContent=country?`已載入 ${Object.keys(country.cities).length} 個城市／地區。`:'尚未選擇國家。';
-      if(country)setTimeout(()=>el.city.focus(),80);
+      el.city.disabled=!country;el.citySearch.disabled=!country;el.cityCombo.querySelector('.combo-toggle').disabled=!country;el.citySearch.value='';closeCombo('city');
+      el.citySearch.placeholder=country?'輸入或選擇城市':'請先選擇國家';
+      $('cityHelp').textContent=country?`可輸入關鍵字搜尋，共 ${Object.keys(country.cities).length} 個城市／地區。`:'尚未選擇國家。';
+      if(country)setTimeout(()=>el.citySearch.focus(),80);
     }
 
     function updateLabels(){
@@ -678,7 +787,7 @@
       const hasCountry=Boolean(el.country.value);const hasCity=hasCountry&&Boolean(el.city.value);const check=tripValidation();
       setStatus(el.destinationStatus,hasCity?`${rates[el.country.value].label}・${rates[el.country.value].cities[el.city.value].label}`:(hasCountry?'請選城市':'請選擇'),hasCity);
       setCardState(el.tripCard,el.tripFields,hasCity);setStatus(el.tripStatus,hasCity?(check.valid?'行程已完成':'請填日期時間'):'先選城市',check.valid);
-      setCardState(el.mealsCard,el.mealFields,hasCity&&check.valid);setStatus(el.mealsStatus,check.valid?'可選填':'先填行程',check.valid);
+      setCardState(el.mealsCard,el.mealFields,hasCity&&check.valid);setStatus(el.mealsStatus,check.valid?'可選填':'先填行程',check.valid,'optional');
       const canCalculate=hasCity&&check.valid;el.calculateBtn.disabled=!canCalculate;el.mobileCalculateBtn.disabled=!canCalculate;
       if(!hasCountry){el.buttonHint.textContent='請先選擇國家與城市';el.mobileActionTitle.textContent='尚未完成';el.mobileActionHint.textContent='先選擇目的地';setProgress(1);}
       else if(!hasCity){el.buttonHint.textContent='接著選擇城市／地區';el.mobileActionTitle.textContent=rates[el.country.value].label;el.mobileActionHint.textContent='接著選擇城市';setProgress(1);}
@@ -715,7 +824,7 @@
       el.dayList.innerHTML='<div class="day-row day-header"><span>日期</span><span>早餐</span><span>午餐</span><span>晚餐</span></div>'+rows.map(r=>`<div class="day-row"><span class="day-date">${formatDate(r.day)}</span>${r.statuses.map(mealBadge).join('')}</div>`).join('');
       el.breakdown.innerHTML=[['早餐',city.B,counts.B,subtotals.B],['午餐',city.L,counts.L,subtotals.L],['晚餐',city.D,counts.D,subtotals.D]].map(([label,price,count,subtotal])=>`<div class="breakdown-item"><span>${label}・${formatMoney(price,city.currency)} × ${count}</span><strong>${formatMoney(subtotal,city.currency)}</strong></div>`).join('');
       el.basis.innerHTML=`<strong>判斷依據</strong><br>抵達 ${pad(check.arr.getHours())}:${pad(check.arr.getMinutes())}：${arrivalRule(arrIdx)}。<br>離境 ${pad(check.dep.getHours())}:${pad(check.dep.getMinutes())}：${departureRule(depIdx)}。`;
-      const formatted=formatMoney(total,city.currency);el.totalAmount.textContent=formatted;el.mobileResultTotal.textContent=formatted;el.summaryPlace.textContent=`${country.label}・${city.label}`;el.emptySummary.hidden=true;el.mealCounts.hidden=false;el.countB.textContent=counts.B;el.countL.textContent=counts.L;el.countD.textContent=counts.D;el.results.classList.add('show');setProgress(4);
+      const formatted=formatMoney(total,city.currency);el.totalAmount.textContent=formatted;el.totalAmount.classList.remove('updated');void el.totalAmount.offsetWidth;el.totalAmount.classList.add('updated');el.mobileResultTotal.textContent=formatted;el.summaryPlace.textContent=`${country.label}・${city.label}`;el.emptySummary.hidden=true;el.mealCounts.hidden=false;el.countB.textContent=counts.B;el.countL.textContent=counts.L;el.countD.textContent=counts.D;el.results.classList.add('show');setProgress(4);
       el.results.scrollIntoView({behavior:'smooth',block:'start'});showToast('計算完成');
     }
 
@@ -726,10 +835,15 @@
       el.ratesTableBody.innerHTML=rows.length?rows.join(''):'<tr><td colspan="6" style="text-align:center;color:var(--muted)">找不到符合的地區</td></tr>';
     }
 
-    fillWheel(el.hourWheel,24);fillWheel(el.minuteWheel,60);
+    fillWheel(el.hourWheel,24);fillWheel(el.minuteWheel,60);enableWheelDrag(el.hourWheel,23);enableWheelDrag(el.minuteWheel,59);
+    registerCombo('country');registerCombo('city');
     document.querySelectorAll('[data-date-target]').forEach(button=>button.addEventListener('click',()=>openDatePicker($(button.dataset.dateTarget))));
     document.querySelectorAll('[data-time-target]').forEach(button=>button.addEventListener('click',()=>openTimePicker($(button.dataset.timeTarget))));
-    [el.arrDate,el.depDate].forEach(input=>input.addEventListener('click',()=>openDatePicker(input)));
+    [el.arrDate,el.depDate].forEach(input=>{
+      input.addEventListener('input',()=>{maskDateInput(input);clearResult();updateState();});
+      input.addEventListener('blur',()=>{maskDateInput(input,true);clearResult();updateState();});
+      input.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();input.blur();}});
+    });
     [el.arrTime,el.depTime].forEach(input=>{
       input.addEventListener('input',()=>{maskTimeInput(input);clearResult();updateState();});
       input.addEventListener('blur',()=>{maskTimeInput(input,true);clearResult();updateState();});
@@ -738,12 +852,11 @@
     el.calendarGrid.addEventListener('click',event=>{const button=event.target.closest('.calendar-day');if(!button||button.disabled)return;setDateValue(activeDateInput,parseDateValue(button.dataset.date));el.dateDialog.close();activeDateInput=null;});
     $('calendarPrev').addEventListener('click',()=>{calendarView=new Date(calendarView.getFullYear(),calendarView.getMonth()-1,1);renderCalendar();});
     $('calendarNext').addEventListener('click',()=>{calendarView=new Date(calendarView.getFullYear(),calendarView.getMonth()+1,1);renderCalendar();});
-    $('calendarToday').addEventListener('click',()=>{let chosen=dateOnly(new Date());const min=activeDateInput===el.depDate?parseDateValue(el.arrDate.value):null;if(min&&chosen<min)chosen=min;setDateValue(activeDateInput,chosen);el.dateDialog.close();activeDateInput=null;});
     $('closeDateBtn').addEventListener('click',()=>el.dateDialog.close());
     el.dateDialog.addEventListener('click',event=>{if(event.target===el.dateDialog)el.dateDialog.close();});
 
     [el.hourWheel,el.minuteWheel].forEach(wheel=>{
-      wheel.addEventListener('click',event=>{const option=event.target.closest('.wheel-option');if(option)scrollWheel(wheel,Number(option.dataset.index),'smooth');});
+      wheel.addEventListener('click',event=>{if(performance.now()<(wheel.suppressClickUntil||0))return;const option=event.target.closest('.wheel-option');if(option)scrollWheel(wheel,Number(option.dataset.index),'smooth');});
     });
     $('confirmTimeBtn').addEventListener('click',confirmTime);$('cancelTimeBtn').addEventListener('click',()=>el.timeDialog.close());$('closeTimeBtn').addEventListener('click',()=>el.timeDialog.close());
     el.timeDialog.addEventListener('click',event=>{if(event.target===el.timeDialog)el.timeDialog.close();});
@@ -755,7 +868,9 @@
     el.expoLunch.addEventListener('change',()=>{el.expoPicker.classList.toggle('show',el.expoLunch.checked);if(el.expoLunch.checked)renderExpoDates();else expoSelection.clear();clearResult();updateState();});
     el.expoDates.addEventListener('click',event=>{const button=event.target.closest('.date-chip');if(!button)return;const key=button.dataset.date;if(expoSelection.has(key))expoSelection.delete(key);else expoSelection.add(key);button.classList.toggle('active');button.setAttribute('aria-pressed',String(button.classList.contains('active')));clearResult();updateState();});
     el.calculateBtn.addEventListener('click',compute);el.mobileCalculateBtn.addEventListener('click',compute);
-    $('resetBtn').addEventListener('click',()=>{el.country.value='';el.city.innerHTML='<option value="">請先選擇國家</option>';el.city.disabled=true;[el.arrDate,el.arrTime,el.depDate,el.depTime].forEach(input=>input.value='');el.hotelBreakfast.checked=false;el.expoLunch.checked=false;el.expoPicker.classList.remove('show');el.expoDates.innerHTML='';expoSelection.clear();clearResult();updateLabels();updateState();window.scrollTo({top:0,behavior:'smooth'});showToast('已重新填寫');});
+    $('resetBtn').addEventListener('click',()=>{el.country.value='';el.countrySearch.value='';el.city.innerHTML='<option value="">請先選擇國家</option>';el.city.value='';el.city.disabled=true;el.citySearch.value='';el.citySearch.disabled=true;el.cityCombo.querySelector('.combo-toggle').disabled=true;closeCombo('country');closeCombo('city');[el.arrDate,el.arrTime,el.depDate,el.depTime].forEach(input=>input.value='');el.hotelBreakfast.checked=false;el.expoLunch.checked=false;el.expoPicker.classList.remove('show');el.expoDates.innerHTML='';expoSelection.clear();clearResult();updateLabels();updateState();window.scrollTo({top:0,behavior:'smooth'});showToast('已重新填寫');});
+
+    document.addEventListener('pointerdown',event=>{if(!el.countryCombo.contains(event.target))closeCombo('country');if(!el.cityCombo.contains(event.target))closeCombo('city');});
 
     $('rulesBtn').addEventListener('click',()=>{renderRates();el.rulesDialog.showModal();});$('closeDialogBtn').addEventListener('click',()=>el.rulesDialog.close());el.rulesDialog.addEventListener('click',event=>{if(event.target===el.rulesDialog)el.rulesDialog.close();});
     document.querySelectorAll('.tab-btn').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));button.classList.add('active');$(button.dataset.tab).classList.add('active');}));
