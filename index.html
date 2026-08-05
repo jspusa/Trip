@@ -128,6 +128,7 @@
             <option value="KR">韓國 🇰🇷</option>
             <option value="TH">泰國 🇹🇭</option>
             <option value="MY">馬來西亞 🇲🇾</option>
+            <option value="CN">中國大陸／港澳 🇨🇳</option>
             <option value="AU">澳洲 🇦🇺</option>
             <option value="KH">柬埔寨 🇰🇭</option>
             <option value="VN">越南 🇻🇳</option>
@@ -329,6 +330,46 @@
         cities:{
           kualalumpur:{label:'吉隆玻', currency:'USD', B:9, L:19, D:19},
           other:{label:'其他', currency:'USD', B:7, L:15, D:15}
+        }
+      },
+      // 依行政院主計總處 114 年 1 月 1 日生效之大陸地區、香港及澳門日支表。
+      // 沿用既有餐費邏輯：早餐為日支額 4%，午、晚餐各為 8%，各餐取整數部分。
+      CN:{
+        label:'中國大陸／港澳',
+        cities:{
+          beijing:{label:'北京', currency:'USD', B:9, L:18, D:18},
+          nanjing:{label:'南京', currency:'USD', B:7, L:14, D:14},
+          tianjin:{label:'天津', currency:'USD', B:7, L:14, D:14},
+          shanghai:{label:'上海', currency:'USD', B:10, L:21, D:21},
+          shenyang:{label:'瀋陽', currency:'USD', B:6, L:12, D:12},
+          harbin:{label:'哈爾濱', currency:'USD', B:6, L:13, D:13},
+          dalian:{label:'大連', currency:'USD', B:6, L:13, D:13},
+          jinan:{label:'濟南', currency:'USD', B:7, L:14, D:14},
+          qingdao:{label:'青島', currency:'USD', B:7, L:15, D:15},
+          wuhan:{label:'武漢', currency:'USD', B:7, L:14, D:14},
+          changsha:{label:'長沙', currency:'USD', B:7, L:14, D:14},
+          xian:{label:'西安', currency:'USD', B:7, L:14, D:14},
+          chengdu:{label:'成都', currency:'USD', B:8, L:16, D:16},
+          chongqing:{label:'重慶', currency:'USD', B:7, L:14, D:14},
+          guiyang:{label:'貴陽', currency:'USD', B:6, L:12, D:12},
+          zhengzhou:{label:'鄭州', currency:'USD', B:6, L:12, D:12},
+          shenzhen:{label:'深圳', currency:'USD', B:8, L:17, D:17},
+          guangzhou:{label:'廣州', currency:'USD', B:8, L:16, D:16},
+          dongguan:{label:'東莞', currency:'USD', B:6, L:12, D:12},
+          guilin:{label:'桂林', currency:'USD', B:6, L:13, D:13},
+          fuzhou:{label:'福州', currency:'USD', B:6, L:13, D:13},
+          haikou:{label:'海口', currency:'USD', B:7, L:14, D:14},
+          suzhou:{label:'蘇州', currency:'USD', B:6, L:13, D:13},
+          hangzhou:{label:'杭州', currency:'USD', B:8, L:17, D:17},
+          ningbo:{label:'寧波', currency:'USD', B:6, L:12, D:12},
+          lhasa:{label:'拉薩', currency:'USD', B:7, L:14, D:14},
+          urumqi:{label:'烏魯木齊', currency:'USD', B:6, L:12, D:12},
+          sanya:{label:'三亞', currency:'USD', B:8, L:16, D:16},
+          xiamen:{label:'廈門', currency:'USD', B:7, L:15, D:15},
+          kunshan:{label:'昆山', currency:'USD', B:6, L:12, D:12},
+          hongkong:{label:'香港', currency:'USD', B:10, L:21, D:21},
+          macau:{label:'澳門', currency:'USD', B:6, L:13, D:13},
+          other:{label:'其他（含內蒙古）', currency:'USD', B:6, L:12, D:12}
         }
       },
       AU:{
