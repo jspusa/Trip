@@ -1,0 +1,43 @@
+/* Trip V4.6: one scrolling dialog body, with actions outside the scroll area. */
+.secretary-dialog[open]{display:flex;flex-direction:column;position:fixed;top:var(--trip-dialog-top,12px);bottom:auto;left:0;right:0;margin:0 auto;width:min(680px,calc(100% - 24px));max-width:none;height:var(--trip-dialog-height,calc(100dvh - 24px));max-height:var(--trip-dialog-height,calc(100dvh - 24px));border-radius:26px;overflow:hidden;}
+.secretary-dialog>.dialog-head{position:relative;flex:0 0 auto;}
+.secretary-dialog .secretary-body{display:block;flex:1 1 auto;min-height:0;max-height:none;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scroll-padding:16px;}
+.secretary-dialog .secretary-chat{overflow:visible;min-height:0;}
+.secretary-dialog .secretary-panel{max-height:none;overflow:visible;padding-bottom:16px;}
+.secretary-footer{flex:0 0 auto;padding:12px 20px max(12px,env(safe-area-inset-bottom));border-top:1px solid var(--line);background:#fff;}
+.secretary-footer .secretary-actions{grid-template-columns:repeat(2,minmax(0,1fr)) minmax(0,1.4fr);margin:0;}
+.secretary-footer .secretary-actions button{min-width:0;min-height:46px;padding:8px 6px;font-size:14px;line-height:1.4;overflow-wrap:anywhere;}
+.secretary-footer .secretary-next,.secretary-footer .secretary-confirm{grid-column:auto;}
+html.trip-secretary-open{overflow:hidden;}
+.export-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;margin:20px 0 0;text-align:center;}
+.export-actions .primary-btn{width:auto;min-width:190px;min-height:48px;padding:12px 20px;}
+.export-actions .secondary-btn{width:auto;margin:0;min-height:48px;padding:12px 18px;}
+.export-actions button:disabled{opacity:.45;cursor:not-allowed;}
+.export-note,.export-status{flex-basis:100%;margin:0;color:var(--muted);font-size:12px;line-height:1.6;}
+.export-status.error{color:var(--red);}
+.export-download{flex-basis:100%;color:var(--blue);font-size:14px;padding:8px;}
+@media(max-width:640px){
+  .secretary-dialog[open]{width:calc(100% - 16px);border-radius:22px;}
+  .secretary-dialog>.dialog-head{padding:14px 16px;}
+  .secretary-footer{padding:10px 12px max(10px,env(safe-area-inset-bottom));}
+  .secretary-footer .secretary-actions button{font-size:13px;}
+}
+@media print{
+  @page{size:A4 portrait;margin:12mm;}
+  html,body{height:auto!important;min-height:0!important;overflow:visible!important;background:white!important;}
+  *,*::before,*::after{animation:none!important;transition:none!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .app-shell{width:100%!important;max-width:none!important;margin:0!important;padding:0!important;}
+  .hero-actions,.desktop-actions,.mobile-action,.export-actions,.toast,dialog,.combo-toggle,.combo-menu,.picker-trigger,.result-toggle{display:none!important;}
+  .card,.summary-card,.progress-card{opacity:1!important;transform:none!important;}
+  #destinationCard,#tripCard,#mealsCard,.summary-card,.day-row,.result-breakdown,.basis{break-inside:avoid;}
+  .results.show #resultDetails[hidden]{display:block!important;}
+  .results.show{display:block!important;}
+  .day-list{display:block!important;}
+  .day-row{margin-bottom:6px;grid-template-columns:110px repeat(3,minmax(0,1fr))!important;}
+  .meal-status{white-space:normal;overflow:visible;text-overflow:clip;}
+  .hero-top{display:flex!important;}
+  .field-grid{grid-template-columns:1fr 1fr!important;}
+  .route-line{grid-template-columns:1fr!important;}
+  .route-arrow{display:none!important;}
+  .result-breakdown{grid-template-columns:repeat(3,1fr)!important;}
+}

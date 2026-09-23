@@ -1,0 +1,103 @@
+name: Trip UI regression and publish
+on:
+  push:
+    branches: [main]
+    paths:
+      - trip-export.js
+      - trip-export.css
+      - scripts/apply-ui-upgrade.py
+      - scripts/test-ui-upgrade.py
+      - .github/workflows/trip-ui-upgrade.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+  pages: write
+concurrency:
+  group: trip-ui-upgrade
+  cancel-in-progress: false
+jobs:
+  test-and-publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Apply targeted entry-point patch
+        run: |
+          python scripts/apply-ui-upgrade.py
+          node --check trip-export.js
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess, tempfile
+          source = Path('index.html').read_text()
+          for script in re.findall(r'<script>([\s\S]*?)</script>', source):
+              with tempfile.NamedTemporaryFile(suffix='.js', mode='w') as target:
+                  target.write(script)
+                  target.flush()
+                  subprocess.run(['node','--check',target.name], check=True)
+          PY
+      - name: Vendor the pinned local PDF renderer
+        run: |
+          mkdir -p vendor
+          npm pack html2canvas@1.4.1 --ignore-scripts --pack-destination "$RUNNER_TEMP"
+          tar -xOf "$RUNNER_TEMP/html2canvas-1.4.1.tgz" package/dist/html2canvas.min.js > vendor/html2canvas-1.4.1.min.js
+          tar -xOf "$RUNNER_TEMP/html2canvas-1.4.1.tgz" package/LICENSE > vendor/html2canvas-LICENSE.txt
+      - name: Install browser test dependencies
+        run: |
+          pip install playwright==1.55.0 pymupdf==1.26.3
+          python -m playwright install --with-deps chromium webkit
+          sudo apt-get install -y fonts-noto-cjk
+      - name: Test dialog, calculation and complete PDFs before publication
+        run: python scripts/test-ui-upgrade.py
+      - name: Commit only the tested entry point and local renderer
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html vendor/html2canvas-1.4.1.min.js vendor/html2canvas-LICENSE.txt
+          if ! git diff --cached --quiet; then
+            git diff --cached --stat
+            git commit -m 'Wire V4.6 dialog fix and full-page PDF export after browser tests'
+            git push origin HEAD:main
+          fi
+      - name: Request the existing GitHub Pages build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method POST "repos/$GITHUB_REPOSITORY/pages/builds"
+      - name: Verify the live page and assets match the tested files
+        run: |
+          python - <<'PY'
+          import hashlib, time, urllib.request
+          from pathlib import Path
+          base='https://jspusa.github.io/Trip/'
+          paths=['index.html','trip-export.js','trip-export.css','vendor/html2canvas-1.4.1.min.js']
+          for attempt in range(40):
+              try:
+                  for path in paths:
+                      request=urllib.request.Request(base+path+'?verify='+str(time.time_ns()), headers={'Cache-Control':'no-cache'})
+                      actual=urllib.request.urlopen(request,timeout=20).read()
+                      expected=Path(path).read_bytes()
+                      if actual!=expected:
+                          raise ValueError('Still waiting for current asset: '+path)
+                  print('LIVE_ASSETS_VERIFIED',[(path,hashlib.sha256(Path(path).read_bytes()).hexdigest()) for path in paths])
+                  break
+              except Exception as error:
+                  print(str(error),flush=True)
+                  if attempt==39: raise
+                  time.sleep(10)
+          PY
+      - name: Smoke-test the deployed site in Chromium and WebKit
+        run: python scripts/test-ui-upgrade.py --url https://jspusa.github.io/Trip/ --live
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trip-v4.6-regression
+          path: |
+            test-results/
+            index.html
+          retention-days: 7
