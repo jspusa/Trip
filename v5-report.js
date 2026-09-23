@@ -35,7 +35,7 @@ async function reportPDF(data){
   function lines(text,width,size){const out=[];for(const paragraph of clean(text).split(/\r?\n/)){let row='';for(const ch of paragraph){if(row&&measure(row+ch,size)>width){out.push(row);row=ch;}else row+=ch;}out.push(row);}return out;}
   function draw(text,x,top,size=10,color=dark){let cursor=x;for(const run of segments(clean(text))){const f=runFont(run);page.drawText(run,{x:cursor,y:H-top-size,size,font:f,color});cursor+=f.widthOfTextAtSize(run,size);}}
   function line(top){page.drawLine({start:{x:M,y:H-top},end:{x:W-M,y:H-top},thickness:.6,color:lineColor});}
-  function newPage(continuation=false){page=doc.addPage([W,H]);all.push(page);y=M;draw(continuation?'出差伙食費明細（續頁）':'出差伙食費報帳明細',M,y,continuation?17:21,blue);y+=continuation?30:34;draw('Jasper Travel  /  V5.0',M,y,9,muted);y+=20;line(y);y+=14;}
+  function newPage(continuation=false){page=doc.addPage([W,H]);all.push(page);y=M;draw(continuation?'出差伙食費明細（續頁）':'出差伙食費報帳明細',M,y,continuation?17:21,blue);y+=continuation?30:34;draw('Jasper Travel  /  V5.1',M,y,9,muted);y+=20;line(y);y+=14;}
   function space(height){if(y+height>H-60)newPage(true);}
   function paragraph(text,size=10,width=I,color=dark){const wrapped=lines(text,width,size);wrapped.forEach(row=>{space(size*1.65);draw(row,M,y,size,color);y+=size*1.65;});}
   function field(label,text){if(!text)return;const wrapped=lines(text,I-66,10);space(wrapped.length*16+7);draw(label,M,y,10,muted);wrapped.forEach((row,i)=>draw(row,M+66,y+i*16,10));y+=wrapped.length*16+7;}
@@ -63,7 +63,7 @@ async function reportPDF(data){
   paragraph('中間完整日期依費率核給；已供餐依實際設定扣除。逐日供餐調整不增加時段外餐費。',9,I,muted);
   if(data.other)paragraph('注意：此行程套用「其他地區」費率，請依公司規定確認。',9,I,muted);
   all.forEach((sheet,i)=>{page=sheet;page.drawLine({start:{x:M,y:42},end:{x:W-M,y:42},thickness:.5,color:lineColor});draw('匯出：'+new Date().toLocaleString('zh-TW',{hour12:false}),M,H-33,8,muted);const number=(i+1)+' / '+all.length;draw(number,W-M-measure(number,9),H-34,9,muted);});
-  doc.setTitle('出差伙食費報帳明細');doc.setCreator('Jasper Travel V5.0');doc.setProducer('Jasper Travel — local PDF export');doc.setLanguage('zh-TW');
+  doc.setTitle('出差伙食費報帳明細');doc.setCreator('Jasper Travel V5.1');doc.setProducer('Jasper Travel — local PDF export');doc.setLanguage('zh-TW');
   return{blob:new Blob([await doc.save()],{type:'application/pdf'}),pages:all.length};
 }
 button.addEventListener('click',async()=>{
