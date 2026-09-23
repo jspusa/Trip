@@ -55,7 +55,6 @@ const resume=document.createElement('section');resume.id='v5Resume';resume.class
 const ack=document.createElement('div');ack.id='v5MealAck';ack.className='meal-alert';ack.hidden=true;ack.innerHTML='<p id="v5MealAckText">日期已變更，範圍外的供餐已移除；請重新確認以下設定。</p><button class="compact-primary" type="button" id="v5AckBtn">供餐日期已確認</button>';el.mealFields.prepend(ack);
 const advanced=document.createElement('details');advanced.id='v5Advanced';advanced.className='advanced-meals';advanced.innerHTML='<summary>逐日調整供餐 <span id="v5AdjustmentCount"></span></summary><p class="field-help">僅調整實際供餐；不會突破抵達、離開時段的可核給限制。「未供餐」仍依時段判斷。</p><div id="v5DayAdjust"></div><button type="button" class="text-btn no-print" id="v5ClearAdjust">清除逐日調整</button>';el.mealFields.append(advanced);
 const secretAdvanced=document.createElement('details');secretAdvanced.className='advanced-meals';secretAdvanced.id='v5SecretAdvanced';secretAdvanced.innerHTML='<summary>逐日調整供餐</summary><p class="field-help">部分日期含早餐或已提供晚餐，可在這裡調整；不會增加時段外餐費。</p><div id="v5SecretDayAdjust"></div>';S.meals.insertBefore(secretAdvanced,S.mealHint);
-S.form.insertAdjacentHTML('beforeend','<p class="paragraph-help">可一次輸入：胡志明市，2026/10/14 09:40 抵達，10/17 17:30 離開，飯店有早餐，15、16 日展場有午餐。</p>');
 S.review.insertAdjacentHTML('afterbegin','<p class="meal-alert" id="v5SecretNotes" hidden></p>');
 
 function bulkUI(parent,prefix,apply,readDates){
@@ -166,15 +165,15 @@ function renderStep(){
   S.form.hidden=!text;S.meals.hidden=C.step!=='meals';S.review.hidden=C.step!=='review';
   const names={destination:'目的地',city:'城市',arrival:'抵達',departure:'離開',meals:'供餐',review:'確認'};
   S.step.textContent=state.edit?'修改'+names[C.step]:'第 '+({destination:1,city:1,arrival:2,departure:3,meals:4,review:5}[C.step])+'／5 步・'+names[C.step];
-  S.inputLabel.textContent={destination:'國家、城市或整段行程',city:'城市／地區',arrival:'抵達日期與時間',departure:'離開日期與時間'}[C.step]||'';
-  S.input.placeholder=text?(C.step==='destination'?'例如：東京，2026/10/14 09:40 抵達，10/17 17:30 離開':C.step==='city'?'例如：東京':'例如：2026/10/14 09:40'):'';
-  const hints={destination:'可以一次貼上整段行程；只會追問缺少的資訊。',city:'請輸入這次出差的城市。',arrival:'請使用當地時間；未填年份會暫列今年，確認頁會提醒。',departure:'跨年請寫明年份，離開時間須晚於抵達時間。'};
+  S.inputLabel.textContent={destination:'目的地',city:'城市／地區',arrival:'抵達日期與時間',departure:'離開日期與時間'}[C.step]||'';
+  S.input.placeholder=text?(C.step==='destination'?'例如：胡志明市':C.step==='city'?'例如：東京':'例如：2026/10/14 09:40'):'';
+  const hints={destination:'直接輸入這次出差的國家或城市。',city:'請輸入這次出差的城市。',arrival:'請使用當地時間；未填年份會暫列今年，確認頁會提醒。',departure:'跨年請寫明年份，離開時間須晚於抵達時間。'};
   if(text){S.hint.textContent=hints[C.step];S.hint.classList.remove('error');}
   [S.back,S.mealBack,S.reviewBack].forEach(b=>{b.disabled=C.step==='destination'&&!state.edit;});
   S.back.textContent=state.edit?'取消修改':'上一步';S.mealBack.textContent=state.edit?'取消修改':'上一步';
   if(C.step==='meals'){S.breakfast.checked=d.breakfast;S.lunch.checked=d.lunch;C.renderSecretLunch();bounds(secretBulk,E.keys(d.arrival?.dateValue,d.departure?.dateValue));renderAdjust($('v5SecretDayAdjust'),draftSnapshot());S.mealHint.textContent='請確認實際供餐；未提及的供餐不會被當成已確認。';S.mealNext.textContent=state.edit?'儲存修改':'確認餐食';}
   if(C.step==='review')renderReview();
-  if(!C.messages.length)message('assistant','請提供目的地，也可以一次貼上完整行程。');
+  if(!C.messages.length)message('assistant','請問這次要到哪個國家出差？也可以直接輸入城市，例如「東京」。');
   document.dispatchEvent(new CustomEvent('trip:secretary-step',{detail:{step:C.step,editing:!!state.edit,place:d.cityDisplay||C.rates[d.countryKey]?.cities[d.cityKey]?.label||C.rates[d.countryKey]?.label||'',arrival:d.arrival,departure:d.departure,mealsConfirmed:d.mealConfirmed===true}}));
   C.renderMessages();scheduleSave();requestAnimationFrame(()=>{if(text)S.input.focus({preventScroll:true});else if(C.step==='review')$('secretaryConfirmBtn').focus({preventScroll:true});});
 }
@@ -186,7 +185,7 @@ function pruneDraftDates(oldPair){
 }
 function submit(answer){
   const d=C.draft,oldPair=d.arrival?.dateValue+'|'+d.departure?.dateValue;let parsed;
-  if(C.step==='destination'&&!state.edit){
+  if(C.step==='destination'&&!state.edit&&window.TripSecretaryFastMode===true){
     parsed=E.parseParagraph(answer,C.parseDestination,C.parseTime);
     if(parsed?.error){C.hint(parsed.error,true);return;}
     if(parsed){
