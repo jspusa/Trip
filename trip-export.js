@@ -146,14 +146,17 @@
   }
   function planPages(doc,maxHeight){
     const regions=Array.from(doc.querySelectorAll('.hero,.progress-card,#destinationCard,#tripCard,#mealsCard,.day-row,.switch-row,.date-chip,.result-breakdown,.basis,.summary-card,.pdf-adjustment,#results')).map(node=>{
-      const box=node.getBoundingClientRect();return{top:Math.floor(box.top),bottom:Math.ceil(box.bottom)};
+      const box=node.getBoundingClientRect();return{top:box.top,bottom:box.bottom};
     }).filter(box=>box.bottom>box.top&&box.bottom-box.top<maxHeight);
     const heading=doc.querySelector('.result-toggle-row'),firstRow=doc.querySelector('.day-row:not(.day-header)');
-    if(heading&&firstRow)regions.push({top:Math.floor(heading.getBoundingClientRect().top),bottom:Math.ceil(firstRow.getBoundingClientRect().bottom)});
+    if(heading&&firstRow)regions.push({top:heading.getBoundingClientRect().top,bottom:firstRow.getBoundingClientRect().bottom});
     const total=Math.ceil(Math.max(...Array.from(doc.querySelectorAll('.hero,.progress-card,#destinationCard,#tripCard,#mealsCard,.summary-card,#results')).map(n=>n.getBoundingClientRect().bottom)))+2,pages=[];
     for(let top=0;top<total;){
       let bottom=Math.min(total,top+maxHeight),previous;
-      do{previous=bottom;for(const box of regions){if(box.top>top+1&&box.top<bottom&&box.bottom>bottom)bottom=Math.min(bottom,box.top);}}while(bottom!==previous);
+      // Keep raw layout coordinates. Rounding both sides of adjacent rows creates
+      // false one-pixel overlaps and can cascade into one row per PDF page.
+      do{previous=bottom;for(const box of regions){if(box.top>top+1&&box.top<bottom-1&&box.bottom>bottom+1)bottom=Math.min(bottom,Math.floor(box.top));}}while(bottom!==previous);
+      if(total-bottom<=8)bottom=total;
       if(bottom<=top)throw new Error('Invalid PDF page boundary');
       pages.push({top,height:bottom-top});top=bottom;
     }

@@ -70,7 +70,9 @@ def makepdf(page,kind,label,expected=None):
             if expected:assert expected in text,text
             assert not any(p.get_images() for p in pdf)
             if label.endswith('-short'):assert len(pdf)==1
-        else:assert all(p.get_images() for p in pdf)
+        else:
+            assert all(p.get_images() for p in pdf)
+            assert len(pdf)<=(12 if label.endswith('-whole-long') else 4),('Excessive PDF pagination',label,len(pdf))
         for i,p in enumerate(pdf):
             assert abs(p.rect.width-595.276)<1 and abs(p.rect.height-841.89)<1
             p.get_pixmap(matrix=fitz.Matrix(1.3,1.3)).save(str(out/(label+f'-page-{i+1}.png')))
