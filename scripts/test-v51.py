@@ -71,6 +71,8 @@ with sync_playwright() as pw:
    p=c.new_page();p.set_default_timeout(20000);p.on('pageerror',lambda e:errors.append(str(e)));return c,p
   for mode,size in [('light',(1200,900)),('dark',(390,844)),('light',(320,568)),('dark',(844,390)),('light',(390,360)),('dark',(710,857))]:
    c,page=new(size,mode);load(page);expect(page.locator('html')).to_have_attribute('data-appearance',mode)
+   if size[0]<641:
+    page.locator('#countryCombo .combo-toggle').click();page.wait_for_timeout(260);expect(page.locator('#countryCombo')).to_have_class(re.compile(r'\\bopen\\b'));expect(page.locator('#countryMenu')).to_be_visible();page.locator('#countryCombo .combo-toggle').click()
    trip(page);bounds(page);page.screenshot(path=str(out/f'{engine}-{mode}-{size[0]}x{size[1]}-review.png'))
    page.locator('[data-edit="departure"]').click();expect(page.locator('#secretaryForm')).to_be_visible();expect(page.locator('#secretaryInputLabel')).to_contain_text('起飛')
    page.locator('#secretaryBackBtn').click();expect(page.locator('#secretaryReview')).to_be_visible()
