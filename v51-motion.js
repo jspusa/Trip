@@ -35,7 +35,7 @@ let lastMessageCount=0;
 document.addEventListener('trip:secretary-step',event=>{
   const {step}=event.detail;
   quickMode.hidden=step!=='destination';
-  document.querySelector('.paragraph-help').hidden=true;
+  const paragraphHelp=document.querySelector('.paragraph-help');if(paragraphHelp)paragraphHelp.hidden=true;
   requestAnimationFrame(()=>{
     const messages=chat.querySelectorAll('.chat-message');
     if(messages.length>lastMessageCount){const newest=messages[messages.length-1];animate(newest,[{opacity:0,transform:'translateY(7px)'},{opacity:1,transform:'none'}],220);}
