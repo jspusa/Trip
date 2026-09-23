@@ -1,25 +1,21 @@
-name: Trip UI regression and publish
+name: Trip V5 regression
 on:
   push:
-    branches: [main]
-    paths:
-      - trip-export.js
-      - trip-export.css
-      - scripts/apply-ui-upgrade.py
-      - scripts/test-ui-upgrade.py
-      - .github/workflows/trip-ui-upgrade.yml
+    branches: [main, work/trip-v5]
   workflow_dispatch:
 permissions:
-  contents: write
+  contents: read
   pages: write
 concurrency:
-  group: trip-ui-upgrade
+  group: trip-v5-${{ github.ref }}
   cancel-in-progress: false
+defaults:
+  run:
+    shell: bash
 jobs:
-  test-and-publish:
-    if: github.ref == 'refs/heads/main'
+  test:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 18
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -28,76 +24,78 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Apply targeted entry-point patch
+      - name: Check syntax and original fee parity
         run: |
-          python scripts/apply-ui-upgrade.py
+          test -z "$(find scripts -name 'v5-source-*.b64' -print -quit)"
+          node --check v5-engine.js
+          node --check v5-experience.js
+          node --check v5-report.js
           node --check trip-export.js
           python - <<'PY'
           from pathlib import Path
-          import re, subprocess, tempfile
-          source = Path('index.html').read_text()
-          for script in re.findall(r'<script>([\s\S]*?)</script>', source):
-              with tempfile.NamedTemporaryFile(suffix='.js', mode='w') as target:
-                  target.write(script)
-                  target.flush()
-                  subprocess.run(['node','--check',target.name], check=True)
+          import re,subprocess,tempfile
+          for text in re.findall(r'<script>([\s\S]*?)</script>',Path('index.html').read_text()):
+              with tempfile.NamedTemporaryFile(mode='w',suffix='.js') as f:
+                  f.write(text);f.flush();subprocess.run(['node','--check',f.name],check=True)
+          for path in ['vendor/pdf-lib-1.17.1.min.js','vendor/fontkit-1.1.1.umd.min.js','vendor/trip-report-tc.ttf','vendor/trip-report-OFL.txt']:
+              assert Path(path).stat().st_size>0,path
           PY
-      - name: Vendor the pinned local PDF renderer
+          node scripts/test-v5-engine.cjs
+      - name: Install test tools and browser dependencies
         run: |
-          mkdir -p vendor
-          npm pack html2canvas@1.4.1 --ignore-scripts --pack-destination "$RUNNER_TEMP"
-          tar -xOf "$RUNNER_TEMP/html2canvas-1.4.1.tgz" package/dist/html2canvas.min.js > vendor/html2canvas-1.4.1.min.js
-          tar -xOf "$RUNNER_TEMP/html2canvas-1.4.1.tgz" package/LICENSE > vendor/html2canvas-LICENSE.txt
-      - name: Install browser test dependencies
+          mkdir -p test-results/v5
+          {
+            pip install playwright==1.55.0 pymupdf==1.26.3 &&
+            python -m playwright install --with-deps chromium webkit &&
+            sudo apt-get install -y fonts-noto-cjk
+          } > test-results/v5/dependencies.log 2>&1 || { tail -60 test-results/v5/dependencies.log; exit 1; }
+      - name: Chromium and WebKit end-to-end tests
         run: |
-          pip install playwright==1.55.0 pymupdf==1.26.3
-          python -m playwright install --with-deps chromium webkit
-          sudo apt-get install -y fonts-noto-cjk
-      - name: Test dialog, calculation and complete PDFs before publication
-        run: python scripts/test-ui-upgrade.py
-      - name: Commit only the tested entry point and local renderer
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add index.html vendor/html2canvas-1.4.1.min.js vendor/html2canvas-LICENSE.txt
-          if ! git diff --cached --quiet; then
-            git diff --cached --stat
-            git commit -m 'Wire V4.6 dialog fix and full-page PDF export after browser tests'
-            git push origin HEAD:main
-          fi
-      - name: Request the existing GitHub Pages build
+          python -u scripts/test-v5.py 2>&1 | tee test-results/v5/browser.log
+          grep -q ALL_V5_TESTS_PASSED test-results/v5/browser.log
+      - name: Rebuild and verify deployed V5 assets
+        if: github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh api --method POST "repos/$GITHUB_REPOSITORY/pages/builds"
-      - name: Verify the live page and assets match the tested files
         run: |
+          gh api --method POST "repos/$GITHUB_REPOSITORY/pages/builds"
           python - <<'PY'
-          import hashlib, time, urllib.request
           from pathlib import Path
+          import time,urllib.request
           base='https://jspusa.github.io/Trip/'
-          paths=['index.html','trip-export.js','trip-export.css','vendor/html2canvas-1.4.1.min.js']
+          paths=['index.html','trip-export.js','v5-engine.js','v5-experience.js','v5-report.js','v5-experience.css']
           for attempt in range(40):
               try:
                   for path in paths:
-                      request=urllib.request.Request(base+path+'?verify='+str(time.time_ns()), headers={'Cache-Control':'no-cache'})
+                      request=urllib.request.Request(base+path+'?verify='+str(time.time_ns()),headers={'Cache-Control':'no-cache'})
                       actual=urllib.request.urlopen(request,timeout=20).read()
-                      expected=Path(path).read_bytes()
-                      if actual!=expected:
-                          raise ValueError('Still waiting for current asset: '+path)
-                  print('LIVE_ASSETS_VERIFIED',[(path,hashlib.sha256(Path(path).read_bytes()).hexdigest()) for path in paths])
+                      assert actual==Path(path).read_bytes(),'Waiting for live '+path
+                  print('LIVE_V5_ASSETS_VERIFIED',flush=True)
                   break
               except Exception as error:
-                  print(str(error),flush=True)
-                  if attempt==39: raise
+                  print(error,flush=True)
+                  if attempt==39:raise
                   time.sleep(10)
           PY
-      - name: Smoke-test the deployed site in Chromium and WebKit
-        run: python scripts/test-ui-upgrade.py --url https://jspusa.github.io/Trip/ --live
+          python -u scripts/test-v5.py --live https://jspusa.github.io/Trip/ 2>&1 | tee test-results/v5/live.log
+          grep -q ALL_V5_TESTS_PASSED test-results/v5/live.log
+      - name: Package reviewable source and rendered test evidence
+        if: always()
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile,ZIP_DEFLATED
+          with ZipFile('v5-source-review.zip','w',ZIP_DEFLATED) as z:
+              for pattern in ['v5-*.js','v5-*.css','trip-export.js','index.html','scripts/*v5*']:
+                  for path in Path('.').glob(pattern):
+                      if path.is_file() and path.suffix not in ['.zip','.ttf','.otf','.b64']:
+                          z.write(path)
+          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: trip-v4.6-regression
+          name: trip-v5-regression
           path: |
-            test-results/
-            index.html
+            test-results/v5/
+            v5-source-review.zip
           retention-days: 7
