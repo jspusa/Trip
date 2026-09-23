@@ -22,15 +22,18 @@ function currency(value,code){return code+' '+Number(value).toFixed(code==='TWD'
 async function reportPDF(data){
   const [lib,kit,bytes]=await Promise.all([loadScript('vendor/pdf-lib-1.17.1.min.js','PDFLib'),loadScript('vendor/fontkit-1.1.1.umd.min.js','fontkit'),loadFont()]);
   const {PDFDocument,rgb}=lib,doc=await PDFDocument.create();doc.registerFontkit(kit);
-  // Retain original glyph IDs: the legacy fontkit subsetter can omit CJK outlines.
-  const font=await doc.embedFont(bytes,{subset:false});
+  // Complete CJK glyphs and separate Latin metrics avoid missing outlines and numeral spacing.
+  const font=await doc.embedFont(bytes,{subset:false}),latin=await doc.embedFont(lib.StandardFonts.Helvetica);
   const supported=new Set(font.getCharacterSet());
   const dark=rgb(.12,.15,.2),muted=rgb(.38,.42,.48),blue=rgb(0,.34,.65),lineColor=rgb(.82,.86,.9),pale=rgb(.95,.97,.99);
   const W=595.276,H=841.89,M=36,I=W-2*M;
   let page,y;const all=[];
   function clean(value){const text=String(value??'').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,'');for(const ch of text){if(ch!=='\n'&&ch!=='\r'&&!supported.has(ch.codePointAt(0)))throw new Error('報帳資料含不支援的字元「'+ch+'」，請移除特殊符號後重試。');}return text;}
-  function lines(text,width,size){const out=[];for(const paragraph of clean(text).split(/\r?\n/)){let row='';for(const ch of paragraph){if(row&&font.widthOfTextAtSize(row+ch,size)>width){out.push(row);row=ch;}else row+=ch;}out.push(row);}return out;}
-  function draw(text,x,top,size=10,color=dark){page.drawText(clean(text),{x,y:H-top-size,size,font,color});}
+  const segments=text=>String(text).match(/[\x20-\x7e]+|[^\x20-\x7e]+/g)||[];
+  const runFont=text=>/^[\x20-\x7e]+$/.test(text)?latin:font;
+  const measure=(text,size)=>segments(text).reduce((sum,run)=>sum+runFont(run).widthOfTextAtSize(run,size),0);
+  function lines(text,width,size){const out=[];for(const paragraph of clean(text).split(/\r?\n/)){let row='';for(const ch of paragraph){if(row&&measure(row+ch,size)>width){out.push(row);row=ch;}else row+=ch;}out.push(row);}return out;}
+  function draw(text,x,top,size=10,color=dark){let cursor=x;for(const run of segments(clean(text))){const f=runFont(run);page.drawText(run,{x:cursor,y:H-top-size,size,font:f,color});cursor+=f.widthOfTextAtSize(run,size);}}
   function line(top){page.drawLine({start:{x:M,y:H-top},end:{x:W-M,y:H-top},thickness:.6,color:lineColor});}
   function newPage(continuation=false){page=doc.addPage([W,H]);all.push(page);y=M;draw(continuation?'出差伙食費明細（續頁）':'出差伙食費報帳明細',M,y,continuation?17:21,blue);y+=continuation?30:34;draw('Jasper Travel  /  V5.0',M,y,9,muted);y+=20;line(y);y+=14;}
   function space(height){if(y+height>H-60)newPage(true);}
@@ -52,14 +55,14 @@ async function reportPDF(data){
     let x=M;wrapped.forEach((text,i)=>{text.forEach((t,j)=>draw(t,x+8,y+6+j*14,9,i===4?blue:dark));x+=cols[i];});y+=height;line(y);
   });
   y+=14;space(116);
-  ['B','L','D'].forEach((m,i)=>{draw(['早餐','午餐','晚餐'][i]+'：'+currency(data.rate[m],data.currency)+' × '+data.counts[m]+' 餐',M+8,y,10,muted);const amount=currency(data.subtotals[m],data.currency);draw(amount,W-M-font.widthOfTextAtSize(amount,10)-8,y,10);y+=19;});
-  y+=4;page.drawRectangle({x:M,y:H-y-38,width:I,height:38,color:pale});draw('可核給合計',M+10,y+9,13,blue);const total=currency(data.total,data.currency);draw(total,W-M-font.widthOfTextAtSize(total,18)-10,y+6,18,blue);y+=52;
+  ['B','L','D'].forEach((m,i)=>{draw(['早餐','午餐','晚餐'][i]+'：'+currency(data.rate[m],data.currency)+' × '+data.counts[m]+' 餐',M+8,y,10,muted);const amount=currency(data.subtotals[m],data.currency);draw(amount,W-M-measure(amount,10)-8,y,10);y+=19;});
+  y+=4;page.drawRectangle({x:M,y:H-y-38,width:I,height:38,color:pale});draw('可核給合計',M+10,y+9,13,blue);const total=currency(data.total,data.currency);draw(total,W-M-measure(total,18)-10,y+6,18,blue);y+=52;
   paragraph('判斷依據',11,I,blue);
   paragraph('抵達當日：09:00 前核給三餐；09:00–12:59 核給午、晚餐；13:00–20:59 核給晚餐；21:00 後不核給。',9,I,muted);
   paragraph('離開當日：05:00 前不核給；05:00–11:59 核給早餐；12:00–18:59 核給早、午餐；19:00 後核給三餐。',9,I,muted);
   paragraph('中間完整日期依費率核給；已供餐依實際設定扣除。逐日供餐調整不增加時段外餐費。',9,I,muted);
   if(data.other)paragraph('注意：此行程套用「其他地區」費率，請依公司規定確認。',9,I,muted);
-  all.forEach((sheet,i)=>{page=sheet;page.drawLine({start:{x:M,y:42},end:{x:W-M,y:42},thickness:.5,color:lineColor});draw('匯出：'+new Date().toLocaleString('zh-TW',{hour12:false}),M,H-33,8,muted);const number=(i+1)+' / '+all.length;draw(number,W-M-font.widthOfTextAtSize(number,9),H-34,9,muted);});
+  all.forEach((sheet,i)=>{page=sheet;page.drawLine({start:{x:M,y:42},end:{x:W-M,y:42},thickness:.5,color:lineColor});draw('匯出：'+new Date().toLocaleString('zh-TW',{hour12:false}),M,H-33,8,muted);const number=(i+1)+' / '+all.length;draw(number,W-M-measure(number,9),H-34,9,muted);});
   doc.setTitle('出差伙食費報帳明細');doc.setCreator('Jasper Travel V5.0');doc.setProducer('Jasper Travel — local PDF export');doc.setLanguage('zh-TW');
   return{blob:new Blob([await doc.save()],{type:'application/pdf'}),pages:all.length};
 }
