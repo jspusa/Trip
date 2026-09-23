@@ -92,6 +92,10 @@ with sync_playwright() as pw:
   page.emulate_media(color_scheme='light');expect(page.locator('html')).to_have_attribute('data-appearance','light')
   # Conversation mode is the default: avatars and chat bubbles stay visible. Fast mode is optional at the bottom.
   page.locator('#secretaryBtn').click();expect(page.locator('#secretaryChat')).to_be_visible();expect(page.locator('.chat-avatar').first).to_be_visible()
+  expect(page.locator('#secretaryChat .chat-message').first).to_contain_text('請問這次要到哪個國家出差')
+  expect(page.locator('#secretaryInputLabel')).to_have_text('目的地');expect(page.locator('#secretaryInput')).to_have_attribute('placeholder','例如：胡志明市')
+  page.locator('#secretaryInput').fill('胡志明市，2026/10/14 09:40 抵達，2026/10/17 17:30 離開');page.locator('.secretary-footer .secretary-send').click();expect(page.locator('#secretaryInputLabel')).to_have_text('抵達日期與時間')
+  page.locator('#secretaryBackBtn').click();expect(page.locator('#secretaryInputLabel')).to_have_text('目的地');page.locator('#secretaryResetBtn').click();
   expect(page.locator('.v51-fast-mode')).to_be_visible();expect(page.locator('#v51FastInput')).not_to_be_visible()
   page.locator('.v51-fast-mode>summary').click();expect(page.locator('#v51FastInput')).to_be_visible()
   page.locator('#v51FastInput').fill('胡志明市，2026/10/14 09:40 抵達，2026/10/17 17:30 離開，飯店有早餐')
