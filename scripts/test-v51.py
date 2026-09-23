@@ -74,7 +74,7 @@ with sync_playwright() as pw:
    if size[0]<641:
     page.locator('#countryCombo .combo-toggle').click();page.wait_for_timeout(260);expect(page.locator('#countryCombo')).to_have_class(re.compile(r'\\bopen\\b'));expect(page.locator('#countryMenu')).to_be_visible();page.locator('#countryCombo .combo-toggle').click()
    trip(page);bounds(page);page.screenshot(path=str(out/f'{engine}-{mode}-{size[0]}x{size[1]}-review.png'))
-   page.locator('[data-edit="departure"]').click();expect(page.locator('#secretaryForm')).to_be_visible();expect(page.locator('#secretaryInputLabel')).to_contain_text('起飛')
+   page.locator('[data-edit="departure"]').click();expect(page.locator('#secretaryForm')).to_be_visible();expect(page.locator('#secretaryInputLabel')).to_contain_text('離開')
    page.locator('#secretaryBackBtn').click();expect(page.locator('#secretaryReview')).to_be_visible()
    finish(page);page.locator('#v5Summary').scroll_into_view_if_needed();page.screenshot(path=str(out/f'{engine}-{mode}-{size[0]}x{size[1]}-result.png'))
    if size[0]<781:expect(page.locator('#v51MobilePdf')).to_be_visible();expect(page.locator('#mobileCalculateBtn')).not_to_be_visible()
