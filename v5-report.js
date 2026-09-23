@@ -1,4 +1,4 @@
-/* Searchable, text-based reimbursement PDF. All processing is local. */
+/* Searchable reimbursement PDF. Rendering and trip data stay on this device. */
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id),toolbar=document.querySelector('.export-actions');if(!toolbar||!window.TripV5)return;
@@ -21,7 +21,9 @@ async function loadFont(){
 function currency(value,code){return code+' '+Number(value).toFixed(code==='TWD'?0:2).replace(/\B(?=(\d{3})+(?!\d))/g,',');}
 async function reportPDF(data){
   const [lib,kit,bytes]=await Promise.all([loadScript('vendor/pdf-lib-1.17.1.min.js','PDFLib'),loadScript('vendor/fontkit-1.1.1.umd.min.js','fontkit'),loadFont()]);
-  const {PDFDocument,rgb}=lib,doc=await PDFDocument.create();doc.registerFontkit(kit);const font=await doc.embedFont(bytes,{subset:true});
+  const {PDFDocument,rgb}=lib,doc=await PDFDocument.create();doc.registerFontkit(kit);
+  // Retain original glyph IDs: the legacy fontkit subsetter can omit CJK outlines.
+  const font=await doc.embedFont(bytes,{subset:false});
   const supported=new Set(font.getCharacterSet());
   const dark=rgb(.12,.15,.2),muted=rgb(.38,.42,.48),blue=rgb(0,.34,.65),lineColor=rgb(.82,.86,.9),pale=rgb(.95,.97,.99);
   const W=595.276,H=841.89,M=36,I=W-2*M;
