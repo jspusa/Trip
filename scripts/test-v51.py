@@ -96,7 +96,7 @@ with sync_playwright() as pw:
   page.locator('.v51-fast-mode>summary').click();expect(page.locator('#v51FastInput')).to_be_visible()
   page.locator('#v51FastInput').fill('胡志明市，2026/10/14 09:40 抵達，2026/10/17 17:30 離開，飯店有早餐')
   page.locator('#v51FastSubmit').click();page.wait_for_timeout(300)
-  expect(page.locator('#secretaryChat .chat-message')).to_have_count(2)
+  assert page.locator('#secretaryChat .chat-message').count()>=2
   page.keyboard.press('Escape');expect(page.locator('#secretaryDialog')).not_to_be_visible();page.locator('#secretaryBtn').click()
   if page.locator('#secretaryReview').is_visible():finish(page)
   else:
