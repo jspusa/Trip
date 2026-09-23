@@ -71,8 +71,10 @@ with sync_playwright() as pw:
    p=c.new_page();p.set_default_timeout(20000);p.on('pageerror',lambda e:errors.append(str(e)));return c,p
   for mode,size in [('light',(1200,900)),('dark',(390,844)),('light',(320,568)),('dark',(844,390)),('light',(390,360)),('dark',(710,857))]:
    c,page=new(size,mode);load(page);expect(page.locator('html')).to_have_attribute('data-appearance',mode)
+   if size[0]<641:
+    page.locator('#countryCombo .combo-toggle').click();page.wait_for_timeout(260);assert page.locator('#countryCombo').evaluate("n=>n.classList.contains('open')");expect(page.locator('#countryMenu')).to_be_visible();page.locator('#countryCombo .combo-toggle').click()
    trip(page);bounds(page);page.screenshot(path=str(out/f'{engine}-{mode}-{size[0]}x{size[1]}-review.png'))
-   page.locator('[data-edit="departure"]').click();expect(page.locator('#v51Question')).to_have_text('什麼時候離開？');expect(page.locator('.v51-itinerary')).to_be_visible()
+   page.locator('[data-edit="departure"]').click();expect(page.locator('#secretaryForm')).to_be_visible();expect(page.locator('#secretaryInputLabel')).to_contain_text('離開')
    page.locator('#secretaryBackBtn').click();expect(page.locator('#secretaryReview')).to_be_visible()
    finish(page);page.locator('#v5Summary').scroll_into_view_if_needed();page.screenshot(path=str(out/f'{engine}-{mode}-{size[0]}x{size[1]}-result.png'))
    if size[0]<781:expect(page.locator('#v51MobilePdf')).to_be_visible();expect(page.locator('#mobileCalculateBtn')).not_to_be_visible()
@@ -88,14 +90,21 @@ with sync_playwright() as pw:
   if not args.inline:page.reload(wait_until='networkidle');expect(page.locator('html')).to_have_attribute('data-appearance','light')
   page.locator('#v51Theme').select_option('system');expect(page.locator('html')).to_have_attribute('data-appearance','dark')
   page.emulate_media(color_scheme='light');expect(page.locator('html')).to_have_attribute('data-appearance','light')
-  # Guided itinerary edits also work before the final review, with correct cancellation.
-  page.locator('#secretaryBtn').click();page.locator('#secretaryInput').fill('胡志明市');page.locator('.secretary-footer .secretary-send').click()
-  page.locator('[data-edit-step="destination"]').click();page.locator('#secretaryBackBtn').click();expect(page.locator('#v51Question')).to_have_text('什麼時候抵達？')
-  page.locator('[data-day="1"]').click();assert page.locator('#secretaryInput').input_value().strip()
-  page.locator('#secretaryInput').fill('2026/10/14 09:40');page.locator('.secretary-footer .secretary-send').click()
-  page.locator('#secretaryInput').fill('2026/10/17 17:30');page.locator('.secretary-footer .secretary-send').click();page.locator('label[for="secretaryBreakfast"]').click();page.locator('#secretaryMealNextBtn').click()
-  page.locator('.v51-transcript>summary').click();page.wait_for_timeout(300);expect(page.locator('#secretaryChat')).to_be_visible();page.locator('.v51-transcript>summary').click();page.wait_for_timeout(300)
-  page.keyboard.press('Escape');expect(page.locator('#secretaryDialog')).not_to_be_visible();page.locator('#secretaryBtn').click();finish(page)
+  # Conversation mode is the default: avatars and chat bubbles stay visible. Fast mode is optional at the bottom.
+  page.locator('#secretaryBtn').click();expect(page.locator('#secretaryChat')).to_be_visible();expect(page.locator('.chat-avatar').first).to_be_visible()
+  expect(page.locator('.v51-fast-mode')).to_be_visible();expect(page.locator('#v51FastInput')).not_to_be_visible()
+  page.locator('.v51-fast-mode>summary').click();expect(page.locator('#v51FastInput')).to_be_visible()
+  page.locator('#v51FastInput').fill('胡志明市，2026/10/14 09:40 抵達，2026/10/17 17:30 離開，飯店有早餐')
+  page.locator('#v51FastSubmit').click();page.wait_for_timeout(300)
+  assert page.locator('#secretaryChat .chat-message').count()>=2
+  page.keyboard.press('Escape');expect(page.locator('#secretaryDialog')).not_to_be_visible();page.locator('#secretaryBtn').click()
+  if page.locator('#secretaryReview').is_visible():finish(page)
+  else:
+   # The parser may intentionally ask one missing/ambiguous detail; complete through the normal conversation.
+   while not page.locator('#secretaryReview').is_visible():
+    if page.locator('#secretaryMeals').is_visible():page.locator('#secretaryMealNextBtn').click()
+    else:page.locator('#secretaryInput').fill('2026/10/17 17:30');page.locator('.secretary-footer .secretary-send').click()
+   finish(page)
   # Same true amount in light and dark exports. PDF colors always remain light.
   pdf(page,'full',engine+'-light-full');pdf(page,'report',engine+'-light-report')
   page.locator('#v51Theme').select_option('dark');pdf(page,'full',engine+'-dark-full');pdf(page,'report',engine+'-dark-report')

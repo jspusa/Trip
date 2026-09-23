@@ -25,36 +25,24 @@ document.querySelectorAll('[data-date-target]').forEach(b=>b.innerHTML=icons.cal
 document.querySelectorAll('[data-time-target]').forEach(b=>b.innerHTML=icons.clock);
 const footer=document.createElement('p');footer.className='v51-footer no-print';footer.textContent='Jasper Travel · 在此裝置完成試算與匯出';document.querySelector('.app-shell').append(footer);
 
-// A focused question with an editable itinerary. Full conversation remains available.
-const dialog=$('secretaryDialog'),body=dialog.querySelector('.secretary-body'),panel=dialog.querySelector('.secretary-panel');
-const guide=document.createElement('section');guide.className='v51-guidance';guide.innerHTML='<nav class="v51-itinerary" id="v51Itinerary" aria-label="已填行程，點選修改"></nav><div id="v51QuestionGroup"><p class="v51-step-caption" id="v51StepCaption"></p><h3 class="v51-question" id="v51Question"></h3><p class="v51-subtitle" id="v51Subtitle"></p></div>';
-body.prepend(guide);
-const transcript=document.createElement('details');transcript.className='v51-transcript';transcript.innerHTML='<summary>查看填寫紀錄</summary>';transcript.append($('secretaryChat'));body.append(transcript);
-const quick=document.createElement('div');quick.className='v51-quick-dates';quick.hidden=true;quick.innerHTML='<button class="text-btn" type="button" data-day="0">今天</button><button class="text-btn" type="button" data-day="1">明天</button><label>選擇日期<input id="v51QuickDate" type="date" aria-label="快速填入日期"></label>';
-$('secretaryForm').insertBefore(quick,document.querySelector('.secretary-composer'));
-function fillDate(value){if(!value)return;const input=$('secretaryInput'),time=input.value.match(/\b\d{1,2}:\d{2}\b/);input.value=value.replaceAll('-','/')+' '+(time?time[0]:'');input.dispatchEvent(new Event('input',{bubbles:true}));input.focus({preventScroll:true});input.setSelectionRange(input.value.length,input.value.length);}
-quick.addEventListener('click',e=>{const b=e.target.closest('[data-day]');if(!b)return;const d=new Date();d.setDate(d.getDate()+Number(b.dataset.day));fillDate(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'));});
-$('v51QuickDate').addEventListener('change',e=>fillDate(e.target.value));
-let stepSignature='';
+// Conversation-first secretary: keep the original one-question-at-a-time chat as the default.
+// A one-line fast parser is available only as an optional tool at the bottom.
+const dialog=$('secretaryDialog'),body=dialog.querySelector('.secretary-body'),panel=dialog.querySelector('.secretary-panel'),chat=$('secretaryChat');
+const quickMode=document.createElement('details');quickMode.className='v51-fast-mode';quickMode.innerHTML='<summary>快速模式 <span>一次貼上整段行程</span></summary><div class="v51-fast-mode-body"><label for="v51FastInput">整段行程</label><textarea id="v51FastInput" rows="3" maxlength="2000" placeholder="例如：胡志明市，10/14 09:40 抵達，10/17 17:30 離開，飯店有早餐"></textarea><p>系統會先解析內容，再用對話補問缺少的資訊。</p><button class="compact-primary" id="v51FastSubmit" type="button">快速解析</button></div>';
+body.append(quickMode);
+$('v51FastSubmit').addEventListener('click',()=>{const value=$('v51FastInput').value.trim();if(!value)return;$('secretaryInput').value=value;$('secretaryInput').dispatchEvent(new Event('input',{bubbles:true}));$('secretaryForm').requestSubmit();quickMode.open=false;$('v51FastInput').value='';});
+let lastMessageCount=0;
 document.addEventListener('trip:secretary-step',event=>{
-  const {step,editing,place,arrival,departure,mealsConfirmed}=event.detail;
-  const signature=step+'|'+editing;
-  const questions={destination:'這次，去哪裡出差？',city:'前往哪一座城市？',arrival:'什麼時候抵達？',departure:'什麼時候離開？',meals:'哪些餐食已經提供？',review:'核對一下，就完成了。'};
-  const subtitles={destination:'輸入城市即可開始，也可以一次貼上整段行程。',city:'選擇城市，才能使用對應的餐費標準。',arrival:'填入抵達目的地的當地日期與時間。',departure:'填入離開當地的日期與時間。',meals:'只勾選實際供餐；部分日期可在下方逐日調整。',review:'資料有變更？直接點選該項「修改」。'};
-  $('v51StepCaption').textContent=editing?'編輯行程':step==='review'?'準備完成':'YOUR NEXT TRIP';
-  $('v51Question').textContent=questions[step];$('v51Subtitle').textContent=subtitles[step];
-  if(step==='review'){$('v51Question').insertAdjacentHTML('afterbegin','<span class="v51-done" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2"><circle cx="16" cy="16" r="14"/><path d="m9 16 5 5 9-10"/></svg></span>');}
-  const nav=$('v51Itinerary');nav.replaceChildren();
-  const entries=[['destination',place],['arrival',arrival?'抵達 '+arrival.dateValue.slice(5)+' '+arrival.timeValue:''],['departure',departure?'離開 '+departure.dateValue.slice(5)+' '+departure.timeValue:''],['meals',mealsConfirmed?'供餐已確認':'']];
-  entries.forEach(([key,value])=>{if(!value)return;const b=document.createElement('button');b.type='button';b.textContent=value;b.dataset.editStep=key;b.setAttribute('aria-label','修改'+value);if(step===key)b.setAttribute('aria-current','step');nav.append(b);});
-  nav.hidden=step==='review';quick.hidden=!['arrival','departure'].includes(step);
-  const current=step==='arrival'?arrival:departure;$('v51QuickDate').value=current?.dateValue||'';
-  $('v51QuickDate').min=step==='departure'?(arrival?.dateValue||''):'';
-  document.querySelector('.paragraph-help').hidden=step!=='destination';
-  if(signature!==stepSignature){stepSignature=signature;finishMotion();animate($('v51QuestionGroup'),[{opacity:0,transform:'translateY(8px)'},{opacity:1,transform:'none'}],240);animate(panel,[{opacity:.25,transform:'translateY(6px)'},{opacity:1,transform:'none'}],260);body.scrollTop=0;}
-  transcript.open=false;
+  const {step}=event.detail;
+  quickMode.hidden=step!=='destination';
+  document.querySelector('.paragraph-help').hidden=true;
+  requestAnimationFrame(()=>{
+    const messages=chat.querySelectorAll('.chat-message');
+    if(messages.length>lastMessageCount){const newest=messages[messages.length-1];animate(newest,[{opacity:0,transform:'translateY(7px)'},{opacity:1,transform:'none'}],220);}
+    lastMessageCount=messages.length;
+    chat.scrollTop=chat.scrollHeight;
+  });
 });
-$('v51Itinerary').addEventListener('click',e=>{const b=e.target.closest('[data-edit-step]');if(b)window.TripV5.editSecretary(b.dataset.editStep);});
 
 // Native dialogs retain focus trapping, Escape and backdrop dismissal.
 document.querySelectorAll('dialog').forEach(node=>{
