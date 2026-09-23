@@ -1,7 +1,7 @@
 name: Trip V5 regression
 on:
   push:
-    branches: [main, work/trip-v5]
+    branches: [main, work/trip-v5, work/trip-v5-1-visual]
   workflow_dispatch:
 permissions:
   contents: read
@@ -30,6 +30,7 @@ jobs:
           node --check v5-engine.js
           node --check v5-experience.js
           node --check v5-report.js
+          node --check v5-visual.js
           node --check trip-export.js
           python - <<'PY'
           from pathlib import Path
@@ -63,7 +64,7 @@ jobs:
           from pathlib import Path
           import time,urllib.request
           base='https://jspusa.github.io/Trip/'
-          paths=['index.html','trip-export.js','v5-engine.js','v5-experience.js','v5-report.js','v5-experience.css']
+          paths=['index.html','trip-export.js','v5-engine.js','v5-experience.js','v5-report.js','v5-experience.css','v5-visual.css','v5-visual.js']
           for attempt in range(40):
               try:
                   for path in paths:
