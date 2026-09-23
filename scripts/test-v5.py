@@ -1,5 +1,5 @@
 """V5 browser regression with synthetic itineraries and rendered PDF evidence."""
-import argparse, functools, http.server, json, threading
+import argparse, functools, http.server, json, os, threading
 from pathlib import Path
 import fitz
 from playwright.sync_api import sync_playwright, expect
