@@ -1145,7 +1145,11 @@
         const exact=comboChoices(kind).find(choice=>choice.label.toLowerCase()===parts.input.value.trim().toLowerCase()||choice.value.toLowerCase()===parts.input.value.trim().toLowerCase());
         if(exact&&!parts.select.value)selectCombo(kind,exact.value);else closeCombo(kind);
       },140));
-      toggle.addEventListener('click',()=>{const shouldOpen=!parts.combo.classList.contains('open');parts.input.focus({preventScroll:true});shouldOpen?openCombo(kind):closeCombo(kind);});
+      // Keep touch interaction stable on iOS: pressing the chevron must not blur the
+      // search field before the click handler decides whether the menu is open.
+      toggle.addEventListener('pointerdown',event=>event.preventDefault());
+      toggle.addEventListener('click',()=>{const shouldOpen=!parts.combo.classList.contains('open');if(shouldOpen){parts.input.focus({preventScroll:true});openCombo(kind);}else closeCombo(kind);});
+      parts.menu.addEventListener('pointerdown',event=>event.preventDefault());
       parts.menu.addEventListener('mousedown',event=>event.preventDefault());
       parts.menu.addEventListener('click',event=>{const option=event.target.closest('.combo-option');if(option)selectCombo(kind,option.dataset.value);});
     }
