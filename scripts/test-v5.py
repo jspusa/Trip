@@ -23,8 +23,9 @@ def load(page,store=None):
 def trip(page,paragraph=False):
     page.locator('#secretaryBtn').click()
     if paragraph:
-        page.locator('#secretaryInput').fill('胡志明市，2026/10/14 09:40 抵達，10/17 17:30 離開，飯店有早餐，15、16 日展場有午餐。')
-        page.locator('.secretary-footer .secretary-send').click()
+        page.locator('.v51-fast-mode>summary').click()
+        page.locator('#v51FastInput').fill('胡志明市，2026/10/14 09:40 抵達，10/17 17:30 離開，飯店有早餐，15、16 日展場有午餐。')
+        page.locator('#v51FastSubmit').click()
     else:
         for value in ['胡志明市','2026/10/14 09:40','2026/10/17 17:30']:
             page.locator('#secretaryInput').fill(value);page.locator('.secretary-footer .secretary-send').click()
