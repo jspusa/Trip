@@ -1,5 +1,5 @@
 """V5 browser regression with synthetic itineraries and rendered PDF evidence."""
-import argparse, functools, http.server, json, threading
+import argparse, functools, http.server, json, os, threading
 from pathlib import Path
 import fitz
 from playwright.sync_api import sync_playwright, expect
@@ -18,7 +18,7 @@ def load(page,store=None):
         # which correctly saves the state of the page being left.
         page.add_init_script("(()=>{if(!sessionStorage.getItem('test-seeded')){const s="+json.dumps(store,ensure_ascii=False)+";localStorage.clear();Object.entries(s).forEach(([k,v])=>localStorage.setItem(k,v));sessionStorage.setItem('test-seeded','1');}})()")
     page.goto(base,wait_until='networkidle')
-    expect(page.locator('.app-version')).to_have_text('V5.0')
+    expect(page.locator('.app-version')).to_have_text('V5.1')
 
 def trip(page,paragraph=False):
     page.locator('#secretaryBtn').click()
@@ -70,7 +70,9 @@ def makepdf(page,kind,label,expected=None):
             if expected:assert expected in text,text
             assert not any(p.get_images() for p in pdf)
             if label.endswith('-short'):assert len(pdf)==1
-        else:assert all(p.get_images() for p in pdf)
+        else:
+            assert all(p.get_images() for p in pdf)
+            assert len(pdf)<=(12 if label.endswith('-whole-long') else 4),('Excessive PDF pagination',label,len(pdf))
         for i,p in enumerate(pdf):
             assert abs(p.rect.width-595.276)<1 and abs(p.rect.height-841.89)<1
             p.get_pixmap(matrix=fitz.Matrix(1.3,1.3)).save(str(out/(label+f'-page-{i+1}.png')))
@@ -78,8 +80,8 @@ def makepdf(page,kind,label,expected=None):
     return path
 
 with sync_playwright() as pw:
-    for engine in ['chromium','webkit']:
-        browser=getattr(pw,engine).launch();errors=[]
+    for engine in os.environ.get('TRIP_TEST_ENGINES','chromium,webkit').split(','):
+        browser=getattr(pw,engine).launch(**({'executable_path':os.environ['TRIP_CHROMIUM']} if engine=='chromium' and os.environ.get('TRIP_CHROMIUM') else {}));errors=[]
         def new(size=(1100,800)):
             c=browser.new_context(viewport={'width':size[0],'height':size[1]},locale='zh-TW',timezone_id='Asia/Taipei',accept_downloads=True)
             page=c.new_page();page.set_default_timeout(18000);page.on('pageerror',lambda e:errors.append(str(e)))
