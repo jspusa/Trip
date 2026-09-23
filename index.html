@@ -412,12 +412,13 @@
 
     @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important;}}
   </style>
+  <link rel="stylesheet" href="trip-export.css?v=4.6">
 </head>
 <body>
   <main class="app-shell">
     <header class="hero">
       <div class="hero-top">
-        <div class="eyebrow"><span class="eyebrow-dot"></span>Jasper Travel <span class="app-version" data-update-count="45" aria-label="版本 4.5">V4.5</span></div>
+        <div class="eyebrow"><span class="eyebrow-dot"></span>Jasper Travel <span class="app-version" data-update-count="46" aria-label="版本 4.6">V4.6</span></div>
         <div class="hero-actions">
           <button class="rules-corner" id="rulesBtn" type="button" aria-label="查看規則與費率">ⓘ 規則與費率</button>
           <button class="rules-corner secretary-corner" id="secretaryBtn" type="button" aria-label="開啟秘書模式">👩🏻‍💼 秘書模式</button>
@@ -1305,5 +1306,6 @@
     renderRates();updateLabels();updateState();
   })();
   </script>
+  <script src="trip-export.js?v=4.6" defer></script>
 </body>
 </html>
