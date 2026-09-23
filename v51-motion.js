@@ -40,7 +40,7 @@ document.addEventListener('trip:secretary-step',event=>{
   const {step,editing,place,arrival,departure,mealsConfirmed}=event.detail;
   const signature=step+'|'+editing;
   const questions={destination:'這次，去哪裡出差？',city:'前往哪一座城市？',arrival:'什麼時候抵達？',departure:'什麼時候離開？',meals:'哪些餐食已經提供？',review:'核對一下，就完成了。'};
-  const subtitles={destination:'輸入城市即可開始，也可以一次貼上整段行程。',city:'選擇城市，才能使用對應的餐費標準。',arrival:'填入落地的當地日期與時間。',departure:'填入離開當地的日期與時間。',meals:'只勾選實際供餐；部分日期可在下方逐日調整。',review:'資料有變更？直接點選該項「修改」。'};
+  const subtitles={destination:'輸入城市即可開始，也可以一次貼上整段行程。',city:'選擇城市，才能使用對應的餐費標準。',arrival:'填入抵達目的地的當地日期與時間。',departure:'填入離開當地的日期與時間。',meals:'只勾選實際供餐；部分日期可在下方逐日調整。',review:'資料有變更？直接點選該項「修改」。'};
   $('v51StepCaption').textContent=editing?'編輯行程':step==='review'?'準備完成':'YOUR NEXT TRIP';
   $('v51Question').textContent=questions[step];$('v51Subtitle').textContent=subtitles[step];
   if(step==='review'){$('v51Question').insertAdjacentHTML('afterbegin','<span class="v51-done" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2"><circle cx="16" cy="16" r="14"/><path d="m9 16 5 5 9-10"/></svg></span>');}
