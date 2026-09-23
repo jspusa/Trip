@@ -8,7 +8,7 @@ permissions:
   pages: write
 concurrency:
   group: trip-ui-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 defaults:
   run:
     shell: bash
@@ -33,7 +33,7 @@ jobs:
           if parts:
               assert os.environ['GITHUB_REF']=='refs/heads/work/trip-v51','Never publish a staging bundle'
               raw=base64.b64decode(''.join(p.read_text().strip() for p in parts),validate=True)
-              assert hashlib.sha256(raw).hexdigest()=='3be2d329226951e062f3066d7868c359b31ab92e732f8cd0b7d2c39cb5ffac57','Patch checksum mismatch'
+              assert hashlib.sha256(raw).hexdigest()=='e06cfd2f5ca9281b68b0f1ca8419ace6a16118decf03f09f5eff628056add80a','Patch checksum mismatch'
               with tempfile.NamedTemporaryFile(suffix='.patch') as f:
                   f.write(lzma.decompress(raw));f.flush()
                   subprocess.run(['git','apply','--check',f.name],check=True)
@@ -114,4 +114,5 @@ jobs:
           path: |
             test-results/v51/
             test-results/v5/browser.log
+            test-results/v5/*-whole*.pdf
           retention-days: 7
