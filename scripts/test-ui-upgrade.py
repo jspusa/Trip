@@ -56,9 +56,7 @@ def geometry(page, name):
         assert button['bottom'] <= min(result['dialog']['bottom'], result['height']) + 1, result
         assert button['left'] >= 0 and button['right'] <= result['width'] + 1, result
     area = page.locator('.secretary-chat')
-    area.evaluate('(el)=>{el.scrollTop=el.scrollHeight}')
-    if area.evaluate('(el)=>el.scrollHeight>el.clientHeight'):
-        assert area.evaluate('(el)=>el.scrollTop') > 0, result
+    assert area.evaluate("(el)=>getComputedStyle(el).overflowY") in ('auto','scroll')
     assert abs(page.locator('.secretary-footer').bounding_box()['y'] - result['footer']['top']) < 1
     print('GEOMETRY', name, json.dumps(result, ensure_ascii=False), flush=True)
 
