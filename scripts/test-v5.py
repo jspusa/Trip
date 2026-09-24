@@ -1,5 +1,5 @@
 """V5 browser regression with synthetic itineraries and rendered PDF evidence."""
-import argparse, functools, http.server, json, os, threading
+import argparse, functools, http.server, json, threading
 from pathlib import Path
 import fitz
 from playwright.sync_api import sync_playwright, expect
@@ -18,14 +18,13 @@ def load(page,store=None):
         # which correctly saves the state of the page being left.
         page.add_init_script("(()=>{if(!sessionStorage.getItem('test-seeded')){const s="+json.dumps(store,ensure_ascii=False)+";localStorage.clear();Object.entries(s).forEach(([k,v])=>localStorage.setItem(k,v));sessionStorage.setItem('test-seeded','1');}})()")
     page.goto(base,wait_until='networkidle')
-    expect(page.locator('.app-version')).to_have_text('V5.1')
+    expect(page.locator('.app-version')).to_have_text('V5.0')
 
 def trip(page,paragraph=False):
     page.locator('#secretaryBtn').click()
     if paragraph:
-        page.locator('.v51-fast-mode>summary').click()
-        page.locator('#v51FastInput').fill('胡志明市，2026/10/14 09:40 抵達，10/17 17:30 離開，飯店有早餐，15、16 日展場有午餐。')
-        page.locator('#v51FastSubmit').click()
+        page.locator('#secretaryInput').fill('胡志明市，2026/10/14 09:40 抵達，10/17 17:30 離開，飯店有早餐，15、16 日展場有午餐。')
+        page.locator('.secretary-footer .secretary-send').click()
     else:
         for value in ['胡志明市','2026/10/14 09:40','2026/10/17 17:30']:
             page.locator('#secretaryInput').fill(value);page.locator('.secretary-footer .secretary-send').click()
@@ -71,9 +70,7 @@ def makepdf(page,kind,label,expected=None):
             if expected:assert expected in text,text
             assert not any(p.get_images() for p in pdf)
             if label.endswith('-short'):assert len(pdf)==1
-        else:
-            assert all(p.get_images() for p in pdf)
-            assert len(pdf)<=(12 if label.endswith('-whole-long') else 4),('Excessive PDF pagination',label,len(pdf))
+        else:assert all(p.get_images() for p in pdf)
         for i,p in enumerate(pdf):
             assert abs(p.rect.width-595.276)<1 and abs(p.rect.height-841.89)<1
             p.get_pixmap(matrix=fitz.Matrix(1.3,1.3)).save(str(out/(label+f'-page-{i+1}.png')))
@@ -81,8 +78,8 @@ def makepdf(page,kind,label,expected=None):
     return path
 
 with sync_playwright() as pw:
-    for engine in os.environ.get('TRIP_TEST_ENGINES','chromium,webkit').split(','):
-        browser=getattr(pw,engine).launch(**({'executable_path':os.environ['TRIP_CHROMIUM']} if engine=='chromium' and os.environ.get('TRIP_CHROMIUM') else {}));errors=[]
+    for engine in ['chromium','webkit']:
+        browser=getattr(pw,engine).launch();errors=[]
         def new(size=(1100,800)):
             c=browser.new_context(viewport={'width':size[0],'height':size[1]},locale='zh-TW',timezone_id='Asia/Taipei',accept_downloads=True)
             page=c.new_page();page.set_default_timeout(18000);page.on('pageerror',lambda e:errors.append(str(e)))
@@ -121,8 +118,8 @@ with sync_playwright() as pw:
         print('AUTO_CALC_ADJUSTMENTS_STORAGE_HISTORY_PDF_PASS',engine,flush=True)
         c,page=new();load(page);page.locator('#secretaryBtn').click();page.locator('#secretaryInput').fill('東京');page.locator('.secretary-footer .secretary-send').click();page.locator('#secretaryInput').fill('2026/10/14 09:40');page.locator('#closeSecretaryBtn').click();page.locator('#secretaryBtn').click();expect(page.locator('#secretaryInput')).to_have_value('2026/10/14 09:40');page.locator('#closeSecretaryBtn').click();partial=storage(page);c.close()
         c,page=new();load(page,partial);page.locator('#v5ResumeBtn').click();expect(page.locator('#secretaryInput')).to_have_value('2026/10/14 09:40');c.close()
-        c,page=new();load(page);page.locator('#secretaryBtn').click();page.locator('.v51-fast-mode>summary').click();page.locator('#v51FastInput').fill('東京，2026/10/14 09:40 抵達，2026/10/17 17:30 離開');page.locator('#v51FastSubmit').click();expect(page.locator('#secretaryMeals')).to_be_visible();c.close()
-        c,page=new();load(page);page.locator('#secretaryBtn').click();page.locator('.v51-fast-mode>summary').click();page.locator('#v51FastInput').fill('東京，2026/12/30 09:40 抵達，1/2 17:30 離開');page.locator('#v51FastSubmit').click();expect(page.locator('#secretaryHint')).to_contain_text('跨年');c.close()
+        c,page=new();load(page);page.locator('#secretaryBtn').click();page.locator('#secretaryInput').fill('東京，2026/10/14 09:40 抵達，2026/10/17 17:30 離開');page.locator('.secretary-footer .secretary-send').click();expect(page.locator('#secretaryMeals')).to_be_visible();c.close()
+        c,page=new();load(page);page.locator('#secretaryBtn').click();page.locator('#secretaryInput').fill('東京，2026/12/30 09:40 抵達，1/2 17:30 離開');page.locator('.secretary-footer .secretary-send').click();expect(page.locator('#secretaryHint')).to_contain_text('跨年');c.close()
         c,page=new();page.add_init_script("Object.defineProperty(window,'localStorage',{get(){throw new Error('storage disabled')}})");load(page);trip(page);finish(page);expect(page.locator('#v5SaveStatus')).to_contain_text('無法暫存');c.close()
         c,page=new();c.route('**/vendor/pdf-lib-*',lambda route:route.abort());load(page);trip(page);finish(page);page.locator('#v5ReportPdfBtn').click();expect(page.locator('#v5ReportStatus')).to_contain_text('失敗',timeout=30000);expect(page.locator('#exportPdfBtn')).to_be_enabled();c.close()
         assert not errors,errors
