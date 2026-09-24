@@ -1,10 +1,10 @@
 name: Trip UI regression and publish
 on:
   push:
-    branches: [main]
+    branches: [main, work/trip-v52-v46-minimal]
     paths:
       - trip-export.js
-      - trip-export.css
+      - trip-export.css\n      - v52-minimal.css\n      - v52-motion.js\n      - index.html
       - scripts/apply-ui-upgrade.py
       - scripts/test-ui-upgrade.py
       - .github/workflows/trip-ui-upgrade.yml
@@ -31,7 +31,7 @@ jobs:
       - name: Apply targeted entry-point patch
         run: |
           python scripts/apply-ui-upgrade.py
-          node --check trip-export.js
+          node --check trip-export.js\n          node --check v52-motion.js
           python - <<'PY'
           from pathlib import Path
           import re, subprocess, tempfile
@@ -75,7 +75,7 @@ jobs:
           import hashlib, time, urllib.request
           from pathlib import Path
           base='https://jspusa.github.io/Trip/'
-          paths=['index.html','trip-export.js','trip-export.css','vendor/html2canvas-1.4.1.min.js']
+          paths=['index.html','trip-export.js','trip-export.css','v52-minimal.css','v52-motion.js','vendor/html2canvas-1.4.1.min.js']
           for attempt in range(40):
               try:
                   for path in paths:
@@ -96,7 +96,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: trip-v4.6-regression
+          name: trip-v52-regression
           path: |
             test-results/
             index.html
