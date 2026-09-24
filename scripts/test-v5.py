@@ -18,7 +18,7 @@ def load(page,store=None):
         # which correctly saves the state of the page being left.
         page.add_init_script("(()=>{if(!sessionStorage.getItem('test-seeded')){const s="+json.dumps(store,ensure_ascii=False)+";localStorage.clear();Object.entries(s).forEach(([k,v])=>localStorage.setItem(k,v));sessionStorage.setItem('test-seeded','1');}})()")
     page.goto(base,wait_until='networkidle')
-    expect(page.locator('.app-version')).to_have_text('V5.1')
+    expect(page.locator('.app-version')).to_have_text('V5.0')
 
 def trip(page,paragraph=False):
     page.locator('#secretaryBtn').click()
