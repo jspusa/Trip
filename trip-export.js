@@ -23,13 +23,12 @@
       if(!dialog.open)return;
       const viewport=window.visualViewport;
       const available=viewport?viewport.height:window.innerHeight;
-      const sheet=window.matchMedia('(max-width:640px)').matches;
-      const height=Math.max(0,Math.min(sheet?760:740,available-(sheet?12:40)));
+      const height=Math.max(0,Math.min(820,available-24));
       dialog.style.setProperty('--trip-dialog-height',`${height}px`);
-      dialog.style.setProperty('--trip-dialog-top',`${(viewport?.offsetTop||0)+(sheet?available-height:(available-height)/2)}px`);
+      dialog.style.setProperty('--trip-dialog-top',`${(viewport?.offsetTop||0)+(available-height)/2}px`);
     });
   }
-  function revealPanel(){requestAnimationFrame(()=>{if(dialog.open&&!body.querySelector('.v51-guidance'))body.scrollTop=body.scrollHeight;});}
+  function revealPanel(){requestAnimationFrame(()=>{if(dialog.open)body.scrollTop=body.scrollHeight;});}
   syncGroups();
   new MutationObserver(()=>{syncGroups();revealPanel();}).observe(panel,{subtree:true,attributes:true,attributeFilter:['hidden']});
   new MutationObserver(revealPanel).observe($('secretaryChat'),{childList:true});
@@ -76,15 +75,6 @@
     return libraryPromise;
   }
   const exportStyles=`
-    :root{--bg:#fff;--surface:#fff;--surface-solid:#fff;--text:#1d1d1f;--muted:#6e6e73;--line:#d2d2d7;--v51-field:#f5f5f7;--blue:#0066cc;}
-    .v51-number-ghost,.v51-footer{display:none!important;}
-    .hero-top{margin-bottom:12px!important;}.hero h1{font-size:30px!important;}.hero{margin-bottom:20px!important;}
-    .summary-card{display:block!important;padding:22px!important;}.amount{font-size:38px!important;color:#1d1d1f!important;}
-    .summary-place{font-size:16px!important;}.summary-trip{margin:8px 0!important;}
-    .card{padding:20px!important;}.card-head{margin-bottom:16px!important;}.progress-card{margin-bottom:18px!important;}
-    .form-stack{gap:16px!important;}.route-line{gap:14px!important;}.summary-card{margin-top:14px!important;}.meal-counts{margin:14px 0!important;}
-    .results{margin-top:14px!important;}.day-row{padding:9px 0!important;}
-
     html,body{margin:0!important;padding:0!important;min-height:0!important;background:#fff!important;width:800px!important;overflow:visible!important;color-scheme:light;}
     *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;}
     .app-shell{width:760px!important;max-width:none!important;margin:0 20px!important;padding:16px 0!important;}
@@ -132,7 +122,6 @@
       });
       clone.querySelectorAll('select,.hero-actions,.desktop-actions,.export-actions,.combo-toggle,.combo-menu,.picker-trigger,.result-toggle').forEach(node=>node.remove());
       clone.querySelectorAll('button.date-chip').forEach(button=>{const span=doc.createElement('span');span.className=button.className;span.textContent=button.textContent;button.replaceWith(span);});
-      clone.querySelectorAll('.v51-expanding').forEach(n=>n.classList.remove('v51-expanding'));
       clone.querySelector('#resultDetails').hidden=false;
       clone.querySelector('#results').classList.add('show','expanded');
       const meta=doc.createElement('p');meta.className='pdf-meta';meta.textContent=`匯出時間：${new Date().toLocaleString('zh-TW',{hour12:false})}｜完整表單、每日明細與總額`;
@@ -145,18 +134,15 @@
     }catch(error){iframe.remove();throw error;}
   }
   function planPages(doc,maxHeight){
-    const regions=Array.from(doc.querySelectorAll('.hero,.progress-card,#destinationCard,#tripCard,#mealsCard,.day-row,.switch-row,.date-chip,.result-breakdown,.basis,.summary-card,.pdf-adjustment,#results')).map(node=>{
-      const box=node.getBoundingClientRect();return{top:box.top,bottom:box.bottom};
+    const regions=Array.from(doc.querySelectorAll('.hero,.progress-card,#destinationCard,#tripCard,#mealsCard,.day-row,.switch-row,.date-chip,.result-breakdown,.basis,.summary-card,.pdf-adjustment')).map(node=>{
+      const box=node.getBoundingClientRect();return{top:Math.floor(box.top),bottom:Math.ceil(box.bottom)};
     }).filter(box=>box.bottom>box.top&&box.bottom-box.top<maxHeight);
     const heading=doc.querySelector('.result-toggle-row'),firstRow=doc.querySelector('.day-row:not(.day-header)');
-    if(heading&&firstRow)regions.push({top:heading.getBoundingClientRect().top,bottom:firstRow.getBoundingClientRect().bottom});
-    const total=Math.ceil(Math.max(...Array.from(doc.querySelectorAll('.hero,.progress-card,#destinationCard,#tripCard,#mealsCard,.summary-card,#results')).map(n=>n.getBoundingClientRect().bottom)))+2,pages=[];
+    if(heading&&firstRow)regions.push({top:Math.floor(heading.getBoundingClientRect().top),bottom:Math.ceil(firstRow.getBoundingClientRect().bottom)});
+    const total=Math.ceil(doc.querySelector('.app-shell').getBoundingClientRect().bottom),pages=[];
     for(let top=0;top<total;){
       let bottom=Math.min(total,top+maxHeight),previous;
-      // Keep raw layout coordinates. Rounding both sides of adjacent rows creates
-      // false one-pixel overlaps and can cascade into one row per PDF page.
-      do{previous=bottom;for(const box of regions){if(box.top>top+1&&box.top<bottom-1&&box.bottom>bottom+1)bottom=Math.min(bottom,Math.floor(box.top));}}while(bottom!==previous);
-      if(total-bottom<=8)bottom=total;
+      do{previous=bottom;for(const box of regions){if(box.top>top+1&&box.top<bottom&&box.bottom>bottom)bottom=Math.min(bottom,box.top);}}while(bottom!==previous);
       if(bottom<=top)throw new Error('Invalid PDF page boundary');
       pages.push({top,height:bottom-top});top=bottom;
     }

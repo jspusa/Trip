@@ -1,21 +1,21 @@
-name: Trip V5.1 visual and functional regression
+name: Trip V5 regression
 on:
   push:
-    branches: [main, work/trip-v51, work/trip-v51-chatfix, work/trip-v51-secretary-original, work/trip-v50-secretary-exact]
+    branches: [main, work/trip-v5]
   workflow_dispatch:
 permissions:
-  contents: write
+  contents: read
   pages: write
 concurrency:
-  group: trip-ui-${{ github.ref }}
-  cancel-in-progress: true
+  group: trip-v5-${{ github.ref }}
+  cancel-in-progress: false
 defaults:
   run:
     shell: bash
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 18
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -24,37 +24,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Expand and verify staging-only patch
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          import base64,hashlib,lzma,os,subprocess,tempfile
-          parts=sorted(Path('scripts').glob('v51-patch-*.b64'))
-          if parts:
-              assert os.environ['GITHUB_REF']=='refs/heads/work/trip-v51','Never publish a staging bundle'
-              raw=base64.b64decode(''.join(p.read_text().strip() for p in parts),validate=True)
-              assert hashlib.sha256(raw).hexdigest()=='e06cfd2f5ca9281b68b0f1ca8419ace6a16118decf03f09f5eff628056add80a','Patch checksum mismatch'
-              with tempfile.NamedTemporaryFile(suffix='.patch') as f:
-                  f.write(lzma.decompress(raw));f.flush()
-                  subprocess.run(['git','apply','--check',f.name],check=True)
-                  subprocess.run(['git','apply',f.name],check=True)
-              for part in parts:part.unlink()
-          PY
-      - name: Keep expanded source reviewable on the staging branch
-        if: github.ref == 'refs/heads/work/trip-v51'
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A -- index.html v5-experience.js v5-report.js trip-export.js v51-visual.css v51-motion.js scripts
-          if ! git diff --cached --quiet; then
-            git diff --cached --stat
-            git commit -m 'Expand verified V5.1 visual and motion source for review and regression'
-            git push origin HEAD:work/trip-v51
-          fi
       - name: Check syntax and original fee parity
         run: |
-          test -z "$(find scripts -name 'v51-patch-*.b64' -print -quit)"
-          for file in v5-engine.js v5-experience.js v5-report.js trip-export.js v51-motion.js; do node --check "$file"; done
+          test -z "$(find scripts -name 'v5-source-*.b64' -print -quit)"
+          node --check v5-engine.js
+          node --check v5-experience.js
+          node --check v5-report.js
+          node --check trip-export.js
           python - <<'PY'
           from pathlib import Path
           import re,subprocess,tempfile
@@ -65,23 +41,19 @@ jobs:
               assert Path(path).stat().st_size>0,path
           PY
           node scripts/test-v5-engine.cjs
-      - name: Install browser regression dependencies
+      - name: Install test tools and browser dependencies
         run: |
-          mkdir -p test-results/v5 test-results/v51
+          mkdir -p test-results/v5
           {
             pip install playwright==1.55.0 pymupdf==1.26.3 &&
             python -m playwright install --with-deps chromium webkit &&
             sudo apt-get install -y fonts-noto-cjk
-          } > test-results/v51/dependencies.log 2>&1 || { tail -60 test-results/v51/dependencies.log; exit 1; }
-      - name: Preserve all V5 functional workflows in Chromium and WebKit
+          } > test-results/v5/dependencies.log 2>&1 || { tail -60 test-results/v5/dependencies.log; exit 1; }
+      - name: Chromium and WebKit end-to-end tests
         run: |
           python -u scripts/test-v5.py 2>&1 | tee test-results/v5/browser.log
           grep -q ALL_V5_TESTS_PASSED test-results/v5/browser.log
-      - name: Test V5.1 layout, motion, themes and PDFs
-        run: |
-          python -u scripts/test-v51.py 2>&1 | tee test-results/v51/browser.log
-          grep -q ALL_V51_TESTS_PASSED test-results/v51/browser.log
-      - name: Build and verify the deployed website
+      - name: Rebuild and verify deployed V5 assets
         if: github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -91,28 +63,39 @@ jobs:
           from pathlib import Path
           import time,urllib.request
           base='https://jspusa.github.io/Trip/'
-          paths=['index.html','trip-export.js','v5-engine.js','v5-experience.js','v5-report.js','v5-experience.css','v51-visual.css','v51-motion.js']
+          paths=['index.html','trip-export.js','v5-engine.js','v5-experience.js','v5-report.js','v5-experience.css']
           for attempt in range(40):
               try:
                   for path in paths:
                       request=urllib.request.Request(base+path+'?verify='+str(time.time_ns()),headers={'Cache-Control':'no-cache'})
                       actual=urllib.request.urlopen(request,timeout=20).read()
                       assert actual==Path(path).read_bytes(),'Waiting for live '+path
-                  print('LIVE_V51_ASSETS_VERIFIED',flush=True)
+                  print('LIVE_V5_ASSETS_VERIFIED',flush=True)
                   break
               except Exception as error:
                   print(error,flush=True)
                   if attempt==39:raise
-                  time.sleep(8)
+                  time.sleep(10)
           PY
-          python -u scripts/test-v51.py --live https://jspusa.github.io/Trip/ 2>&1 | tee test-results/v51/live.log
-          grep -q ALL_V51_TESTS_PASSED test-results/v51/live.log
+          python -u scripts/test-v5.py --live https://jspusa.github.io/Trip/ 2>&1 | tee test-results/v5/live.log
+          grep -q ALL_V5_TESTS_PASSED test-results/v5/live.log
+      - name: Package reviewable source and rendered test evidence
+        if: always()
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile,ZIP_DEFLATED
+          with ZipFile('v5-source-review.zip','w',ZIP_DEFLATED) as z:
+              for pattern in ['v5-*.js','v5-*.css','trip-export.js','index.html','scripts/*v5*']:
+                  for path in Path('.').glob(pattern):
+                      if path.is_file() and path.suffix not in ['.zip','.ttf','.otf','.b64']:
+                          z.write(path)
+          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: trip-v51-regression
+          name: trip-v5-regression
           path: |
-            test-results/v51/
-            test-results/v5/browser.log
-            test-results/v5/*-whole*.pdf
+            test-results/v5/
+            v5-source-review.zip
           retention-days: 7
