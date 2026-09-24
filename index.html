@@ -412,14 +412,13 @@
 
     @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important;}}
   </style>
-  <link rel="stylesheet" href="trip-export.css?v=5.0">
-  <link rel="stylesheet" href="v5-experience.css?v=5.0">
+  <link rel="stylesheet" href="trip-export.css?v=4.6">
 </head>
 <body>
   <main class="app-shell">
     <header class="hero">
       <div class="hero-top">
-        <div class="eyebrow"><span class="eyebrow-dot"></span>Jasper Travel <span class="app-version" data-update-count="50" aria-label="版本 5.0">V5.0</span></div>
+        <div class="eyebrow"><span class="eyebrow-dot"></span>Jasper Travel <span class="app-version" data-update-count="46" aria-label="版本 4.6">V4.6</span></div>
         <div class="hero-actions">
           <button class="rules-corner" id="rulesBtn" type="button" aria-label="查看規則與費率">ⓘ 規則與費率</button>
           <button class="rules-corner secretary-corner" id="secretaryBtn" type="button" aria-label="開啟秘書模式">👩🏻‍💼 秘書模式</button>
@@ -604,7 +603,7 @@
       <div class="secretary-panel">
         <form class="secretary-form" id="secretaryForm">
           <label for="secretaryInput" id="secretaryInputLabel">國家或城市</label>
-          <div class="secretary-composer"><textarea class="secretary-input" id="secretaryInput" autocomplete="off" aria-describedby="secretaryHint" aria-invalid="false" placeholder="例如：東京" rows="3" maxlength="2000"></textarea></div>
+          <div class="secretary-composer"><input class="secretary-input" id="secretaryInput" type="text" autocomplete="off" aria-describedby="secretaryHint" aria-invalid="false" placeholder="例如：東京"></div>
           <div class="secretary-hint" id="secretaryHint" role="status" aria-live="polite">也可以輸入「日本東京」或「東京日本」。</div>
           <div class="secretary-actions">
             <button class="secretary-back" id="secretaryBackBtn" type="button">上一步</button>
@@ -715,8 +714,6 @@
 
   <div class="toast" id="toast" role="status"></div>
 
-  <script src="v5-engine.js?v=5.0"></script>
-  <script src="v5-experience.js?v=5.0"></script>
   <script>
   (()=>{
     const rates={
@@ -1241,27 +1238,6 @@
       el.ratesTableBody.innerHTML=rows.length?rows.join(''):'<tr><td colspan="6" style="text-align:center;color:var(--muted)">找不到符合的地區</td></tr>';
     }
 
-    const experience=window.installTripV5({
-      rates,el,secretaryEl,baseUpdate:updateState,baseClear:clearResult,
-      get draft(){return secretaryDraft;},set draft(v){secretaryDraft=v;},
-      get step(){return secretaryStep;},set step(v){secretaryStep=v;},
-      get messages(){return secretaryMessages;},set messages(v){secretaryMessages=v;},
-      get expo(){return expoSelection;},set expo(v){expoSelection=v;},
-      readMain:()=>({country:el.country.value,city:el.city.value,countryText:el.countrySearch.value,cityText:el.citySearch.value,cityDisplay:activeSecretaryOther?.cityDisplay||rates[el.country.value]?.cities[el.city.value]?.label||'',arrDate:el.arrDate.value,arrTime:el.arrTime.value,depDate:el.depDate.value,depTime:el.depTime.value,breakfast:el.hotelBreakfast.checked,lunch:el.expoLunch.checked,lunchDates:[...expoSelection]}),
-      writeMain:s=>{
-        el.country.value=s.country;el.countrySearch.value=s.countryText||[...el.country.options].find(o=>o.value===s.country)?.textContent.trim()||'';populateCities(false);el.city.value=s.city;el.citySearch.value=s.cityText||rates[s.country]?.cities[s.city]?.label||'';
-        activeSecretaryOther=s.city==='other'?{countryKey:s.country,cityDisplay:s.cityDisplay||rates[s.country]?.cities[s.city]?.label}:null;
-        ['arrDate','arrTime','depDate','depTime'].forEach(k=>el[k].value=s[k]);el.hotelBreakfast.checked=s.breakfast;el.expoLunch.checked=s.lunch;expoSelection=new Set(s.lunchDates);el.expoPicker.classList.toggle('show',s.lunch);if(s.lunch)renderExpoDates();else el.expoDates.innerHTML='';closeCombo('country');closeCombo('city');
-      },
-      parseDestination:parseSecretaryDestination,parseTime:parseSecretaryDateTime,newDraft:newSecretaryDraft,
-      renderExpo:renderExpoDates,renderSecretLunch:renderSecretaryLunchDates,renderMessages:renderSecretaryMessages,
-      toast:showToast,hint:setSecretaryHint,setProgress,arrivalRule,departureRule
-    });
-    compute=experience.compute;clearResult=experience.clearResult;updateState=experience.updateState;
-    renderSecretaryStep=experience.renderStep;renderSecretaryReview=experience.renderReview;
-    submitSecretaryAnswer=experience.submit;secretaryGoBack=experience.goBack;applySecretaryDraft=experience.applySecretary;
-    resetSecretary=experience.restartSecretary;
-
     fillWheel(el.hourWheel,24);fillWheel(el.minuteWheel,60);enableWheelDrag(el.hourWheel,23);enableWheelDrag(el.minuteWheel,59);
     registerCombo('country');registerCombo('city');
     document.querySelectorAll('[data-date-target]').forEach(button=>button.addEventListener('click',()=>openDatePicker($(button.dataset.dateTarget))));
@@ -1298,16 +1274,16 @@
     function toggleResult(){const expanded=el.resultToggle.getAttribute('aria-expanded')==='true';el.resultToggle.setAttribute('aria-expanded',String(!expanded));el.resultToggleLabel.textContent=expanded?'展開':'收合';el.resultDetails.hidden=expanded;el.results.classList.toggle('expanded',!expanded);}
     el.resultToggle.addEventListener('click',toggleResult);
     el.resultToggle.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleResult();}});
-    $('resetBtn').addEventListener('click',()=>experience.resetMain());
+    $('resetBtn').addEventListener('click',()=>{activeSecretaryOther=null;el.country.value='';el.countrySearch.value='';el.city.innerHTML='<option value="">請先選擇國家</option>';el.city.value='';el.city.disabled=true;el.citySearch.value='';el.citySearch.disabled=true;el.cityCombo.querySelector('.combo-toggle').disabled=true;closeCombo('country');closeCombo('city');[el.arrDate,el.arrTime,el.depDate,el.depTime].forEach(input=>input.value='');el.hotelBreakfast.checked=false;el.expoLunch.checked=false;el.expoPicker.classList.remove('show');el.expoDates.innerHTML='';expoSelection.clear();clearResult();updateLabels();updateState();window.scrollTo({top:0,behavior:'smooth'});showToast('已重新填寫');});
 
     document.addEventListener('pointerdown',event=>{if(!el.countryCombo.contains(event.target))closeCombo('country');if(!el.cityCombo.contains(event.target))closeCombo('city');});
 
-    $('secretaryBtn').addEventListener('click',experience.openSecretary);
+    $('secretaryBtn').addEventListener('click',()=>{secretaryEl.dialog.showModal();resetSecretary();});
     $('closeSecretaryBtn').addEventListener('click',()=>secretaryEl.dialog.close());
     secretaryEl.dialog.addEventListener('click',event=>{if(event.target===secretaryEl.dialog)secretaryEl.dialog.close();});
     secretaryEl.input.addEventListener('compositionstart',()=>{secretaryComposing=true;});
     secretaryEl.input.addEventListener('compositionend',()=>{secretaryComposing=false;});
-    secretaryEl.input.addEventListener('keydown',event=>{if(event.key!=='Enter'||event.shiftKey||event.isComposing||secretaryComposing)return;event.preventDefault();secretaryEl.form.requestSubmit();});
+    secretaryEl.input.addEventListener('keydown',event=>{if(event.key!=='Enter'||event.isComposing||secretaryComposing)return;event.preventDefault();secretaryEl.form.requestSubmit();});
     secretaryEl.input.addEventListener('input',()=>{secretaryEl.hint.classList.remove('error');secretaryEl.input.setAttribute('aria-invalid','false');});
     secretaryEl.form.addEventListener('submit',event=>{event.preventDefault();if(secretaryComposing)return;const answer=secretaryEl.input.value.trim();if(!answer){setSecretaryHint('請先輸入答案。',true);return;}submitSecretaryAnswer(answer);});
     [secretaryEl.back,secretaryEl.mealBack,secretaryEl.reviewBack].forEach(button=>button.addEventListener('click',secretaryGoBack));
@@ -1317,17 +1293,19 @@
       secretaryDraft.lunch=secretaryEl.lunch.checked;if(!secretaryDraft.lunch)secretaryDraft.lunchDates.clear();renderSecretaryLunchDates();setSecretaryHint(secretaryDraft.lunch?'請把有午餐的日期由灰色點成藍色。':'');updateSecretaryMealButton();
     });
     secretaryEl.lunchDates.addEventListener('click',event=>{const button=event.target.closest('.date-chip');if(!button)return;const key=button.dataset.date;if(secretaryDraft.lunchDates.has(key))secretaryDraft.lunchDates.delete(key);else secretaryDraft.lunchDates.add(key);button.classList.toggle('active');button.setAttribute('aria-pressed',String(button.classList.contains('active')));setSecretaryHint('');});
-    $('secretaryMealNextBtn').addEventListener('click',experience.confirmMeals);
+    $('secretaryMealNextBtn').addEventListener('click',()=>{
+      secretaryDraft.breakfast=secretaryEl.breakfast.checked;secretaryDraft.lunch=secretaryEl.lunch.checked;if(secretaryDraft.lunch&&!secretaryDraft.lunchDates.size){setSecretaryHint('請至少選擇一個有提供午餐的日期，或取消午餐勾選。',true);return;}
+      saveSecretaryState();const lunchSummary=secretaryDraft.lunch?`${secretaryDraft.lunchDates.size} 天`:'無',departureTerm=secretaryDraft.countryKey==='TW'?'發車':'起飛';pushSecretaryMessage('user',`飯店早餐：${secretaryDraft.breakfast?'有':'無'}\n展場午餐：${lunchSummary}`);secretaryStep='review';pushSecretaryMessage('assistant',`資料都整理好了，請確認抵達、${departureTerm}日期與供餐資訊。`);renderSecretaryStep();
+    });
     $('secretaryConfirmBtn').addEventListener('click',applySecretaryDraft);
 
     $('rulesBtn').addEventListener('click',()=>{renderRates();el.rulesDialog.showModal();});$('closeDialogBtn').addEventListener('click',()=>el.rulesDialog.close());el.rulesDialog.addEventListener('click',event=>{if(event.target===el.rulesDialog)el.rulesDialog.close();});
     document.querySelectorAll('.tab-btn').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));button.classList.add('active');$(button.dataset.tab).classList.add('active');}));
     el.rateFilter.addEventListener('input',()=>renderRates(el.rateFilter.value));
 
-    renderRates();updateLabels();updateState();experience.finish();
+    renderRates();updateLabels();updateState();
   })();
   </script>
-  <script src="trip-export.js?v=5.0" defer></script>
-  <script src="v5-report.js?v=5.0" defer></script>
+  <script src="trip-export.js?v=4.6" defer></script>
 </body>
 </html>
