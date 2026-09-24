@@ -1,7 +1,7 @@
 name: Trip V5.1 visual and functional regression
 on:
   push:
-    branches: [main, work/trip-v51, work/trip-v51-chatfix, work/trip-v51-secretary-original]
+    branches: [main, work/trip-v51, work/trip-v51-chatfix, work/trip-v51-secretary-original, work/trip-v50-secretary-exact]
   workflow_dispatch:
 permissions:
   contents: write

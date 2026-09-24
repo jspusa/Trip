@@ -276,3 +276,84 @@
   .chat-message{max-width:96%;}
   .v51-fast-mode{margin:6px 22px 20px;}
 }
+
+
+/* Secretary mode is intentionally frozen to the V5.0 presentation. */
+@media screen{
+  .secretary-dialog{--text:#1d1d1f;--muted:#6e6e73;--line:#d2d2d7;--blue:#0071e3;--red:#d70015;color-scheme:light;width:min(680px,calc(100% - 32px));overflow:hidden;background:#fff;color:var(--text);border:0;box-shadow:0 30px 90px rgba(0,0,0,.28);border-radius:26px;}
+  .secretary-dialog[open]{width:min(680px,calc(100% - 24px));border-radius:26px;animation:dialogIn .3s cubic-bezier(.22,1,.36,1);}
+  .secretary-dialog[open]::backdrop{animation:backdropIn .25s ease both;}
+  .secretary-dialog::backdrop{background:rgba(0,0,0,.32);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);}
+  .secretary-dialog>.dialog-head{position:relative;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;padding:18px 20px;background:rgba(255,255,255,.9);border-bottom:1px solid var(--line);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);}
+  .secretary-dialog .dialog-head h2{font-size:19px;font-weight:700;margin:0;}
+  .secretary-dialog .icon-btn{display:grid;place-items:center;width:34px;height:34px;border:0;border-radius:50%;background:#e9e9ed;color:#3a3a3c;font-size:20px;cursor:pointer;}
+  .secretary-title{display:flex;align-items:center;gap:10px;min-width:0;}
+  .secretary-title-icon{display:grid;place-items:center;width:38px;height:38px;flex:0 0 auto;border:1px solid rgba(0,113,227,.12);border-radius:50%;background:linear-gradient(145deg,#fff,#dcecff);color:inherit;font-size:21px;box-shadow:0 4px 12px rgba(0,113,227,.12);}
+  .secretary-title-copy{display:grid;gap:2px;min-width:0;}
+  .secretary-title-copy h2{font-size:19px;}
+  .secretary-step{color:var(--muted);font-size:11px;font-weight:600;}
+  .secretary-dialog .secretary-body{display:block;flex:1 1 auto;min-height:0;max-height:none;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scroll-padding:16px;}
+  .secretary-dialog .secretary-chat{display:grid;align-content:start;gap:10px;overflow:visible;min-height:0;padding:20px;background:linear-gradient(180deg,#f8fbff 0%,#fff 58%);scroll-behavior:smooth;}
+  .secretary-dialog .chat-message{display:flex;align-items:flex-start;gap:8px;max-width:88%;animation:rise .2s ease;}
+  .secretary-dialog .chat-message.user{justify-self:end;flex-direction:row-reverse;margin-left:0;}
+  .secretary-dialog .chat-avatar{display:grid;place-items:center;width:31px;height:31px;flex:0 0 auto;border:1px solid rgba(0,113,227,.12);border-radius:50%;background:linear-gradient(145deg,#fff,#dcecff);color:inherit;font-size:17px;box-shadow:0 3px 10px rgba(0,113,227,.1);}
+  .secretary-dialog .chat-message.user .chat-avatar{background:#e9e9ed;color:inherit;}
+  .secretary-dialog .chat-bubble{border:1px solid var(--line);border-radius:5px 16px 16px 16px;background:#fff;color:var(--text);padding:10px 12px;font-size:14px;line-height:1.55;white-space:pre-line;box-shadow:0 5px 18px rgba(0,0,0,.035);}
+  .secretary-dialog .chat-message.user .chat-bubble{border-color:var(--blue);border-radius:16px 5px 16px 16px;background:var(--blue);color:#fff;}
+  .secretary-dialog .chat-message.warning .chat-avatar{border-color:#f2c94c;background:#fff0bd;}
+  .secretary-dialog .chat-message.warning .chat-bubble{border-color:#efbd3f;background:#fff8df;color:#714700;box-shadow:0 5px 18px rgba(178,115,0,.08);}
+  .secretary-dialog .chat-mark{display:inline-block;margin:1px 2px;border:1px solid transparent;border-radius:7px;padding:1px 6px;font-weight:780;line-height:1.4;vertical-align:baseline;}
+  .secretary-dialog .chat-mark.place{border-color:#8fc4ff;background:#e8f2ff;color:#005bbb;}
+  .secretary-dialog .chat-mark.time{border-color:#86d79a;background:#e9f8ee;color:#1f7437;font-variant-numeric:tabular-nums;}
+  .secretary-dialog .chat-mark.action{border-color:#ffb07a;background:#fff0e6;color:#a43e00;font-weight:850;}
+  .secretary-dialog .secretary-panel{max-height:none;overflow:visible;border-top:1px solid var(--line);background:#fff;padding:16px 20px 16px;}
+  .secretary-dialog .secretary-form{display:grid;gap:7px;}
+  .secretary-dialog .secretary-form label{font-size:12px;color:var(--muted);}
+  .secretary-dialog .secretary-composer{display:block;}
+  .secretary-dialog .secretary-input{width:100%;min-width:0;min-height:50px;border:1px solid var(--line);border-radius:13px;background:#fff;color:var(--text);padding:0 14px;font-size:16px;resize:vertical;}
+  .secretary-dialog .secretary-input:focus{background:#fff;border-color:var(--blue);box-shadow:0 0 0 4px rgba(0,113,227,.1);outline:none;}
+  .secretary-dialog .secretary-send{min-width:82px;border:0;border-radius:13px;background:var(--blue);color:#fff;padding:0 16px;font-weight:700;cursor:pointer;}
+  .secretary-dialog .secretary-hint{min-height:17px;color:var(--muted);font-size:11px;line-height:1.4;}
+  .secretary-dialog .secretary-hint.error{color:var(--red);}
+  .secretary-dialog .secretary-meals{display:grid;gap:12px;}
+  .secretary-dialog .secretary-meals .switch-list{gap:8px;}
+  .secretary-dialog .secretary-meals .switch-row{padding:11px 13px;background:#fff;border:0;border-radius:16px;}
+  .secretary-dialog .secretary-lunch-dates{border-radius:14px;background:#f5f5f7;padding:12px;}
+  .secretary-dialog .secretary-lunch-dates .date-chip{border-color:#d1d1d6;background:#e5e5ea;color:#3a3a3c;font-weight:650;transition:.18s ease;}
+  .secretary-dialog .secretary-lunch-dates .date-chip:hover{background:#d8d8dc;}
+  .secretary-dialog .secretary-lunch-dates .date-chip.active{border-color:var(--blue);background:var(--blue);color:#fff;box-shadow:0 4px 10px rgba(0,113,227,.2);}
+  .secretary-dialog .secretary-actions{display:grid;grid-template-columns:auto 1fr 1.4fr;gap:8px;margin-top:2px;}
+  .secretary-dialog .secretary-actions button{min-height:46px;border:0;border-radius:12px;padding:0 14px;font-weight:700;cursor:pointer;}
+  .secretary-dialog .secretary-actions button:disabled{opacity:.42;cursor:not-allowed;}
+  .secretary-dialog .secretary-back,.secretary-dialog .secretary-reset{background:#f2f2f7;color:var(--text);}
+  .secretary-dialog .secretary-next,.secretary-dialog .secretary-confirm{background:var(--blue);color:#fff;}
+  .secretary-dialog .secretary-review{display:grid;gap:12px;}
+  .secretary-dialog .review-grid{display:grid;gap:8px;}
+  .secretary-dialog .review-row{display:grid;grid-template-columns:92px 1fr auto;gap:12px;align-items:start;border-radius:13px;background:#f5f5f7;padding:10px 12px;border:0;}
+  .secretary-dialog .review-row.warning{border:1px solid #efbd3f;background:#fff8df;}
+  .secretary-dialog .review-row.warning span,.secretary-dialog .review-row.warning strong{color:#714700;}
+  .secretary-dialog .review-row span{color:var(--muted);font-size:12px;}
+  .secretary-dialog .review-row strong{font-size:13px;line-height:1.5;text-align:right;word-break:break-word;}
+  .secretary-dialog .review-row .text-btn{background:transparent;color:var(--blue);min-height:36px;padding:4px 8px;}
+  .secretary-dialog .review-note{color:var(--muted);font-size:11px;line-height:1.5;text-align:center;}
+  .secretary-footer{background:#fff;border-color:var(--line);}
+  .secretary-footer .secretary-actions{grid-template-columns:repeat(2,minmax(0,1fr)) minmax(0,1.4fr);margin:0;}
+  .secretary-footer .secretary-actions button{border-radius:12px;font-weight:700;}
+  .secretary-dialog .advanced-meals{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-top:8px;}
+  .secretary-dialog details>summary{color:var(--text);font-size:13px!important;font-weight:650!important;}
+}
+@media(max-width:640px){
+  .secretary-dialog[open]{width:calc(100% - 16px);border-radius:22px;margin:0 auto;}
+  .secretary-dialog>.dialog-head{padding:14px 16px;border-bottom:1px solid var(--line);}
+  .secretary-dialog .dialog-head::before{display:none;}
+  .secretary-dialog .secretary-chat{padding:16px;}
+  .secretary-dialog .secretary-panel{padding:14px 16px 16px;}
+  .secretary-footer{padding:10px 12px max(10px,env(safe-area-inset-bottom));}
+}
+@media(max-width:390px){
+  .secretary-dialog .secretary-composer{display:block;}
+  .secretary-dialog .secretary-send{min-height:46px;}
+  .secretary-dialog .secretary-actions{grid-template-columns:1fr 1fr;}
+  .secretary-dialog .secretary-actions .secretary-next,.secretary-dialog .secretary-actions .secretary-confirm{grid-column:1/-1;}
+  .secretary-dialog .review-row{grid-template-columns:76px 1fr auto;}
+}

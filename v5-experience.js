@@ -55,6 +55,7 @@ const resume=document.createElement('section');resume.id='v5Resume';resume.class
 const ack=document.createElement('div');ack.id='v5MealAck';ack.className='meal-alert';ack.hidden=true;ack.innerHTML='<p id="v5MealAckText">日期已變更，範圍外的供餐已移除；請重新確認以下設定。</p><button class="compact-primary" type="button" id="v5AckBtn">供餐日期已確認</button>';el.mealFields.prepend(ack);
 const advanced=document.createElement('details');advanced.id='v5Advanced';advanced.className='advanced-meals';advanced.innerHTML='<summary>逐日調整供餐 <span id="v5AdjustmentCount"></span></summary><p class="field-help">僅調整實際供餐；不會突破抵達、離開時段的可核給限制。「未供餐」仍依時段判斷。</p><div id="v5DayAdjust"></div><button type="button" class="text-btn no-print" id="v5ClearAdjust">清除逐日調整</button>';el.mealFields.append(advanced);
 const secretAdvanced=document.createElement('details');secretAdvanced.className='advanced-meals';secretAdvanced.id='v5SecretAdvanced';secretAdvanced.innerHTML='<summary>逐日調整供餐</summary><p class="field-help">部分日期含早餐或已提供晚餐，可在這裡調整；不會增加時段外餐費。</p><div id="v5SecretDayAdjust"></div>';S.meals.insertBefore(secretAdvanced,S.mealHint);
+S.form.insertAdjacentHTML('beforeend','<p class="paragraph-help">可一次輸入：胡志明市，2026/10/14 09:40 抵達，10/17 17:30 離開，飯店有早餐，15、16 日展場有午餐。</p>');
 S.review.insertAdjacentHTML('afterbegin','<p class="meal-alert" id="v5SecretNotes" hidden></p>');
 
 function bulkUI(parent,prefix,apply,readDates){
@@ -124,7 +125,7 @@ function compute(options){
   const open=silent&&expanded;el.resultDetails.hidden=!open;el.results.classList.toggle('expanded',open);el.resultToggle.setAttribute('aria-expanded',String(open));el.resultToggleLabel.textContent=open?'收合':'展開';
   $('v5SummaryTrip').textContent=`${s.arrDate} ${s.arrTime} 抵達 → ${s.depDate} ${s.depTime} 離開｜當地時間`;
   updateState();remember(result);document.dispatchEvent(new CustomEvent('trip:calculated'));
-  if(!silent){summary.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});C.toast(state.storageOK?'計算完成，已保留在最近行程':'計算完成；此瀏覽器無法保留，請匯出');}save();return result;
+  if(!silent){summary.scrollIntoView({behavior:'smooth',block:'start'});C.toast(state.storageOK?'計算完成，已保留在最近行程':'計算完成；此瀏覽器無法保留，請匯出');}save();return result;
 }
 function applyMain(s,calculate=false){
   state.applying=true;state.adjustments={...s.adjustments};state.meta={...s.meta};state.needReview=!!s.mealsNeedReview;state.lastDates=s.arrDate+'|'+s.depDate;state.auto=!!s.calculated;
@@ -135,7 +136,7 @@ function resetMain(force=false){
   if(!force&&(meaningful(main())||C.draft?.countryKey||state.pending)&&!confirm('開始新行程並清除目前草稿？已儲存的最近行程不會刪除。'))return;
   state.pending=null;resume.hidden=true;document.querySelector('.form-stack').inert=false;$('secretaryBtn').disabled=false;
   state.auto=false;state.detailsExpanded=false;state.historyId=null;state.adjustments={};state.needReview=false;state.lastDates='';C.draft=null;C.messages=[];S.input.value='';state.edit=null;state.backup=null;state.secretaryNeedsSync=false;
-  applyMain(E.normalise({},C.rates));removeStorage(DRAFT);save();window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+  applyMain(E.normalise({},C.rates));removeStorage(DRAFT);save();window.scrollTo({top:0,behavior:'smooth'});
 }
 $('v5NewBtn').addEventListener('click',()=>resetMain());
 ['name','department','purpose'].forEach(k=>$('v5'+k[0].toUpperCase()+k.slice(1)).addEventListener('input',e=>{state.meta[k]=e.target.value;if(state.result)state.result.meta={...state.meta};document.dispatchEvent(new Event('trip:invalidate'));scheduleSave();}));
@@ -165,16 +166,15 @@ function renderStep(){
   S.form.hidden=!text;S.meals.hidden=C.step!=='meals';S.review.hidden=C.step!=='review';
   const names={destination:'目的地',city:'城市',arrival:'抵達',departure:'離開',meals:'供餐',review:'確認'};
   S.step.textContent=state.edit?'修改'+names[C.step]:'第 '+({destination:1,city:1,arrival:2,departure:3,meals:4,review:5}[C.step])+'／5 步・'+names[C.step];
-  S.inputLabel.textContent={destination:'目的地',city:'城市／地區',arrival:'抵達日期與時間',departure:'離開日期與時間'}[C.step]||'';
-  S.input.placeholder=text?(C.step==='destination'?'例如：胡志明市':C.step==='city'?'例如：東京':'例如：2026/10/14 09:40'):'';
-  const hints={destination:'直接輸入這次出差的國家或城市。',city:'請輸入這次出差的城市。',arrival:'請使用當地時間；未填年份會暫列今年，確認頁會提醒。',departure:'跨年請寫明年份，離開時間須晚於抵達時間。'};
+  S.inputLabel.textContent={destination:'國家、城市或整段行程',city:'城市／地區',arrival:'抵達日期與時間',departure:'離開日期與時間'}[C.step]||'';
+  S.input.placeholder=text?(C.step==='destination'?'例如：東京，2026/10/14 09:40 抵達，10/17 17:30 離開':C.step==='city'?'例如：東京':'例如：2026/10/14 09:40'):'';
+  const hints={destination:'可以一次貼上整段行程；只會追問缺少的資訊。',city:'請輸入這次出差的城市。',arrival:'請使用當地時間；未填年份會暫列今年，確認頁會提醒。',departure:'跨年請寫明年份，離開時間須晚於抵達時間。'};
   if(text){S.hint.textContent=hints[C.step];S.hint.classList.remove('error');}
   [S.back,S.mealBack,S.reviewBack].forEach(b=>{b.disabled=C.step==='destination'&&!state.edit;});
   S.back.textContent=state.edit?'取消修改':'上一步';S.mealBack.textContent=state.edit?'取消修改':'上一步';
   if(C.step==='meals'){S.breakfast.checked=d.breakfast;S.lunch.checked=d.lunch;C.renderSecretLunch();bounds(secretBulk,E.keys(d.arrival?.dateValue,d.departure?.dateValue));renderAdjust($('v5SecretDayAdjust'),draftSnapshot());S.mealHint.textContent='請確認實際供餐；未提及的供餐不會被當成已確認。';S.mealNext.textContent=state.edit?'儲存修改':'確認餐食';}
   if(C.step==='review')renderReview();
-  if(!C.messages.length)message('assistant','請問這次要到哪個國家出差？也可以直接輸入城市，例如「東京」。');
-  document.dispatchEvent(new CustomEvent('trip:secretary-step',{detail:{step:C.step,editing:!!state.edit,place:d.cityDisplay||C.rates[d.countryKey]?.cities[d.cityKey]?.label||C.rates[d.countryKey]?.label||'',arrival:d.arrival,departure:d.departure,mealsConfirmed:d.mealConfirmed===true}}));
+  if(!C.messages.length)message('assistant','請提供目的地，也可以一次貼上完整行程。');
   C.renderMessages();scheduleSave();requestAnimationFrame(()=>{if(text)S.input.focus({preventScroll:true});else if(C.step==='review')$('secretaryConfirmBtn').focus({preventScroll:true});});
 }
 function startEdit(key){state.backup=secretaryPack();state.edit=key;C.step=key;if(key==='arrival'||key==='departure'){const p=C.draft[key];S.input.value=p?p.dateValue+' '+p.timeValue:'';}else if(key==='destination')S.input.value=(C.rates[C.draft.countryKey]?.label||'')+(C.draft.cityDisplay||'');renderStep();}
@@ -185,7 +185,7 @@ function pruneDraftDates(oldPair){
 }
 function submit(answer){
   const d=C.draft,oldPair=d.arrival?.dateValue+'|'+d.departure?.dateValue;let parsed;
-  if(C.step==='destination'&&!state.edit&&window.TripSecretaryFastMode===true){
+  if(C.step==='destination'&&!state.edit){
     parsed=E.parseParagraph(answer,C.parseDestination,C.parseTime);
     if(parsed?.error){C.hint(parsed.error,true);return;}
     if(parsed){
@@ -210,7 +210,7 @@ function submit(answer){
   if(state.edit&&d.cityKey){state.edit=null;state.backup=null;}nextStep();renderStep();
 }
 function goBack(){
-  if(state.edit){const backup=state.backup;state.edit=null;state.backup=null;if(backup)secretaryUnpack(backup);C.step=backup?.step||'review';renderStep();return;}
+  if(state.edit){const backup=state.backup;state.edit=null;state.backup=null;if(backup)secretaryUnpack(backup);C.step='review';renderStep();return;}
   C.step={city:'destination',arrival:'destination',departure:'arrival',meals:'departure',review:'meals'}[C.step]||'destination';
   if(['arrival','departure'].includes(C.step)){const p=C.draft[C.step];S.input.value=p?p.dateValue+' '+p.timeValue:'';}else S.input.value='';renderStep();
 }
@@ -235,7 +235,7 @@ $('v5HistoryList').addEventListener('click',e=>{
   state.pending=null;resume.hidden=true;document.querySelector('.form-stack').inert=false;$('secretaryBtn').disabled=false;
   const s=E.normalise(record.snapshot,C.rates);C.draft=null;C.messages=[];state.edit=null;
   if(b.dataset.history==='copy'){s.arrDate='';s.depDate='';s.arrTime='';s.depTime='';s.lunchDates=[];s.lunch=false;s.adjustments={};s.mealsNeedReview=true;s.calculated=false;state.historyId=null;}else state.historyId=record.id;
-  applyMain(s,b.dataset.history==='load');historyDialog.close();save();if(b.dataset.history==='copy')el.arrDate.focus();else summary.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
+  applyMain(s,b.dataset.history==='load');historyDialog.close();save();if(b.dataset.history==='copy')el.arrDate.focus();else summary.scrollIntoView({behavior:'smooth',block:'start'});
 });
 $('v5ResumeBtn').onclick=()=>{const p=state.pending;state.pending=null;resume.hidden=true;document.querySelector('.form-stack').inert=false;$('secretaryBtn').disabled=false;state.historyId=typeof p.historyId==='string'?p.historyId:null;applyMain(E.normalise(p.main,C.rates)||E.normalise({},C.rates),!!p.main?.calculated);if(secretaryUnpack(p.secretary)&&(!meaningful(main())||p.secretary.draft?.countryKey))openSecretary();save();};
 $('v5DiscardBtn').onclick=()=>{if(confirm('捨棄上次草稿並開始新行程？最近行程不受影響。'))resetMain(true);};
@@ -243,7 +243,7 @@ document.addEventListener('input',e=>{if(state.applying)return;if(document.query
 document.addEventListener('change',e=>{if(state.applying)return;if(document.querySelector('.form-stack').contains(e.target))state.secretaryNeedsSync=!!C.draft;if(S.dialog.contains(e.target)){queueMicrotask(()=>{if(C.draft)renderAdjust($('v5SecretDayAdjust'),draftSnapshot());scheduleSave();});}else scheduleSave();});
 S.dialog.addEventListener('close',save);window.addEventListener('pagehide',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save();});
 window.addEventListener('storage',e=>{if(e.key===HISTORY&&historyDialog.open)renderHistory();if(e.key===DRAFT&&e.newValue){$('v5SaveStatus').textContent='另一個分頁更新了草稿。為避免互相覆寫，請只在一個分頁編輯。';}});
-window.TripV5={editSecretary:key=>{if(C.draft&&['destination','arrival','departure','meals'].includes(key))startEdit(key);},getReport:()=>state.result?clone({...state.result,meta:{...state.meta},snapshot:main()}):null,ready:()=>!!state.result&&E.validate(main(),C.rates).valid,save};
+window.TripV5={getReport:()=>state.result?clone({...state.result,meta:{...state.meta},snapshot:main()}):null,ready:()=>!!state.result&&E.validate(main(),C.rates).valid,save};
 function finish(){
   state.ready=true;const saved=readStorage(DRAFT);if(saved?.version===5&&(meaningful(E.normalise(saved.main,C.rates))||saved.secretary?.draft?.countryKey||saved.secretary?.input)){
     state.pending=saved;resume.hidden=false;const s=E.normalise(saved.main,C.rates);$('v5ResumeText').textContent=(s?.cityDisplay||C.rates[s?.country]?.cities[s?.city]?.label||'秘書模式草稿')+'｜'+String(saved.updatedAt||'').replace('T',' ').slice(0,16)+'（暫存時間）';document.querySelector('.form-stack').inert=true;$('secretaryBtn').disabled=true;
