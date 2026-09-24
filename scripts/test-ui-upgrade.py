@@ -26,7 +26,7 @@ base = args.url or 'http://127.0.0.1:8765/'
 
 def reach_meals(page):
     page.goto(base, wait_until='networkidle')
-    expect(page.locator('.app-version')).to_have_text('V4.6')
+    expect(page.locator('.app-version')).to_have_text('V5.2')
     expect(page.locator('#exportPdfBtn')).to_be_disabled()
     page.locator('#secretaryBtn').click()
     for value in ['胡志明市', '2026/10/14 09:40', '2026/10/17 17:30']:
