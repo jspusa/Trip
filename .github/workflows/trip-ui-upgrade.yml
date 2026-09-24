@@ -1,7 +1,7 @@
 name: Trip V5.2 regression and publish
 on:
   push:
-    branches: [main, work/trip-v52-v46-minimal]
+    branches: [main, work/trip-v52-v46-minimal, work/trip-v52-report-pdf]
     paths:
       - index.html
       - trip-export.js
