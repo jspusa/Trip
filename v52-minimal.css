@@ -81,3 +81,11 @@ dialog{box-shadow:0 30px 90px rgba(0,0,0,.22);}
 @media(prefers-reduced-motion:reduce){
   .v52-reveal{opacity:1!important;transform:none!important;}
 }
+
+/* Export hierarchy: reimbursement is the primary action; full-page and print are secondary. */
+.export-actions{max-width:620px;margin-left:auto;margin-right:auto;}
+.export-actions .v52-report-primary{order:0;flex:1 1 100%;width:100%;min-height:54px;font-size:15px;}
+.export-actions #exportPdfBtn{order:1;flex:1 1 220px;background:#e8e8ed;color:var(--text);box-shadow:none;}
+.export-actions #printPageBtn{order:2;flex:1 1 140px;background:transparent;border:1px solid var(--line);}
+.export-actions .export-note{order:3;}
+.export-actions .export-status,.export-actions .export-download{order:4;}

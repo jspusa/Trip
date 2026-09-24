@@ -30,6 +30,7 @@ def reach_meals(page):
     assert page.locator('[data-appearance], #v5HistoryBtn, #v5NewTripBtn, .v51-fast-mode').count() == 0
     assert page.evaluate("getComputedStyle(document.documentElement).colorScheme") == 'light'
     expect(page.locator('#exportPdfBtn')).to_be_disabled()
+    expect(page.locator('#v52ReportPdfBtn')).to_be_disabled()
     page.locator('#secretaryBtn').click()
     for value in ['胡志明市', '2026/10/14 09:40', '2026/10/17 17:30']:
         page.locator('#secretaryInput').fill(value)
@@ -69,6 +70,7 @@ def complete(page):
     page.locator('#secretaryConfirmBtn').click()
     expect(page.locator('#secretaryDialog')).not_to_be_visible()
     expect(page.locator('#exportPdfBtn')).to_be_enabled()
+    expect(page.locator('#v52ReportPdfBtn')).to_be_enabled()
     expect(page.locator('#totalAmount')).to_contain_text('84')
     expect(page.locator('#countB')).to_have_text('0')
     expect(page.locator('#countL')).to_have_text('4')
@@ -139,6 +141,17 @@ with sync_playwright() as pw:
         reach_meals(page)
         complete(page)
         export_pdf(page, browser_name+'-full-trip')
+        with page.expect_download(timeout=120000) as report_pending:
+            page.locator('#v52ReportPdfBtn').click()
+        report=report_pending.value
+        assert '報帳版' in report.suggested_filename
+        report_path=output / f'{browser_name}-report.pdf'
+        report.save_as(report_path)
+        with fitz.open(report_path) as pdf:
+            assert len(pdf)>=1
+            text_content=''.join(p.get_text() for p in pdf)
+            assert 'Jasper Travel V5.2' in text_content
+            assert '1 / ' in text_content
         page.emulate_media(media='print')
         expect(page.locator('#resultDetails')).to_be_visible()
         expect(page.locator('.export-actions')).not_to_be_visible()
