@@ -19,33 +19,16 @@ let preference=root.dataset.appearancePreference||'system';$('v51Theme').value=p
 function applyTheme(){root.dataset.appearance=preference==='system'?(dark.matches?'dark':'light'):preference;root.dataset.appearancePreference=preference;document.querySelector('meta[name="theme-color"]')?.setAttribute('content',root.dataset.appearance==='dark'?'#151516':'#f5f5f7');}
 $('v51Theme').addEventListener('change',e=>{preference=e.target.value;try{localStorage.setItem('jasper.trip.appearance',preference);}catch{}applyTheme();});dark.addEventListener('change',()=>{if(preference==='system')applyTheme();});applyTheme();
 const icons={assistant:'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="3"/><path d="M9 4V2m6 2V2M9 10h6m-6 4h6m-6 4h3"/></svg>',calendar:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 2v6m10-6v6M3 11h18"/></svg>',clock:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/></svg>'};
-$('rulesBtn').textContent='規則與費率';$('secretaryBtn').textContent='祕書模式';$('secretaryDialogTitle').textContent='祕書模式';
-document.querySelector('.secretary-title-icon').innerHTML=icons.assistant;
+$('rulesBtn').textContent='規則與費率';
 document.querySelectorAll('[data-date-target]').forEach(b=>b.innerHTML=icons.calendar);
 document.querySelectorAll('[data-time-target]').forEach(b=>b.innerHTML=icons.clock);
 const footer=document.createElement('p');footer.className='v51-footer no-print';footer.textContent='Jasper Travel · 在此裝置完成試算與匯出';document.querySelector('.app-shell').append(footer);
 
-// Conversation-first secretary: keep the original one-question-at-a-time chat as the default.
-// A one-line fast parser is available only as an optional tool at the bottom.
-const dialog=$('secretaryDialog'),body=dialog.querySelector('.secretary-body'),panel=dialog.querySelector('.secretary-panel'),chat=$('secretaryChat');
-const quickMode=document.createElement('details');quickMode.className='v51-fast-mode';quickMode.innerHTML='<summary>快速模式 <span>一次貼上整段行程</span></summary><div class="v51-fast-mode-body"><label for="v51FastInput">整段行程</label><textarea id="v51FastInput" rows="3" maxlength="2000" placeholder="例如：胡志明市，10/14 09:40 抵達，10/17 17:30 離開，飯店有早餐"></textarea><p>系統會先解析內容，再用對話補問缺少的資訊。</p><button class="compact-primary" id="v51FastSubmit" type="button">快速解析</button></div>';
-body.append(quickMode);
-$('v51FastSubmit').addEventListener('click',()=>{const value=$('v51FastInput').value.trim();if(!value)return;window.TripSecretaryFastMode=true;$('secretaryInput').value=value;$('secretaryInput').dispatchEvent(new Event('input',{bubbles:true}));$('secretaryForm').requestSubmit();window.TripSecretaryFastMode=false;quickMode.open=false;$('v51FastInput').value='';});
-let lastMessageCount=0;
-document.addEventListener('trip:secretary-step',event=>{
-  const {step}=event.detail;
-  quickMode.hidden=step!=='destination';
-  const paragraphHelp=document.querySelector('.paragraph-help');if(paragraphHelp)paragraphHelp.hidden=true;
-  requestAnimationFrame(()=>{
-    const messages=chat.querySelectorAll('.chat-message');
-    if(messages.length>lastMessageCount){const newest=messages[messages.length-1];animate(newest,[{opacity:0,transform:'translateY(7px)'},{opacity:1,transform:'none'}],220);}
-    lastMessageCount=messages.length;
-    chat.scrollTop=chat.scrollHeight;
-  });
-});
+const dialog=$('secretaryDialog');
 
 // Native dialogs retain focus trapping, Escape and backdrop dismissal.
 document.querySelectorAll('dialog').forEach(node=>{
+  if(node===dialog)return;
   const nativeClose=node.close.bind(node),nativeOpen=node.showModal.bind(node);let closing=null;
   node.close=function(value){
     if(!node.open||reduce.matches){nativeClose(value);return;}
@@ -70,7 +53,7 @@ function toggleDetails(node){
   const record={opening,animation:null};accordionState.set(node,record);
   record.animation=animate(node,[{height:from+'px'},{height:(opening?full:collapsed)+'px'}],260,()=>{node.open=opening;node.classList.remove('v51-expanding');accordionState.delete(node);});
 }
-document.querySelectorAll('details').forEach(node=>node.querySelector(':scope>summary')?.addEventListener('click',e=>{e.preventDefault();toggleDetails(node);}));
+document.querySelectorAll('details').forEach(node=>{if(node.closest('#secretaryDialog'))return;node.querySelector(':scope>summary')?.addEventListener('click',e=>{e.preventDefault();toggleDetails(node);});});
 let resultMotion=null;
 function toggleResult(e){
   if(e.type==='keydown'&&!['Enter',' '].includes(e.key))return;
