@@ -8,6 +8,7 @@ on:
       - trip-export.css
       - v52-minimal.css
       - v52-motion.js
+      - v52-report.js
       - scripts/apply-ui-upgrade.py
       - scripts/test-ui-upgrade.py
       - .github/workflows/trip-ui-upgrade.yml
@@ -34,6 +35,7 @@ jobs:
           python scripts/apply-ui-upgrade.py
           node --check trip-export.js
           node --check v52-motion.js
+          node --check v52-report.js
           python - <<'PY'
           from pathlib import Path
           import re, subprocess, tempfile
