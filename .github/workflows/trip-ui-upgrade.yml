@@ -17,7 +17,6 @@ concurrency:
   cancel-in-progress: false
 jobs:
   test-and-publish:
-    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
