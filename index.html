@@ -4,9 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f5f5f7">
-  <script>
-  (()=>{let p='system';try{const saved=localStorage.getItem('jasper.trip.appearance');if(['system','light','dark'].includes(saved))p=saved;}catch{}document.documentElement.dataset.appearancePreference=p;document.documentElement.dataset.appearance=p==='system'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):p;})();
-  </script>
   <title>出差伙食費計算器</title>
   <style>
     :root{
@@ -417,20 +414,19 @@
   </style>
   <link rel="stylesheet" href="trip-export.css?v=5.0">
   <link rel="stylesheet" href="v5-experience.css?v=5.0">
-  <link rel="stylesheet" href="v51-visual.css?v=5.1">
 </head>
 <body>
   <main class="app-shell">
     <header class="hero">
       <div class="hero-top">
-        <div class="eyebrow"><span class="eyebrow-dot"></span>Jasper Travel <span class="app-version" data-update-count="51" aria-label="版本 5.1">V5.1</span></div>
+        <div class="eyebrow"><span class="eyebrow-dot"></span>Jasper Travel <span class="app-version" data-update-count="50" aria-label="版本 5.0">V5.0</span></div>
         <div class="hero-actions">
           <button class="rules-corner" id="rulesBtn" type="button" aria-label="查看規則與費率">ⓘ 規則與費率</button>
           <button class="rules-corner secretary-corner" id="secretaryBtn" type="button" aria-label="開啟秘書模式">👩🏻‍💼 秘書模式</button>
         </div>
       </div>
-      <h1>出差伙食費，輕鬆算好。</h1>
-      <p>從行程到報帳，簡單幾步。<br>填入目的地與時間，其餘交給我們。</p>
+      <h1>出差伙食費計算機</h1>
+      <p>依序選擇目的地與行程，系統會自動判斷可核給的早餐、午餐與晚餐。</p>
     </header>
 
     <nav class="progress-card" aria-label="填寫進度">
@@ -720,7 +716,7 @@
   <div class="toast" id="toast" role="status"></div>
 
   <script src="v5-engine.js?v=5.0"></script>
-  <script src="v5-experience.js?v=5.1"></script>
+  <script src="v5-experience.js?v=5.0"></script>
   <script>
   (()=>{
     const rates={
@@ -1145,11 +1141,7 @@
         const exact=comboChoices(kind).find(choice=>choice.label.toLowerCase()===parts.input.value.trim().toLowerCase()||choice.value.toLowerCase()===parts.input.value.trim().toLowerCase());
         if(exact&&!parts.select.value)selectCombo(kind,exact.value);else closeCombo(kind);
       },140));
-      // Keep touch interaction stable on iOS: pressing the chevron must not blur the
-      // search field before the click handler decides whether the menu is open.
-      toggle.addEventListener('pointerdown',event=>event.preventDefault());
-      toggle.addEventListener('click',()=>{const shouldOpen=!parts.combo.classList.contains('open');if(shouldOpen){parts.input.focus({preventScroll:true});openCombo(kind);}else closeCombo(kind);});
-      parts.menu.addEventListener('pointerdown',event=>event.preventDefault());
+      toggle.addEventListener('click',()=>{const shouldOpen=!parts.combo.classList.contains('open');parts.input.focus({preventScroll:true});shouldOpen?openCombo(kind):closeCombo(kind);});
       parts.menu.addEventListener('mousedown',event=>event.preventDefault());
       parts.menu.addEventListener('click',event=>{const option=event.target.closest('.combo-option');if(option)selectCombo(kind,option.dataset.value);});
     }
@@ -1335,8 +1327,7 @@
     renderRates();updateLabels();updateState();experience.finish();
   })();
   </script>
-  <script src="trip-export.js?v=5.1" defer></script>
-  <script src="v5-report.js?v=5.1" defer></script>
-  <script src="v51-motion.js?v=5.1" defer></script>
+  <script src="trip-export.js?v=5.0" defer></script>
+  <script src="v5-report.js?v=5.0" defer></script>
 </body>
 </html>
