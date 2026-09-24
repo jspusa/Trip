@@ -43,21 +43,17 @@
   toolbar.className='export-actions';
   toolbar.setAttribute('aria-label','匯出與列印');
   toolbar.innerHTML='<button class="primary-btn" id="exportPdfBtn" type="button" disabled>匯出整頁 PDF</button><button class="secondary-btn" id="printPageBtn" type="button" disabled>列印</button><p class="export-note">計算完成後可匯出完整表單、每日明細與總額，自動分頁。</p><p class="export-status" id="pdfStatus" role="status" aria-live="polite"></p><a class="export-download" id="pdfDownloadLink" hidden>PDF 已產生，點此儲存</a>';
-  toolbar.dataset.v5='true';
-  document.querySelector('#v5Summary').insertBefore(toolbar,document.querySelector('#v5ReportFields'));
+  document.querySelector('.app-shell').append(toolbar);
   const exportButton=$('exportPdfBtn'),printButton=$('printPageBtn'),status=$('pdfStatus'),downloadLink=$('pdfDownloadLink');
   let busy=false,libraryPromise=null,lastUrl=null;
   const scriptBase=new URL('.',document.currentScript?.src||document.baseURI);
   function syncExport(){
-    const ready=window.TripV5?.ready()||false;
-    exportButton.disabled=busy||document.body.dataset.pdfBusy==='true'||!ready;printButton.disabled=exportButton.disabled;
+    const ready=$('results').classList.contains('show')&&!$('calculateBtn').disabled;
+    exportButton.disabled=busy||!ready;printButton.disabled=busy||!ready;
     if(!ready&&!busy){status.textContent='';downloadLink.hidden=true;}
   }
   new MutationObserver(syncExport).observe($('results'),{attributes:true,attributeFilter:['class']});
   new MutationObserver(syncExport).observe($('calculateBtn'),{attributes:true,attributeFilter:['disabled']});
-  document.addEventListener('trip:calculated',syncExport);
-  document.addEventListener('trip:export-busy',syncExport);
-  document.addEventListener('trip:invalidate',()=>{downloadLink.hidden=true;if(!busy)status.textContent='';syncExport();});
   syncExport();
   printButton.addEventListener('click',()=>window.print());
   function loadRenderer(){
@@ -78,7 +74,7 @@
     html,body{margin:0!important;padding:0!important;min-height:0!important;background:#fff!important;width:800px!important;overflow:visible!important;color-scheme:light;}
     *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;}
     .app-shell{width:760px!important;max-width:none!important;margin:0 20px!important;padding:16px 0!important;}
-    .no-print,.summary-state,.hero-actions,.desktop-actions,.export-actions,.result-toggle,.combo-menu,.picker-trigger,.combo-toggle,.lock-hint{display:none!important;}
+    .hero-actions,.desktop-actions,.export-actions,.result-toggle,.combo-menu,.picker-trigger,.combo-toggle,.lock-hint{display:none!important;}
     .card,.summary-card,.progress-card{opacity:1!important;transform:none!important;background:#fff!important;}
     .card{border:1px solid #d2d2d7!important;}
     .hero-top{display:flex!important;}.eyebrow{justify-self:auto!important;}
@@ -89,12 +85,11 @@
     .day-row{grid-template-columns:120px repeat(3,minmax(0,1fr))!important;}
     .meal-status{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;}
     .result-breakdown{grid-template-columns:repeat(3,1fr)!important;}
-    .pdf-adjustment{font-size:12px;line-height:1.6;margin:6px 0;}.summary-trip{font-size:13px;}
     .pdf-value{min-height:44px;display:flex;align-items:center;border:1px solid #d2d2d7;border-radius:12px;padding:10px 14px;font-size:16px;color:#1d1d1f;background:#fff;overflow-wrap:anywhere;}
     .pdf-answer{flex:0 0 auto;font-size:13px;font-weight:700;color:#1d1d1f;}
     .date-chip{display:inline-block;}.pdf-meta{font-size:11px;color:#6e6e73;margin-top:12px;text-align:center;}
   `;
-  async function makeSnapshot(report){
+  async function makeSnapshot(){
     const iframe=document.createElement('iframe');
     iframe.title='PDF 匯出暫存版面';iframe.setAttribute('aria-hidden','true');iframe.tabIndex=-1;
     Object.assign(iframe.style,{position:'fixed',left:'-100000px',top:'0',width:'800px',height:'1120px',border:'0',pointerEvents:'none'});
@@ -102,20 +97,16 @@
     try{
       const doc=iframe.contentDocument;
       doc.open();doc.write('<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"></head><body></body></html>');doc.close();
-      Array.from(document.styleSheets).forEach(sheet=>{try{const copy=doc.createElement('style');copy.textContent=Array.from(sheet.cssRules).map(r=>r.cssText).join('\n');doc.head.append(copy);}catch{}});
+      document.querySelectorAll('style').forEach(style=>doc.head.append(style.cloneNode(true)));
       const style=doc.createElement('style');style.textContent=exportStyles;doc.head.append(style);
       const source=document.querySelector('.app-shell'),clone=source.cloneNode(true);
-      clone.querySelectorAll('.no-print,.export-actions,.summary-state,.paragraph-help').forEach(node=>node.remove());
-      clone.querySelectorAll('details').forEach(node=>node.open=true);
-      const adjustments=clone.querySelector('#v5Advanced');
-      if(adjustments){const entries=Object.entries(report.snapshot.adjustments);if(!entries.length)adjustments.remove();else{adjustments.replaceChildren();const title=doc.createElement('strong');title.textContent='逐日供餐調整';adjustments.append(title);entries.sort().forEach(([key,value])=>{const row=doc.createElement('p');row.className='pdf-adjustment';row.textContent=key.slice(0,10)+' '+({B:'早餐',L:'午餐',D:'晚餐'}[key.slice(-1)])+'：'+({hotel:'飯店供餐',expo:'展場供餐',company:'公司／他人供餐',self:'未供餐'}[value]);adjustments.append(row);});}}
-      clone.querySelectorAll('input,textarea').forEach(input=>{
+      clone.querySelectorAll('input').forEach(input=>{
         const original=$(input.id);
         if(!original)return;
         const value=doc.createElement('div');
         if(input.type==='checkbox'){
           value.className='pdf-answer';value.textContent=original.checked?'有提供':'未提供';
-          (input.closest('.switch')||input).replaceWith(value);
+          input.closest('.switch').replaceWith(value);
         }else{
           value.className='pdf-value';value.textContent=original.value||'—';input.replaceWith(value);
         }
@@ -126,7 +117,6 @@
       clone.querySelector('#results').classList.add('show','expanded');
       const meta=doc.createElement('p');meta.className='pdf-meta';meta.textContent=`匯出時間：${new Date().toLocaleString('zh-TW',{hour12:false})}｜完整表單、每日明細與總額`;
       clone.querySelector('.hero').append(meta);
-      if(report.meta.name||report.meta.department||report.meta.purpose){const info=doc.createElement('p');info.className='pdf-meta';info.textContent=[report.meta.name&&'姓名：'+report.meta.name,report.meta.department&&'部門：'+report.meta.department,report.meta.purpose&&'事由：'+report.meta.purpose].filter(Boolean).join('｜');clone.querySelector('.hero').append(info);}
       doc.body.append(clone);
       await doc.fonts.ready;
       await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
@@ -134,7 +124,7 @@
     }catch(error){iframe.remove();throw error;}
   }
   function planPages(doc,maxHeight){
-    const regions=Array.from(doc.querySelectorAll('.hero,.progress-card,#destinationCard,#tripCard,#mealsCard,.day-row,.switch-row,.date-chip,.result-breakdown,.basis,.summary-card,.pdf-adjustment')).map(node=>{
+    const regions=Array.from(doc.querySelectorAll('.hero,.progress-card,#destinationCard,#tripCard,#mealsCard,.day-row,.switch-row,.date-chip,.result-breakdown,.basis,.summary-card')).map(node=>{
       const box=node.getBoundingClientRect();return{top:Math.floor(box.top),bottom:Math.ceil(box.bottom)};
     }).filter(box=>box.bottom>box.top&&box.bottom-box.top<maxHeight);
     const heading=doc.querySelector('.result-toggle-row'),firstRow=doc.querySelector('.day-row:not(.day-header)');
@@ -175,14 +165,12 @@
     return new Blob(parts,{type:'application/pdf'});
   }
   exportButton.addEventListener('click',async()=>{
-    if(busy||exportButton.disabled||document.body.dataset.pdfBusy==='true')return;
-    const report=window.TripV5.getReport();if(!report)return;
-    document.body.dataset.pdfBusy='true';document.dispatchEvent(new Event('trip:export-busy'));
+    if(busy||exportButton.disabled)return;
     busy=true;syncExport();exportButton.setAttribute('aria-busy','true');exportButton.textContent='正在匯出…';status.classList.remove('error');status.textContent='正在準備完整頁面…';downloadLink.hidden=true;
     let snapshot;
     try{
-      snapshot=await makeSnapshot(report);
       const render=await loadRenderer();
+      snapshot=await makeSnapshot();
       const pages=planPages(snapshot.doc,1136),images=[];
       for(let i=0;i<pages.length;i++){
         status.textContent=`正在製作 PDF：${i+1}／${pages.length} 頁`;
@@ -196,12 +184,12 @@
         await new Promise(resolve=>setTimeout(resolve,0));
       }
       const blob=makePdf(images);
-      const place=(report.country+'・'+report.city).replace(/[\\/:*?"<>|\u0000-\u001f]/g,'_').slice(0,60);
-      const filename=`出差伙食費_${place}_${report.arrDate}_${report.depDate}.pdf`;
+      const place=$('summaryPlace').textContent.replace(/[\\/:*?"<>|\u0000-\u001f]/g,'_').slice(0,60);
+      const filename=`出差伙食費_${place}_${$('arrDate').value.replaceAll('/','-')}_${$('depDate').value.replaceAll('/','-')}.pdf`;
       if(lastUrl){const oldUrl=lastUrl;setTimeout(()=>URL.revokeObjectURL(oldUrl),60000);}
       lastUrl=URL.createObjectURL(blob);downloadLink.href=lastUrl;downloadLink.download=filename;downloadLink.hidden=false;
       downloadLink.click();status.textContent=`PDF 已產生，共 ${pages.length} 頁。未自動下載時，請點選下方儲存連結。`;
     }catch(error){console.error('Trip PDF export failed:',error);status.classList.add('error');status.textContent='PDF 匯出失敗，請重試；也可使用「列印」另存 PDF。';}
-    finally{snapshot?.iframe.remove();busy=false;document.body.dataset.pdfBusy='false';document.dispatchEvent(new Event('trip:export-busy'));exportButton.removeAttribute('aria-busy');exportButton.textContent='匯出整頁 PDF';syncExport();}
+    finally{snapshot?.iframe.remove();busy=false;exportButton.removeAttribute('aria-busy');exportButton.textContent='匯出整頁 PDF';syncExport();}
   });
 })();
