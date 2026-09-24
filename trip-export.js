@@ -10,12 +10,20 @@
   footer.className='secretary-footer';
   const groups=['secretaryForm','secretaryMeals','secretaryReview'].map(id=>{
     const owner=$(id),actions=owner.querySelector('.secretary-actions');
-    actions.querySelectorAll('button[type="submit"]').forEach(button=>button.setAttribute('form',id));
+    if(id==='secretaryForm'){
+      const send=actions.querySelector('button[type="submit"]');
+      const composer=owner.querySelector('.secretary-composer');
+      if(send&&composer){send.setAttribute('aria-label','送出訊息');send.title='送出';composer.append(send);}
+    }
     footer.append(actions);
-    return {owner,actions};
+    return {owner,actions,id};
   });
   dialog.append(footer);
-  function syncGroups(){groups.forEach(({owner,actions})=>{actions.hidden=owner.hidden;});}
+  function syncGroups(){
+    groups.forEach(({owner,actions})=>{actions.hidden=owner.hidden;});
+    const active=groups.find(({owner})=>!owner.hidden);
+    dialog.dataset.secretaryStage=active?.id==='secretaryForm'?'chat':active?.id==='secretaryMeals'?'meals':'review';
+  }
   let frame=0;
   function fitDialog(){
     cancelAnimationFrame(frame);
