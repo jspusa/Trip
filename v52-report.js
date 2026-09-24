@@ -1,4 +1,4 @@
-/* V5.2 compact reimbursement PDF. Uses the already-calculated V4.6 result; all processing stays local. */
+/* V5.2 compact reimbursement PDF — searchable Traditional Chinese output. Uses the already-calculated V4.6 result; all processing stays local. */
 (()=>{'use strict';
 const $=id=>document.getElementById(id),toolbar=document.querySelector('.export-actions');if(!toolbar)return;
 const button=document.createElement('button');button.id='v52ReportPdfBtn';button.type='button';button.className='primary-btn v52-report-primary';button.textContent='報帳版 PDF';button.disabled=true;
