@@ -30,12 +30,12 @@ const footer=document.createElement('p');footer.className='v51-footer no-print';
 const dialog=$('secretaryDialog'),body=dialog.querySelector('.secretary-body'),panel=dialog.querySelector('.secretary-panel'),chat=$('secretaryChat');
 const quickMode=document.createElement('details');quickMode.className='v51-fast-mode';quickMode.innerHTML='<summary>快速模式 <span>一次貼上整段行程</span></summary><div class="v51-fast-mode-body"><label for="v51FastInput">整段行程</label><textarea id="v51FastInput" rows="3" maxlength="2000" placeholder="例如：胡志明市，10/14 09:40 抵達，10/17 17:30 離開，飯店有早餐"></textarea><p>系統會先解析內容，再用對話補問缺少的資訊。</p><button class="compact-primary" id="v51FastSubmit" type="button">快速解析</button></div>';
 body.append(quickMode);
-$('v51FastSubmit').addEventListener('click',()=>{const value=$('v51FastInput').value.trim();if(!value)return;$('secretaryInput').value=value;$('secretaryInput').dispatchEvent(new Event('input',{bubbles:true}));$('secretaryForm').requestSubmit();quickMode.open=false;$('v51FastInput').value='';});
+$('v51FastSubmit').addEventListener('click',()=>{const value=$('v51FastInput').value.trim();if(!value)return;window.TripSecretaryFastMode=true;$('secretaryInput').value=value;$('secretaryInput').dispatchEvent(new Event('input',{bubbles:true}));$('secretaryForm').requestSubmit();window.TripSecretaryFastMode=false;quickMode.open=false;$('v51FastInput').value='';});
 let lastMessageCount=0;
 document.addEventListener('trip:secretary-step',event=>{
   const {step}=event.detail;
   quickMode.hidden=step!=='destination';
-  document.querySelector('.paragraph-help').hidden=true;
+  const paragraphHelp=document.querySelector('.paragraph-help');if(paragraphHelp)paragraphHelp.hidden=true;
   requestAnimationFrame(()=>{
     const messages=chat.querySelectorAll('.chat-message');
     if(messages.length>lastMessageCount){const newest=messages[messages.length-1];animate(newest,[{opacity:0,transform:'translateY(7px)'},{opacity:1,transform:'none'}],220);}
